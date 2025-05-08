@@ -1,0 +1,56 @@
+<template>
+  <div class="page">
+    <div class="page-content">
+      <div class="block grid grid-gap mt-50">
+        <img src="./assets/images/logo1.png" width="150px" class="logo" />
+      </div>
+      <div class="block">
+        <a href="/login/" class="button button-fill login-button">Login</a>
+        <br />
+        <a href="/register/" class="link">Register</a>
+        <br />
+        <a href="/verify/" class="link">Verify</a>
+      </div>
+    </div>
+  </div>
+</template>
+<style>
+  .block {
+    text-align: center;
+  }
+  .mt-50 {
+    margin-top: 50%;
+    margin-bottom: 30%;
+  }
+  .logo {
+    margin: 0 auto;
+  }
+  .login-button {
+    border-radius: 5px;
+    max-width: 150px;
+    margin: 0 auto;
+  }
+</style>
+<script>
+  export default (props, { $on, $f7router }) => {
+    $on("pageInit", () => {
+      const userVerify = localStorage.getItem("userVerify") ;
+      setTimeout(() => {
+        if(!userVerify){
+          $f7router.navigate("/login/", { reloadCurrent: true });
+        }
+        if (userVerify === "0") {
+          $f7router.navigate("/verify/", { reloadCurrent: true });
+        } else {
+          $f7router.navigate("/screen/", { reloadCurrent: true });
+        } 
+        // else {
+        //   $f7router.navigate("/register/", { reloadCurrent: true });
+        // }
+      }, 2000); // 2 seconds delay
+    });
+
+    return $render;
+  };
+</script>
+

@@ -1,0 +1,307 @@
+<template>
+  <div class="page" data-name="verify">
+    <div class="page-content">
+      <div class="verification-screen">
+        <p class="verification-screen__text">
+          A confirmation code has been sent to your email
+        </p>
+      </div>
+      <form id="verifyForm" class="form__verify-code">
+        <div class="list">
+          <p class="verify-code__title item-label new-label">
+            Please check your email and enter the code you received
+          </p>
+          <div class="item-inner__flex-row">
+            <div class="input-wrap input__numbers">
+              <input
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="1"
+                name="number"
+                id="numOne"
+                class="verify-code__number"
+                placeholder="X"
+              />
+            </div>
+            <div class="input-wrap input__numbers">
+              <input
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="1"
+                id="numTwo"
+                class="verify-code__number"
+                placeholder="X"
+              />
+            </div>
+            <div class="input-wrap input__numbers">
+              <input
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="1"
+                id="numThree"
+                class="verify-code__number"
+                placeholder="X"
+              />
+            </div>
+            <div class="input-wrap input__numbers">
+              <input
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="1"
+                id="numFour"
+                class="verify-code__number"
+                placeholder="X"
+              />
+            </div>
+          </div>
+
+          <div class="block timer-block mb-block-0">
+            <a class="timer">0:05</a>
+          </div>
+          <div class="text-center">
+            <a href="#" @click="${resendEmail}" class="btn-resend">Resend</a>
+          </div>
+        </div>
+        <div class="list">
+          <div class="text-center mb-block-5">
+            <button
+              type="submit"
+              @click="${confirmVerifyCode}"
+              class="button button-fill confirm-button"
+            >
+              Confirm
+            </button>
+            <a class="link-custom no-abs mt-2" href="/">back</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script>
+  export default (props, { $, $on, $f7, $f7router }) => {
+    let countdownTime = 120;
+    let timerInterval;
+
+    const updateTimer = () => {
+      const minutes = Math.floor(countdownTime / 60);
+      const seconds = countdownTime % 60;
+
+      $(".timer").text(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
+
+      if (countdownTime <= 0) {
+        clearInterval(timerInterval);
+        $f7.dialog.alert(
+          "Countdown is finished, please resend to get new valid code."
+        );
+        $("#numOne, #numTwo, #numThree, #numFour").prop("disabled", true);
+      } else {
+        countdownTime--;
+      }
+    };
+
+    $on("pageInit", () => {
+      timerInterval = setInterval(updateTimer, 1000);
+      updateTimer();
+
+      const inputs = $(".verify-code__number");
+      inputs.on("input", function () {
+        const input = $(this);
+        const index = Array.from(inputs).findIndex((el) => el === this);
+
+        const value = input
+          .val()
+          .replace(/[^0-9]/g, "")
+          .slice(0, 1);
+
+        input.val(value); // Upis samo jedne cifre
+
+        // Pomeri fokus SAMO ako korisnik trenutno stoji na inputu u koji je uneo broj
+        if (
+          value &&
+          document.activeElement === this &&
+          index < inputs.length - 1
+        ) {
+          inputs.eq(index + 1).focus();
+        }
+      });
+
+      inputs.on("keydown", function (e) {
+        const index = inputs.index(this);
+        if (e.key === "Backspace" && !this.value && index > 0) {
+          inputs.eq(index - 1).focus();
+        }
+      });
+
+      $("#verifyForm").on("submit", function (e) {
+        confirmVerifyCode(e);
+      });
+
+      $(".btn-resend").off("click").on("click", resendEmail);
+    });
+
+    const resendEmail = async (e) => {
+      e.preventDefault();
+
+      try {
+        const userData = localStorage.getItem("user");
+        const user = userData ? JSON.parse(userData) : null;
+
+        if (!user?.id || !user?.email) {
+          $f7.dialog.alert("User not found.");
+          return;
+        }
+
+        const urlResend = `http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`;
+
+        const responseResendUrl = await fetch(urlResend, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email }),
+        });
+
+        if (responseResendUrl.ok) {
+          $("#numOne, #numTwo, #numThree, #numFour").prop("disabled", false);
+          clearInterval(timerInterval);
+          countdownTime = 120;
+          timerInterval = setInterval(updateTimer, 1000);
+          updateTimer();
+          $f7.dialog.alert("Verification email resent successfully.");
+        } else {
+          const errorData = await responseResendUrl.json();
+          $f7.dialog.alert(errorData?.message || "Failed to resend code.");
+        }
+      } catch (error) {
+        console.error("Resend Error:", error);
+        $f7.dialog.alert("Error occurred. Please try again.");
+      }
+    };
+
+    const confirmVerifyCode = async (e) => {
+      e.preventDefault();
+
+      const numOne = $("#numOne").val();
+      const numTwo = $("#numTwo").val();
+      const numThree = $("#numThree").val();
+      const numFour = $("#numFour").val();
+
+      if (!numOne || !numTwo || !numThree || !numFour) {
+        $f7.dialog.alert("Please fill all four numbers.");
+        return;
+      }
+
+      const code = parseInt(`${numOne}${numTwo}${numThree}${numFour}`);
+      const isValidNumber = /^\d$/;
+
+      if (
+        !isValidNumber.test(numOne) ||
+        !isValidNumber.test(numTwo) ||
+        !isValidNumber.test(numThree) ||
+        !isValidNumber.test(numFour)
+      ) {
+        $f7.dialog.alert("Each input must be a single-digit number.");
+        return;
+      }
+
+      try {
+        const userData = localStorage.getItem("user");
+        const user = userData ? JSON.parse(userData) : null;
+
+        if (!user?.id || !user?.email) {
+          $f7.dialog.alert("User info not found.");
+          return;
+        }
+
+        const url = `http://127.0.0.1:8000/api/verify-user/${user.id}`;
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: user.email,
+            verification_code: code,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("DATA:",data);
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("userVerify",1);
+          clearInterval(timerInterval);
+          $f7router.navigate("/screen/");
+        } else {
+          const errorData = await response.json();
+          $f7.dialog.alert(errorData?.error || "Verification failed.");
+        }
+      } catch (error) {
+        console.error("Verification Error:", error);
+        $f7.dialog.alert("Something went wrong. Please try again.");
+      }
+    };
+
+    return $render;
+  };
+</script>
+
+<style>
+  .page-content {
+    text-align: center;
+  }
+  .verification-screen__text {
+    font-size: 20px;
+  }
+
+  .verify-code__title {
+    font-size: 20px;
+  }
+  .item-inner__flex-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+    margin-top: 40%;
+  }
+  .input-wrap {
+    border-radius: 16px;
+    font-weight: bold !important;
+    color: black !important;
+    border: none !important;
+    padding: 10px;
+    background: white !important;
+  }
+  .input-wrap input {
+    text-align: center;
+    font-size: 30px;
+  }
+
+  .input__numbers {
+    width: 40px !important;
+    height: 36px;
+    margin: 0 10px;
+  }
+
+  .input__numbers .verify-code__number {
+    font-size: 30px !important;
+    height: auto !important;
+    margin: 0;
+    padding: 0px !important;
+    margin-top: 0px !important;
+    border: 1px solid black;
+    text-align: center;
+  }
+
+  .confirm-button {
+    border-radius: 5px;
+    max-width: 150px;
+    margin: 0 auto;
+  }
+</style>

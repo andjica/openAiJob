@@ -1,0 +1,216 @@
+<template>
+  <div class="page" data-name="register">
+    <div class="page-content">
+      <div class="login-screen-title">
+        <img src="./assets/images/logo1.png" width="150px" />
+      </div>
+      <form id="registerForm">
+        <div class="list inset no-hairlines-md">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">First Name</div>
+                <div class="item-input-wrap">
+                  <input
+                    id="firstnameInput"
+                    type="text"
+                    placeholder="First name"
+                  />
+                  <span class="input-clear-button"></span>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Last Name</div>
+                <div class="item-input-wrap">
+                  <input
+                    id="lastnameInput"
+                    type="text"
+                    placeholder="Last name"
+                  />
+                  <span class="input-clear-button"></span>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Email</div>
+                <div class="item-input-wrap">
+                  <input
+                    id="emailInputRegister"
+                    type="email"
+                    placeholder="Your email"
+                  />
+                  <span class="input-clear-button"></span>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Password</div>
+                <div class="item-input-wrap">
+                  <input
+                    id="passwordInputRegister"
+                    type="password"
+                    placeholder="Your password"
+                  />
+                  <span class="input-clear-button"></span>
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Confirm Password</div>
+                <div class="item-input-wrap">
+                  <input
+                    id="confirmpasswordInput"
+                    type="password"
+                    placeholder="Your confirm password"
+                  />
+                  <span class="input-clear-button"></span>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="block">
+          <button type="submit" class="button button-fill register-button">
+            Create account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script>
+  export default (props, { $, $on, $f7, $f7router }) => {
+    $on("pageInit", () => {
+      const $firstName = $("#firstnameInput");
+      const $lastName = $("#lastnameInput");
+      const $email = $("#emailInputRegister");
+      const $password = $("#passwordInputRegister");
+      const $confirmPassword = $("#confirmpasswordInput");
+
+      function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      }
+
+      $("#registerForm").on("submit", (e) => {
+        e.preventDefault();
+        const firstName = $firstName.val();
+        const lastName = $lastName.val();
+        const email = $email.val().trim();
+        const password = $password.val();
+        const confirmPassword = $confirmPassword.val();
+        const errors = [];
+
+        console.log("firstName:", firstName);
+        console.log("lastName:", lastName);
+        console.log("email:", email);
+        console.log("password:", password);
+        console.log("confirmPassword:", confirmPassword);
+
+        if (!firstName) {
+          errors.push("First name is required!");
+        } else if (firstName.length < 3) {
+          errors.push("First name must have more than 3 characters!");
+        }
+        if (!lastName) {
+          errors.push("Last name is required!");
+        } else if (lastName.length < 3) {
+          errors.push("Last name must have more than 3 characters!");
+        }
+        if (!email) {
+          errors.push("Email is required!");
+        } else if (!validateEmail(email)) {
+          errors.push("Email is not valid!");
+        }
+        if (!password) {
+          errors.push("Password is required!");
+        } else if (password.length < 6) {
+          errors.push("Password must have at least 6 characters!");
+        }
+        if (!confirmPassword) {
+          errors.push("Confirm password is required!");
+        } else if (confirmPassword.length < 6) {
+          errors.push("Confirm password must have at least 6 characters!");
+        }
+        // ✅ Check if passwords match
+        if (password && confirmPassword && password !== confirmPassword) {
+          errors.push("Passwords do not match!");
+        }
+
+        if (errors.length) {
+          // Show all errors in one alert
+          const msgHtml = errors.map((msg) => `<div>${msg}</div>`).join("");
+          $f7.dialog.alert(msgHtml, "Validation Errors");
+          return;
+        }
+        // If valid, proceed to register
+        registerUser(firstName, lastName, email, password, confirmPassword);
+      });
+
+      function registerUser(
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword
+      ) {
+        $f7.dialog.preloader("Registering...");
+
+        fetch("http://127.0.0.1:8000/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            email,
+            password,
+            confirmPassword,
+          }),
+        })
+          .then((response) => {
+            $f7.dialog.close();
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("User data", data);
+            if (data) {
+              localStorage.setItem("user", JSON.stringify(data.user));
+              localStorage.setItem("userVerify", 0);
+              localStorage.setItem("jwt_token", data.jwt_token);
+              $f7.dialog.alert("Registration successful!", () => {
+                $f7router.navigate("/verify/");
+              });
+            } else {
+              $f7.dialog.alert(data.message || "Registration failed.");
+            }
+          })
+          .catch((err) => {
+            $f7.dialog.close();
+            console.error("Registration error", err);
+            $f7.dialog.alert("Error: " + err.message);
+          });
+      }
+    });
+    return $render;
+  };
+</script>
+
+<style>
+  .register-button {
+    border-radius: 5px;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+</style>

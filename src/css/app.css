@@ -1,0 +1,9 @@
+/* Your app custom styles here */
+
+.page {
+    background: white!important;
+}
+
+.login-screen-title {
+    margin-top: 10%;
+}
