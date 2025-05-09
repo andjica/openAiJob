@@ -18,6 +18,7 @@
   .block {
     text-align: center;
   }
+  
   .mt-50 {
     margin-top: 50%;
     margin-bottom: 30%;
@@ -42,7 +43,7 @@
         if (userVerify === "0") {
           $f7router.navigate("/verify/", { reloadCurrent: true });
         } else {
-          $f7router.navigate("/screen/", { reloadCurrent: true });
+          $f7router.navigate("/main/", { reloadCurrent: true });
         } 
         // else {
         //   $f7router.navigate("/register/", { reloadCurrent: true });

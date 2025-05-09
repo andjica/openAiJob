@@ -198,6 +198,7 @@
       }
 
       const code = parseInt(`${numOne}${numTwo}${numThree}${numFour}`);
+      alert(code);
       const isValidNumber = /^\d$/;
 
       if (
@@ -234,10 +235,11 @@
         if (response.ok) {
           const data = await response.json();
           console.log("DATA:",data);
-          localStorage.setItem("token", data.token);
+          // localStorage.setItem("token", data.token);
           localStorage.setItem("userVerify",1);
+          localStorage.setItem("candidatProfile", data.candidatProfile);
           clearInterval(timerInterval);
-          $f7router.navigate("/screen/");
+          $f7router.navigate("/main/");
         } else {
           const errorData = await response.json();
           $f7.dialog.alert(errorData?.error || "Verification failed.");

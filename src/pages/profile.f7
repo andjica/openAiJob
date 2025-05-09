@@ -1,0 +1,996 @@
+<template>
+  <div class="page" data-name="setting">
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text">Profile</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-content pt-60">
+      <form
+        class="form-block mb-40"
+        id="verifyProfileForm"
+        enctype="multipart/form-data"
+      >
+        <!-- Personal Information -->
+        <h4>Personal Information</h4>
+        <div class="list">
+          <ul>
+            <li>
+              <div class="list no-hairlines-md">
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <label class="item-title">Full Name</label>
+                    <div class="item-input-wrap">
+                      <input
+                        type="text"
+                        placeholder="Enter your full name"
+                        id="full-name"
+                      />
+                      <span class="success-icon">✔</span>
+                    </div>
+                    <span class="error-message">Please enter a valid name</span>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Email</label>
+                  <div class="item-input">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      id="email"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-content content-flex item-select item-input">
+                <a
+                  class="item-link smart-select smart-select-init w-100"
+                  data-open-in="sheet"
+                >
+                  <select name="country" id="countries">
+                    <option value="">Select a country</option>
+                  </select>
+                  <div class="select-content">
+                    <label for="countries" class="item-title">Country</label>
+                  </div>
+                </a>
+              </div>
+              <div class="profile-message"></div>
+              <div class="item-content content-flex item-select item-input">
+                <a
+                  class="item-link smart-select smart-select-init w-100"
+                  data-open-in="sheet"
+                >
+                  <select name="city" id="cities">
+                    <option value="">Select a city</option>
+                  </select>
+                  <div class="select-content">
+                    <label for="cities" class="item-title">City</label>
+                  </div>
+                </a>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Phone</label>
+                  <div class="item-media">
+                    <span id="phone-code">XXX</span>
+                    <input
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      name="phoneNumber"
+                      id="phoneNumber"
+                      pattern="^[0-9]+$"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <!-- <div class="profile-message"></div> -->
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <label class="item-title">Birthday</label>
+                <div class="item-input">
+                  <div class="item-media">
+                    <input type="date" id="user_birthday" />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-inner btn-upload">
+                <label for="profile_image" class="custom-file-upload"
+                  >Upload Image</label
+                >
+                <input type="file" id="profile_image" accept="image/*" hidden />
+                <span class="success-icon"></span>
+                <!-- Success icon container -->
+                <span id="profile_filename" style="font-size: 12px; color: #555"></span>
+              </div>
+              
+              <span class="error-message"></span>
+              <!-- Error message container -->
+            </li>
+          </ul>
+        </div>
+
+        <!-- Professional Experience -->
+        <h4>Professional Experience</h4>
+        <div class="list">
+          <ul>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Current Title</label>
+                  <div class="item-input">
+                    <input
+                      type="text"
+                      placeholder="Enter your job title"
+                      id="current_title_job"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Current Company</label>
+                  <div class="item-input">
+                    <input
+                      type="text"
+                      placeholder="Enter your company name"
+                      id="current_company"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Years of Experience</label>
+                  <div class="item-input">
+                    <input
+                      type="number"
+                      placeholder="Enter years of experience"
+                      id="years_of_experience"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Education -->
+        <h4>Education</h4>
+        <div class="list">
+          <ul>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Name</label>
+                  <div class="item-input">
+                    <input
+                      type="text"
+                      placeholder="Enter your schoole name"
+                      id="school_name"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Degree</label>
+                  <div class="item-input">
+                    <input
+                      type="text"
+                      placeholder="Enter your degree"
+                      id="school_degree"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Start Year</label>
+                  <div class="item-input">
+                    <input
+                      type="number"
+                      placeholder="Enter your start year"
+                      id="school_year_start"
+                      min="1950"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <label class="item-title">Graduation Year</label>
+                  <div class="item-input">
+                    <input
+                      type="number"
+                      placeholder="Enter your graduation year"
+                      id="school_year_end"
+                      min="1950"
+                    />
+                    <span class="success-icon"></span>
+                    <!-- Success icon container -->
+                  </div>
+                  <span class="error-message"></span>
+                  <!-- Error message container -->
+                </div>
+              </div>
+              <div class="profile-message"></div>
+            </li>
+            <li>
+              <div class="item-inner btn-upload">
+                <label for="cv_upload" class="custom-file-upload"
+                  >Upload CV</label
+                >
+                <input
+                  type="file"
+                  id="cv_upload"
+                  accept=".pdf,.doc,.docx"
+                  hidden
+                />
+                <span class="success-icon"></span>
+                <!-- Success icon container -->
+                <span id="cv_filename" style="font-size: 12px; display: block; margin-top: 5px;"></span>
+              </div>
+              <span class="error-message"></span>
+              <!-- Error message container -->
+            </li>
+          </ul>
+        </div>
+
+        <button type="submit" class="button">SUBMIT</button>
+      </form>
+    </div>
+  </div>
+</template>
+
+<style>
+  .setting__title {
+    position: static !important;
+    width: 100%;
+    margin-left: 60px;
+  }
+
+  .file-input {
+    margin-top: 10px;
+  }
+
+  .list {
+    margin-bottom: 20px;
+  }
+
+  .list .item-content {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: calc(var(--f7-list-item-min-height));
+    /* padding-left: calc(
+      var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left)
+    ); */
+    /* border: 2px solid #007aff; */
+    width: 90%;
+    margin: 0px auto;
+    border-radius: 20px;
+    margin-top: 10px;
+  }
+
+  .list .item-link {
+    display: block;
+    padding-top: 9px;
+  }
+
+  .item-content.item-input {
+    background-color: transparent !important;
+  }
+  .item-title {
+    position: absolute;
+    background: white;
+    padding: 0 2px;
+  }
+
+  .item-content .form_select-control {
+    width: 100%; /* Make it responsive */
+    height: auto;
+    background-color: transparent !important;
+    padding: 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333; /* Text color */
+    outline: none;
+    cursor: pointer;
+  }
+
+  .item-content select {
+    top: 0 !important;
+    text-align: left;
+  }
+
+  /* Styling the dropdown options */
+  .item-content .form_select-control option {
+    background-color: #fff;
+    color: #333;
+    font-size: 16px;
+    padding: 5px;
+  }
+
+  .button-fill-1 {
+    width: 100%;
+    background-color: #007aff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    color: white;
+    font-size: 16px;
+  }
+  .button-fill-1:hover {
+    background-color: #005bb5;
+  }
+
+  .smart-select .item-after {
+    max-width: 100%;
+  }
+
+  select#font-family {
+    position: relative;
+    top: 0px;
+    background: none !important;
+    font-weight: bold;
+    float: right;
+    right: -41px;
+  }
+
+  /* Input text field inside your styled list */
+  .item-content.item-input input[type="text"] {
+    width: 100%;
+    padding: 10px 35px 10px 10px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: #333;
+    outline: none;
+  }
+
+  /* Label styling (already styled but enhanced) */
+  .item-title {
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: white;
+    padding: 0 4px;
+    font-size: 14px;
+    color: #007aff;
+    font-weight: 600;
+  }
+
+  /* Success icon */
+  .success-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: green;
+    font-size: 18px;
+    display: none; /* Show on valid input */
+  }
+
+  /* Error message */
+  .error-message {
+    display: none; /* Show on invalid input */
+    color: red;
+    font-size: 13px;
+    margin-top: 5px;
+  }
+</style>
+<script>
+  export default (props, { $, $on, $f7router }) => {
+    $on("pageInit", async () => {
+      const candidat = [];
+      // localStorage.getItem("candidatProfile");
+      // localStorage.getItem("user");
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      // const candidatProfile = localStorage.getItem("candidatProfile");
+      if (user) {
+        const fullName = `${user.first_name} ${user.last_name}`;
+        const fullNameInput = document.getElementById("full-name");
+        const email = `${user.email}`;
+        const emailInput = document.getElementById("email");
+
+        if (fullNameInput || emailInput) {
+          fullNameInput.value = fullName;
+          emailInput.value = email;
+        }
+      }
+      const countriesData = localStorage.getItem("countriesData");
+      const profileData = localStorage.getItem("user");
+      console.log(profileData);
+
+      const profileInput = document.getElementById("profile_image");
+      const cvInput = document.getElementById("cv_upload");
+
+if (profileInput) {
+  profileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    const fileNameSpan = document.getElementById("profile_filename");
+    if (file && fileNameSpan) {
+      fileNameSpan.textContent = file.name;
+    }
+  });
+}
+
+
+if (cvInput) {
+  cvInput.addEventListener("change", function () {
+    const file = this.files[0];
+    const fileNameSpan = document.getElementById("cv_filename");
+    if (file && fileNameSpan) {
+      fileNameSpan.textContent = file.name;
+    }
+  });
+}
+
+
+      // if (profileData) {
+      //   const data = JSON.parse(profileData).data.original;
+
+      //   // Personal Information
+      //   $("#full-name").val(
+      //     `${data.data.user.first_name} ${data.data.user.last_name}`
+      //   );
+      //   $("#email").val(data.data.user.email);
+      //   $("#phoneNumber").val(data.data.phone);
+      //   $("#user_birthday").val(data.data.birthday);
+
+      //   // Phone code
+      //   const fullPhone = data.data.phone;
+      //   const countryCode = data.data.country.phone_code;
+      //   const localPhone = fullPhone.replace(
+      //     new RegExp(`^\\+?${countryCode}`),
+      //     ""
+      //   );
+      //   $("#phoneNumber").val(localPhone);
+      //   $("#phone-code").text(`+${countryCode}`);
+
+      //   // Profile image (optional)
+      //   if (data.profile_image) {
+      //     $("#profile_image_preview").attr("src", data.data.profile_image);
+      //   }
+
+      //   // Professional Experience
+      //   $("#current_company").val(data.data.current_company);
+      //   $("#current_title_job").val(data.data.current_title_job || "");
+      //   $("#years_of_experience").val(data.data.years_of_experience || "");
+
+      //   // Education
+      //   $("#school_name").val(data.data.school_name);
+      //   $("#school_degree").val(data.data.school_degree);
+      //   $("#school_year_start").val(data.data.school_year_start);
+      //   $("#school_year_end").val(data.data.school_year_end);
+
+      //   // CV Upload (optional)
+      //   if (data.cv) {
+      //     $("#cv_upload").after(
+      //       `<a href="${data.data.cv}" target="_blank">View Uploaded CV</a>`
+      //     );
+      //   }
+      // }
+
+      await fetchCountry();
+
+      $("#verifyProfileForm").on("submit", (e) => {
+        e.preventDefault();
+        submitProfile(e);
+      });
+
+      const submitProfile = async (event) => {
+        let isValid = true;
+        const userDataToken = localStorage.getItem("user");
+        const user = userDataToken ? JSON.parse(userDataToken) : null;
+        const token = localStorage.getItem("jwt_token");
+
+        const profileInput = document.getElementById("profile_image");
+        const profileFile = profileInput?.files?.[0] || null;
+
+        const cvInput = document.getElementById("cv_upload");
+        const cvFile = cvInput?.files?.[0] || null;
+
+        // Function to show error message under input field
+        const showError = (id, message) => {
+          const inputField = document.getElementById(id);
+          if (!inputField) return; // Ensure inputField exists
+
+          const itemInner = inputField.closest(".item-inner");
+          const itemInput = inputField.closest(".item-input");
+
+          if (!itemInner || !itemInput) return; // Ensure parent elements exist
+
+          const errorMessage = itemInner.querySelector(".error-message");
+          const successIcon = itemInput.querySelector(".success-icon");
+
+          if (errorMessage) {
+            errorMessage.style.display = "block";
+            errorMessage.innerHTML = `<span style="color: red; font-size: 12px;">${message}</span>`;
+          }
+
+          if (successIcon) {
+            successIcon.style.display = "none"; // Hide success icon on error
+            successIcon.innerHTML = "";
+          }
+        };
+
+        // Function to show success icon on the right side of input
+        const showSuccess = (id) => {
+          const inputField = document.getElementById(id);
+          if (!inputField) return;
+
+          const itemInput = inputField.closest(".item-input");
+          const itemInner = inputField.closest(".item-inner");
+
+          if (!itemInput || !itemInner) return;
+
+          let successIcon = itemInput.querySelector(".success-icon");
+          let errorMessage = itemInner.querySelector(".error-message");
+
+          // Hide error message if it exists
+          if (errorMessage) {
+            errorMessage.style.display = "none";
+            errorMessage.innerHTML = "";
+          }
+
+          // Ensure success icon is displayed and add the check icon
+          successIcon.style.display = "block"; // Make sure it's visible
+          successIcon.innerHTML = `<i class="fa-solid fa-circle-check" style="color: green;"></i>`;
+        };
+
+        // List of required fields
+        const requiredFields = [
+          "full-name",
+          "email",
+          "phoneNumber",
+          "cities",
+          "current_title_job",
+          "current_company",
+          "years_of_experience",
+          "school_degree",
+          "school_name",
+          "school_year_start",
+          "school_year_end",
+          "cv_upload",
+        ];
+
+        // Check each field
+        requiredFields.forEach((id) => {
+          const input = document.getElementById(id);
+          if (!input) {
+            console.error(`Element with id '${id}' not found.`);
+          }
+          const value =
+            input.type === "file" ? input.files[0] : input.value.trim();
+          console.log(value);
+          if (id === "years_of_experience") {
+            if (
+              !/^\d{1,2}$/.test(value) ||
+              parseInt(value) < 1 ||
+              parseInt(value) > 99
+            ) {
+              showError(id, "Experience must be between 1 and 99 years.");
+              isValid = false;
+            } else {
+              showSuccess(id);
+            }
+          } else if (id === "phoneNumber") {
+            const phoneValue = document
+              .getElementById("phoneNumber")
+              .value.trim();
+            const regex = /^[0-9]*$/;
+
+            if (!regex.test(phoneValue)) {
+              showError(id, "Please enter only numbers.");
+              isValid = false;
+            } else {
+              showSuccess(id);
+            }
+          } else if (id === "school_year_end" || id === "school_year_start") {
+            if (!/^\d{4}$/.test(value)) {
+              showError(id, "Graduation year must be a 4-digit number.");
+              isValid = false;
+            } else {
+              showSuccess(id);
+            }
+          } else if (id === "profile_image" || id === "cv_upload") {
+            if (!value) {
+              showError(
+                id,
+                `${id === "cv_upload" ? "CV" : "Profile image"} is required.`
+              );
+              isValid = false;
+            } else if (value.size > 5 * 1024 * 1024) {
+              showError(id, "File size must be 5MB or less.");
+              isValid = false;
+            } else {
+              showSuccess(id);
+            }
+          } else {
+            // General required field validation
+            if (!value) {
+              showError(id, "This field is required");
+              isValid = false;
+            } else {
+              showSuccess(id);
+            }
+          }
+        });
+
+        // If validation fails, stop form submission
+        if (!isValid) return;
+        const phoneCode = $("#phone-code").text().trim();
+        const phoneNumber = $("#phoneNumber").val().trim();
+        const fullPhone = phoneCode + phoneNumber;
+
+        const formData = new FormData();
+        formData.append("user_id", user?.id);
+        formData.append("country_id", $("#countries").val());
+        formData.append("city_id", $("#cities").val());
+        formData.append("birthday", $("#user_birthday").val());
+        formData.append("phone", fullPhone);
+        formData.append("current_company", $("#current_company").val());
+        formData.append("current_title_job", $("#current_title_job").val());
+        formData.append("years_of_experience", $("#years_of_experience").val());
+        formData.append("school_name", $("#school_name").val());
+        formData.append("school_degree", $("#school_degree").val());
+        formData.append("school_year_start", $("#school_year_start").val());
+        formData.append("school_year_end", $("#school_year_end").val());
+
+        if (profileFile) {
+          formData.append("profile_image", profileFile);
+        } else {
+          console.warn("Profile image is missing.");
+        }
+
+        if (cvFile) {
+          formData.append("cv", cvFile);
+        } else {
+          console.warn("CV file is missing.");
+        }
+
+        try {
+          const url = "http://127.0.0.1:8000/api/candidat/profile/create";
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+
+            localStorage.setItem("candidatProfile", JSON.stringify(data));
+          } else {
+            throw new Error("Failed to save user profile!");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      };
+    });
+
+    const fetchCountry = async () => {
+      try {
+        const userDataToken = localStorage.getItem("jwt_token");
+        const user = userDataToken ? JSON.parse(userDataToken) : null;
+        const token = userDataToken;
+
+        if (!token) throw new Error("Token not found! Please log in.");
+
+        const profileData = localStorage.getItem("candidatProfile");
+        let selectedCountryId = "";
+
+        if (profileData) {
+          try {
+            const data = JSON.parse(profileData).data.original;
+            selectedCountryId = data?.data?.country?.id || "";
+          } catch (err) {
+            console.warn("Could not extract country ID from profile data.");
+          }
+        }
+
+        const storedCountries = localStorage.getItem("countriesData");
+        if (storedCountries) {
+          populateCountriesDropdown(
+            JSON.parse(storedCountries),
+            selectedCountryId
+          );
+          return;
+        }
+
+        const url = `http://127.0.0.1:8000/api/countries`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch countries!");
+
+        const data = await response.json();
+        const countries = Array.isArray(data) ? data : data?.countries;
+
+        if (!Array.isArray(countries))
+          throw new Error("Countries data is not an array!");
+
+        localStorage.setItem("countriesData", JSON.stringify(countries));
+        populateCountriesDropdown(countries, selectedCountryId);
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+    };
+
+    const populateCountriesDropdown = (countries, selectedCountryId = "") => {
+      const countrySelect = $("#countries");
+      countrySelect.empty();
+
+      const selectedCountry = countries.find((c) => c.id == selectedCountryId);
+      if (selectedCountry) {
+        countrySelect.append(
+          `<option value="${selectedCountry.id}" selected>${selectedCountry.name}</option>`
+        );
+      } else {
+        countrySelect.append('<option value="">Select a country</option>');
+      }
+
+      countries.forEach((c) => {
+        if (c.id != selectedCountryId) {
+          countrySelect.append(`<option value="${c.id}">${c.name}</option>`);
+        }
+      });
+
+      // Proper Smart Select reinitialization
+      const ssEl = document.querySelector(".smart-select");
+      if (ssEl.f7SmartSelect) {
+        ssEl.f7SmartSelect.destroy(); // Destroy old instance
+      }
+
+      const app = Framework7?.instance || new Framework7(); // Ensure app instance exists
+      app.smartSelect.create({
+        el: ".smart-select",
+      });
+
+      // Initial fetch if value is preselected
+      if (selectedCountryId) {
+        fetchPhone(selectedCountryId);
+        fetchCity(selectedCountryId);
+      }
+
+      // Event binding
+      countrySelect.off("change").on("change", function () {
+        const selectedId = $(this).val();
+        if (selectedId) {
+          fetchPhone(selectedId);
+          fetchCity(selectedId);
+        } else {
+          $("#phone-code").text("XXX");
+          $("#cities").html('<option value="">Select a city</option>');
+        }
+      });
+    };
+
+    const fetchCity = async (countryId, selectedCityId = "") => {
+      try {
+        const userDataToken = localStorage.getItem("user");
+        const user = userDataToken ? JSON.parse(userDataToken) : null;
+        const token = user ? user.token : null;
+
+        if (!token) {
+          throw new Error("Token not found! Please log in.");
+        }
+
+        // Get selectedCityId from candidatProfile
+        const profileData = localStorage.getItem("candidatProfile");
+        let selectedCityIdFromProfile = "";
+        if (profileData) {
+          try {
+            const data = JSON.parse(profileData).data.original;
+            selectedCityIdFromProfile = data.data.city?.id || "";
+          } catch (err) {
+            console.warn("Could not extract city ID from profile data.");
+          }
+        }
+
+        // Use selectedCityId from profile data or the passed selectedCityId
+        selectedCityId = selectedCityId || selectedCityIdFromProfile;
+
+        // Check if cities data is stored in localStorage
+        const storedCities = localStorage.getItem(`citiesData-${countryId}`);
+        if (storedCities) {
+          populateCitiesDropdown(JSON.parse(storedCities), selectedCityId);
+          return;
+        }
+
+        // Fetch cities from the API
+        const url = `http://127.0.0.1:8000/api/cities/${countryId}`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch cities!");
+        }
+
+        const data = await response.json();
+        const cities = Array.isArray(data) ? data : data.cities;
+
+        if (!Array.isArray(cities)) {
+          throw new Error("Cities data is not an array!");
+        }
+
+        // Store cities in localStorage for future use
+        localStorage.setItem(`citiesData-${countryId}`, JSON.stringify(cities));
+
+        // Populate the dropdown
+        populateCitiesDropdown(cities, selectedCityId);
+      } catch (error) {
+        console.error("Error:", error);
+        $("#cities").html('<option value="">Select a city</option>');
+      }
+    };
+
+    // Function to populate the cities dropdown
+    const populateCitiesDropdown = (cities, selectedCityId = "") => {
+      const citySelect = $("#cities");
+      citySelect.empty(); // Clear previous options
+
+      // Get the selected city object from the list of cities
+      const selectedCity = cities.find((city) => city.id == selectedCityId);
+
+      // Add the selected city as the first option (if found)
+      if (selectedCity) {
+        citySelect.append(
+          `<option value="${selectedCity.id}" selected>${selectedCity.name}</option>`
+        );
+      } else {
+        // No selected city, show default option
+        countrySelect.append('<option value="">Select a city</option>');
+      }
+
+      // Add the rest of the cities to the dropdown
+      cities.forEach((city) => {
+        if (city.id !== selectedCityId) {
+          citySelect.append(`<option value="${city.id}">${city.name}</option>`);
+        }
+      });
+
+      // Refresh Smart Select if needed
+      if (citySelect[0]?.f7SmartSelect) {
+        citySelect[0].f7SmartSelect.update();
+      }
+
+      // If a city is selected, trigger related logic
+      if (selectedCityId) {
+        // Example: logic to handle changes based on selected city
+        console.log(`Selected city: ${selectedCityId}`);
+      }
+
+      citySelect.off("change").on("change", function () {
+        const selectedCityId = $(this).val();
+        if (selectedCityId) {
+          console.log(`City selected: ${selectedCityId}`);
+        } else {
+          console.log("No city selected");
+          // Reset city-related info if no city is selected
+          $("#city-details").html(""); // or other related elements
+        }
+      });
+    };
+
+    //phone phone code
+    const fetchPhone = async (countryId) => {
+      try {
+        const url = `http://127.0.0.1:8000/api/country/${countryId}/phone-code`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch phone code!");
+        }
+
+        const data = await response.json();
+
+        // Display phone code
+        $("#phone-code").text(data.phone ? `+${data.phone}` : "XXX");
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    return $render;
+  };
+</script>

@@ -1,0 +1,150 @@
+<template>
+  <div class="page" data-name="main">
+    <!-- Begin of header -->
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a href="#" class="link icon-only panel-open" data-panel="left">
+            <i class="icon f7-icons if-not-md">menu</i>
+            <i class="icon material-icons if-md">menu</i>
+          </a>
+          <div class="panel panel-left panel-reveal">Left Panel</div>
+        </div>
+        <div class="right">
+          <a href="/profile/">
+            <i class="icon f7-icons if-not-md">person-badge-plus-fill</i>
+            <i class="icon material-icons if-md">person_add</i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- End of header -->
+
+    <!-- Begin of content -->
+    <div class="page-content pt-30">
+      <div class="block">
+        <h3 class="title">All Jobs</h3>
+
+        <!-- Swiper -->
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <!-- Job Post 1 -->
+            <div class="swiper-slide">
+              <div class="job-post">
+                <h2>Software Engineer</h2>
+                <p>Looking for an experienced software engineer...</p>
+                <a href="/job/1" class="button">View Details</a>
+              </div>
+            </div>
+
+            <!-- Job Post 2 -->
+            <div class="swiper-slide">
+              <div class="job-post">
+                <h2>Product Manager</h2>
+                <p>Join our team as a product manager...</p>
+                <a href="/job/2" class="button">View Details</a>
+              </div>
+            </div>
+
+            <!-- Job Post 3 -->
+            <div class="swiper-slide">
+              <div class="job-post">
+                <h2>UX Designer</h2>
+                <p>We are seeking a talented UX designer...</p>
+                <a href="/job/3" class="button">View Details</a>
+              </div>
+            </div>
+
+            <!-- Add more job posts here if needed -->
+          </div>
+
+          <!-- Add Pagination and Navigation if needed -->
+          <div class="swiper-pagination"></div>
+          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev"></div>
+        </div>
+      </div>
+    </div>
+    <!-- End of content -->
+
+    <!-- Begin of footer -->
+    <div class="toolbar toolbar-bottom">
+      <div class="toolbar-inner">
+        <a class="link">Link 1</a>
+        <a class="link">Link 2</a>
+        <a class="link">Link 3</a>
+      </div>
+    </div>
+    <!-- End of footer -->
+  </div>
+</template>
+
+<style>
+  .title {
+    text-align: center;
+    padding-top: 20px;
+  }
+
+  /* Styling for the job post */
+  .job-post {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 10px 0;
+    background-color: #f9f9f9;
+  }
+
+  .job-post h2 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .job-post p {
+    font-size: 14px;
+    color: #555;
+  }
+
+  .job-post .button {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+  }
+
+  /* Styling for swiper container */
+  .swiper-container {
+    margin-top: 20px;
+    padding: 0 20px; /* Optional: Add padding to make the swiper look better */
+  }
+
+  .swiper-pagination {
+    bottom: 10px !important;
+  }
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: #007bff;
+  }
+</style>
+
+<script>
+  export default (props, { $on, $f7router }) => {
+    // Initialize the Swiper after the page is initialized
+    $on('page:init', () => {
+      var swiper = new Swiper('.swiper-container', {
+        slidesPerView: 1, // Display 1 slide at a time
+        spaceBetween: 10, // Space between slides
+        loop: true, // Enable looping of slides
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true, // Make the pagination clickable
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+      });
+    });
+
+    return $render;
+  };
+</script>

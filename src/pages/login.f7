@@ -141,7 +141,7 @@
               $f7.dialog.close();
               if (data.token) {
                 localStorage.setItem("jwt_token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
+                localStorage.setItem("candidatProfile", JSON.stringify(data.user));
                 $f7router.navigate('/home/');
               } else {
                 $f7.dialog.alert(data.message || "Invalid credentials.");

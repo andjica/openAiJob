@@ -1,5 +1,7 @@
 import HomePage from '../pages/home.f7';
-import ScreenPage from '../pages/screen.f7';
+import MainPage from '../pages/main.f7';
+import AddPerson from '../pages/addPerson.f7';
+import profilePage from '../pages/profile.f7';
 
 import RegisterPage from '../pages/register.f7';
 import LoginPage from '../pages/login.f7';
@@ -29,8 +31,16 @@ var routes = [
     component: HomePage,
   },
   {
-    path: '/screen/',
-    component: ScreenPage,
+    path: '/main/',
+    component: MainPage,
+  },
+  {
+    path: '/addPerson/',
+    component: AddPerson,
+  },
+  {
+    path: '/profile/',
+    component: profilePage,
   },
   {
     path: '(.*)',

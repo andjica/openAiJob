@@ -7,3 +7,19 @@
 .login-screen-title {
     margin-top: 10%;
 }
+
+.navbar-large .navbar-bg {
+    height: 100%;
+}
+
+.pt-30 {
+    padding-top: 30px;
+  }
+
+.pt-60 {
+    padding-top: 60px;
+}
+
+.w-100{
+    width: 100%;
+}

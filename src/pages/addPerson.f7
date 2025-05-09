@@ -1,0 +1,38 @@
+<template>
+    <div class="page" data-name="addPerson">
+        <div class="navbar navbar-large">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+              <div class="left">
+                  <a href="#" class="link back">
+                      <i class="icon icon-back"></i>
+                  </a>
+              </div>
+              <div class="title-large add-person__title">
+                <div class="title-large-text">Add Person</div>
+              </div>
+            </div>
+          </div>
+          <div class="page-content">
+            <h1>This is page for adding new Person</h1>
+          </div>
+    </div>
+</template>
+
+<style>
+      .add-person__title {
+    position: static !important;
+    width: 100%;
+    margin-left: 45px;
+  }
+</style>
+
+<script>
+    export default (props, { $on, $f7router }) => {
+      $on("pageInit", () => {
+        
+      });
+  
+      return $render;
+    };
+  </script>
