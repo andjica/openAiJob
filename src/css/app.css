@@ -12,6 +12,9 @@
     height: 100%;
 }
 
+.ml-5 {
+    margin-left: 5px!important;
+}
 .pt-30 {
     padding-top: 30px;
   }
@@ -23,3 +26,7 @@
 .w-100{
     width: 100%;
 }
+
+  .fontSize-18 {
+    font-size: 18px!important;
+  }

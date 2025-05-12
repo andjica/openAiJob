@@ -8,8 +8,6 @@
         <a href="/login/" class="button button-fill login-button">Login</a>
         <br />
         <a href="/register/" class="link">Register</a>
-        <br />
-        <a href="/verify/" class="link">Verify</a>
       </div>
     </div>
   </div>
@@ -18,7 +16,7 @@
   .block {
     text-align: center;
   }
-  
+
   .mt-50 {
     margin-top: 50%;
     margin-bottom: 30%;
@@ -35,23 +33,22 @@
 <script>
   export default (props, { $on, $f7router }) => {
     $on("pageInit", () => {
-      const userVerify = localStorage.getItem("userVerify") ;
+      const userVerify = localStorage.getItem("userVerify");
+      const user = localStorage.getItem("candidatProfile");
       setTimeout(() => {
-        if(!userVerify){
+        if (!userVerify) {
           $f7router.navigate("/login/", { reloadCurrent: true });
         }
         if (userVerify === "0") {
           $f7router.navigate("/verify/", { reloadCurrent: true });
+        } else if (user === "0") {
+          $f7router.navigate("/profile/", { reloadCurrent: true });
         } else {
           $f7router.navigate("/main/", { reloadCurrent: true });
-        } 
-        // else {
-        //   $f7router.navigate("/register/", { reloadCurrent: true });
-        // }
+        }
       }, 2000); // 2 seconds delay
     });
 
     return $render;
   };
 </script>
-

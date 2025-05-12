@@ -89,61 +89,28 @@
     let timerInterval;
 
     const updateTimer = () => {
-      const minutes = Math.floor(countdownTime / 60);
-      const seconds = countdownTime % 60;
-
-      $(".timer").text(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
-
       if (countdownTime <= 0) {
         clearInterval(timerInterval);
+        $(".timer").text("0:00");
         $f7.dialog.alert(
           "Countdown is finished, please resend to get new valid code."
         );
         $("#numOne, #numTwo, #numThree, #numFour").prop("disabled", true);
-      } else {
-        countdownTime--;
+        return;
       }
+
+      const minutes = Math.floor(countdownTime / 60);
+      const seconds = countdownTime % 60;
+      $(".timer").text(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
+      countdownTime--;
     };
 
-    $on("pageInit", () => {
-      timerInterval = setInterval(updateTimer, 1000);
+    const startTimer = () => {
+      clearInterval(timerInterval);
+      countdownTime = 120;
       updateTimer();
-
-      const inputs = $(".verify-code__number");
-      inputs.on("input", function () {
-        const input = $(this);
-        const index = Array.from(inputs).findIndex((el) => el === this);
-
-        const value = input
-          .val()
-          .replace(/[^0-9]/g, "")
-          .slice(0, 1);
-
-        input.val(value); // Upis samo jedne cifre
-
-        // Pomeri fokus SAMO ako korisnik trenutno stoji na inputu u koji je uneo broj
-        if (
-          value &&
-          document.activeElement === this &&
-          index < inputs.length - 1
-        ) {
-          inputs.eq(index + 1).focus();
-        }
-      });
-
-      inputs.on("keydown", function (e) {
-        const index = inputs.index(this);
-        if (e.key === "Backspace" && !this.value && index > 0) {
-          inputs.eq(index - 1).focus();
-        }
-      });
-
-      $("#verifyForm").on("submit", function (e) {
-        confirmVerifyCode(e);
-      });
-
-      $(".btn-resend").off("click").on("click", resendEmail);
-    });
+      timerInterval = setInterval(updateTimer, 1000);
+    };
 
     const resendEmail = async (e) => {
       e.preventDefault();
@@ -157,25 +124,20 @@
           return;
         }
 
-        const urlResend = `http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`;
+        const url = `http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`;
 
-        const responseResendUrl = await fetch(urlResend, {
+        const response = await fetch(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email }),
         });
 
-        if (responseResendUrl.ok) {
+        if (response.ok) {
           $("#numOne, #numTwo, #numThree, #numFour").prop("disabled", false);
-          clearInterval(timerInterval);
-          countdownTime = 120;
-          timerInterval = setInterval(updateTimer, 1000);
-          updateTimer();
+          startTimer();
           $f7.dialog.alert("Verification email resent successfully.");
         } else {
-          const errorData = await responseResendUrl.json();
+          const errorData = await response.json();
           $f7.dialog.alert(errorData?.message || "Failed to resend code.");
         }
       } catch (error) {
@@ -197,15 +159,11 @@
         return;
       }
 
-      const code = parseInt(`${numOne}${numTwo}${numThree}${numFour}`);
-      alert(code);
+      const code = `${numOne}${numTwo}${numThree}${numFour}`;
       const isValidNumber = /^\d$/;
 
       if (
-        !isValidNumber.test(numOne) ||
-        !isValidNumber.test(numTwo) ||
-        !isValidNumber.test(numThree) ||
-        !isValidNumber.test(numFour)
+        ![numOne, numTwo, numThree, numFour].every((n) => isValidNumber.test(n))
       ) {
         $f7.dialog.alert("Each input must be a single-digit number.");
         return;
@@ -223,23 +181,19 @@
         const url = `http://127.0.0.1:8000/api/verify-user/${user.id}`;
         const response = await fetch(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: user.email,
-            verification_code: code,
+            verification_code: parseInt(code),
           }),
         });
 
         if (response.ok) {
           const data = await response.json();
-          console.log("DATA:",data);
-          // localStorage.setItem("token", data.token);
-          localStorage.setItem("userVerify",1);
-          localStorage.setItem("candidatProfile", data.candidatProfile);
+          localStorage.setItem("userVerify", 1);
+          localStorage.setItem("candidatProfile", 0);
           clearInterval(timerInterval);
-          $f7router.navigate("/main/");
+          $f7router.navigate("/profile/");
         } else {
           const errorData = await response.json();
           $f7.dialog.alert(errorData?.error || "Verification failed.");
@@ -249,6 +203,44 @@
         $f7.dialog.alert("Something went wrong. Please try again.");
       }
     };
+
+    $on("pageInit", () => {
+      startTimer();
+
+      const inputs = $(".verify-code__number");
+
+      inputs.on("input", function () {
+        const input = $(this);
+        const index = Array.from(inputs).findIndex((el) => el === this);
+        const value = input
+          .val()
+          .replace(/[^0-9]/g, "")
+          .slice(0, 1);
+        input.val(value);
+
+        if (
+          value &&
+          document.activeElement === this &&
+          index < inputs.length - 1
+        ) {
+          inputs.eq(index + 1).focus();
+        }
+      });
+
+      inputs.on("keydown", function (e) {
+        const index = inputs.index(this);
+        if (e.key === "Backspace" && !this.value && index > 0) {
+          inputs.eq(index - 1).focus();
+        }
+      });
+
+      $("#verifyForm").on("submit", confirmVerifyCode);
+      $(".btn-resend").off("click").on("click", resendEmail);
+    });
+
+    $on("pageBeforeRemove", () => {
+      clearInterval(timerInterval);
+    });
 
     return $render;
   };

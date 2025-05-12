@@ -8,7 +8,6 @@ import 'framework7/css/bundle';
 import '../css/icons.css';
 import '../css/app.css';
 
-
 // Import Routes
 import routes from './routes.js';
 // Import Store
@@ -66,28 +65,24 @@ window.apiFetch = async function(url, options = {}) {
 var app = new Framework7({
   name: 'openAiJob', // App name
   theme: 'auto', // Automatic theme detection
-
-
   el: '#app', // App root element
   component: App, // App main component
-  // App store
-  store: store,
-  // App routes
-  routes: routes,
+  store: store, // App store
+  routes: routes, // App routes
 });
 
-// Middleware: Pre svake rute proveri token
-app.router.beforeEach((to, from, resolve, reject) => {
+// Use route change event to handle the authentication check
+app.on('routeChange', (to, from) => {
   const token = localStorage.getItem('jwt_token');
 
   if (publicRoutes.includes(to.route.path)) {
-    resolve();
-    return;
+    return; // Skip check for public routes
   }
 
   if (token && !isTokenExpired(token)) {
-    resolve();
+    // Proceed with route if token is valid
   } else {
+    // Redirect to login if token is expired or missing
     localStorage.removeItem('jwt_token');
     app.router.navigate('/login');
   }
