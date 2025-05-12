@@ -9,7 +9,7 @@
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text">Profile</div>
+          <div class="title-large-text" id="profileTitle">Profile</div>
         </div>
       </div>
     </div>
@@ -60,13 +60,14 @@
             <li>
               <div class="item-content content-flex item-select item-input">
                 <a
-                  class="item-link smart-select smart-select-init" data-open-in="sheet"
+                  class="item-link smart-select smart-select-init w-100"
+                  data-open-in="sheet"
                 >
                   <select name="country" id="countries" data-open-in="sheet">
                     <option value="">Select a country</option>
                   </select>
                   <div class="select-content">
-                    <div for="countries" class="item-title">Country</div>
+                    <div for="countries" class="item-title w-20">Country</div>
                   </div>
                 </a>
               </div>
@@ -82,7 +83,7 @@
                     <label for="cities" class="item-title">City</label>
                   </div>
                 </a>
-              </div> 
+              </div>
             </li>
             <li>
               <div class="item-content item-input">
@@ -255,8 +256,9 @@
             </li>
           </ul>
         </div>
-        <button type="submit" class="button">SUBMIT</button>
+        <button type="submit" class="button button-fill-1">SUBMIT</button>
       </form>
+      <button class="button button-fill-2 logout">Logout</button>
     </div>
   </div>
 </template>
@@ -282,10 +284,6 @@
     justify-content: space-between;
     align-items: center;
     min-height: calc(var(--f7-list-item-min-height));
-    /* padding-left: calc(
-      var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left)
-    ); */
-    /* border: 2px solid #007aff; */
     width: 90%;
     margin: 0px auto;
     border-radius: 20px;
@@ -331,6 +329,11 @@
     padding: 5px;
   }
 
+  .select-content .item-after {
+    font-size: 18px;
+    text-align: left;
+  }
+
   .button-fill-1 {
     width: 100%;
     background-color: #007aff;
@@ -340,12 +343,31 @@
     color: white;
     font-size: 16px;
   }
+
   .button-fill-1:hover {
     background-color: #005bb5;
   }
 
+    .button-fill-2 {
+    width: 100%;
+    background-color: #ec3838;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    color: white;
+    font-size: 16px;
+  }
+
+  .button-fill-2:hover {
+    background-color: #f12626;
+  }
+
   .smart-select .item-after {
     max-width: 100%;
+  }
+
+  .sheet-modal {
+        height: 500px;
   }
 
   select#font-family {
@@ -384,43 +406,29 @@
     color: #007aff;
     font-weight: 600;
   }
-
-  /* Success icon */
-  .success-icon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: green;
-    font-size: 18px;
-    display: none; /* Show on valid input */
-  }
-
-  /* Error message */
-  .error-message {
-    display: none; /* Show on invalid input */
-    color: red;
-    font-size: 13px;
-    margin-top: 5px;
-  }
 </style>
 <script>
   export default (props, { $, $f7, $on, $f7router }) => {
     $on("pageInit", async () => {
       const candidat = [];
-      // localStorage.getItem("candidatProfile");
-      // localStorage.getItem("user");
+
       const user = JSON.parse(localStorage.getItem("user"));
 
-      let candidatProfile = localStorage.getItem("candidatProfile");
-
-      const backLink = document.getElementById('backLink');
+      const candidatProfile = localStorage.getItem("candidatProfile");
+      const backLink = document.getElementById("backLink");
+      const profileTitle = document.getElementById("profileTitle");
 
       // Check if candidatProfile is 0
-      if (candidatProfile === "0") {
-        backLink.style.display = 'none';  // Hide the element
+      if (candidatProfile === 0) {
+        backLink.style.display = "none"; // Hide the element
       } else {
-        backLink.style.display = 'block'; // Show the element (in case it was hidden)
+        backLink.style.display = "block"; // Show the element (in case it was hidden)
+      }
+
+      if (candidatProfile) {
+        profileTitle.textContent = "Your Profile";
+      } else {
+        profileTitle.textContent = "Finish Profile";
       }
 
       if (user) {
@@ -437,8 +445,6 @@
 
       const countriesData = localStorage.getItem("countriesData");
       const profileData = localStorage.getItem("user");
-
-      console.log(candidataProfile);
 
       const profileInput = document.getElementById("profile_image");
       const cvInput = document.getElementById("cv_upload");
@@ -463,50 +469,67 @@
         });
       }
 
-      // if (candidataProfile) {
-      //   const data = JSON.parse(candidataProfile);
-      //   console.log("OVDE",data);
-      //   // Personal Information
-      //   $("#full-name").val(
-      //     `${data.data.user.first_name} ${data.data.user.last_name}`
-      //   );
-      //   $("#email").val(data.data.user.email);
-      //   $("#phoneNumber").val(data.data.phone);
-      //   $("#user_birthday").val(data.data.birthday);
+      if (candidatProfile) {
+        let parsedProfile;
+        try {
+          parsedProfile = JSON.parse(candidatProfile);
+        } catch (e) {
+          console.error("Invalid JSON in localStorage[candidatProfile]", e);
+        }
 
-      //   // Phone code
-      //   const fullPhone = data.data.phone;
-      //   const countryCode = data.data.country.phone_code;
-      //   const localPhone = fullPhone.replace(
-      //     new RegExp(`^\\+?${countryCode}`),
-      //     ""
-      //   );
-      //   $("#phoneNumber").val(localPhone);
-      //   $("#phone-code").text(`+${countryCode}`);
+        if (
+          parsedProfile &&
+          parsedProfile.candidateProfile &&
+          parsedProfile.candidateProfile.original &&
+          parsedProfile.candidateProfile.original.data &&
+          parsedProfile.candidateProfile.original.data.user
+        ) {
+          const data = parsedProfile.candidateProfile.original;
+          const user = data.data.user;
 
-      //   // Profile image (optional)
-      //   if (data.profile_image) {
-      //     $("#profile_image_preview").attr("src", data.data.profile_image);
-      //   }
+          // Continue safely with your field population code...
+          $("#full-name").val(
+            `${user.first_name || ""} ${user.last_name || ""}`
+          );
+          $("#email").val(user.email || "");
+          $("#phoneNumber").val(data.data.phone || "");
+          $("#user_birthday").val(data.data.birthday || "");
 
-      //   // Professional Experience
-      //   $("#current_company").val(data.data.current_company);
-      //   $("#current_title_job").val(data.data.current_title_job || "");
-      //   $("#years_of_experience").val(data.data.years_of_experience || "");
+          const fullPhone = data.data.phone || "";
+          const countryCode = data.data.country?.phone_code || "";
+          const localPhone = fullPhone.replace(
+            new RegExp(`^\\+?${countryCode}`),
+            ""
+          );
+          $("#phoneNumber").val(localPhone);
+          $("#phone-code").text(`+${countryCode}`);
 
-      //   // Education
-      //   $("#school_name").val(data.data.school_name);
-      //   $("#school_degree").val(data.data.school_degree);
-      //   $("#school_year_start").val(data.data.school_year_start);
-      //   $("#school_year_end").val(data.data.school_year_end);
+          if (data.data.profile_image) {
+            $("#profile_image_preview").attr("src", data.data.profile_image);
+          }
 
-      //   // CV Upload (optional)
-      //   if (data.cv) {
-      //     $("#cv_upload").after(
-      //       `<a href="${data.data.cv}" target="_blank">View Uploaded CV</a>`
-      //     );
-      //   }
-      // }
+          $("#current_company").val(data.data.current_company || "");
+          $("#current_title_job").val(data.data.current_title_job || "");
+          $("#years_of_experience").val(data.data.years_of_experience || "");
+
+          $("#school_name").val(data.data.school_name || "");
+          $("#school_degree").val(data.data.school_degree || "");
+          $("#school_year_start").val(data.data.school_year_start || "");
+          $("#school_year_end").val(data.data.school_year_end || "");
+          console.log("CV", data.data.cv);
+          // const $cvInput = $("#cv_upload");
+          // if ($cvInput.length && data.data.cv) {
+          //   $cvInput.after(
+          //     `<a href="${data.data.cv}" target="_blank">View Uploaded CV</a>`
+          //   );
+          // }
+        } else {
+          console.warn("candidatProfile structure is invalid or incomplete.");
+        }
+        
+      } else {
+        console.warn("No candidatProfile found in localStorage.");
+      }
 
       await fetchCountry();
 
@@ -517,8 +540,6 @@
       });
 
       const submitProfile = async (event) => {
-        console.log("SUBMIT");
-        debugger
         let isValid = true;
         const errors = [];
 
@@ -611,12 +632,18 @@
           return;
         }
 
+        const fullName = $("#full-name").val().trim();
+        const [firstName, ...rest] = fullName.split(" ");
+        const lastName = rest.join(" ");
+
         const phoneCode = $("#phone-code").text().trim();
         const phoneNumber = $("#phoneNumber").val().trim();
         const fullPhone = phoneCode + phoneNumber;
 
         const formData = new FormData();
         formData.append("user_id", user?.id);
+        formData.append("first_name", firstName);
+        formData.append("last_name", lastName);
         formData.append("country_id", $("#countries").val());
         formData.append("city_id", $("#cities").val());
         formData.append("birthday", $("#user_birthday").val());
@@ -632,31 +659,42 @@
         if (profileFile) formData.append("profile_image", profileFile);
         if (cvFile) formData.append("cv", cvFile);
 
+        const preloader = $f7.dialog.preloader("Updating...");
         try {
           const url = `http://127.0.0.1:8000/api/candidat/profile/update/${user.id}`;
           const response = await fetch(url, {
-            method: "PUT",
+            method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
             },
             body: formData,
           });
-
+          console.log("Format data for user", formData);
           if (response.ok) {
             const data = await response.json();
             console.log("Candidate profile ", data);
             localStorage.setItem("candidatProfile", JSON.stringify(data));
+            $f7.dialog.close();
+            $f7router.navigate("/main/");
           } else {
+            console.log(response.message);
             throw new Error("Failed to save user profile!");
           }
         } catch (error) {
           console.error("Error:", error);
+          $f7.dialog.close();
           $f7.dialog.alert(
             "Something went wrong while submitting the profile.",
             "Error"
           );
         }
       };
+
+      $(".logout").on("click", function () {
+      localStorage.removeItem("jwt_token");
+      localStorage.removeItem("user");
+      $f7router.navigate("/login/");
+    });
     });
 
     const fetchCountry = async () => {
@@ -670,7 +708,8 @@
 
         if (profileData) {
           try {
-            const data = JSON.parse(profileData).data.original;
+            const data = JSON.parse(profileData).candidateProfile.original;
+            console.log("COUNTRY",data.data.country);
             selectedCountryId = data?.data?.country?.id || "";
           } catch (err) {
             console.warn("Could not extract country ID from profile data.");
@@ -712,50 +751,49 @@
     };
 
     const populateCountriesDropdown = (countries, selectedCountryId = "") => {
-  const countrySelect = $("#countries");
-  countrySelect.empty();
+      const countrySelect = $("#countries");
+      countrySelect.empty();
 
-  // Add default option
-  countrySelect.append('<option value="">Select a country</option>');
+      // Add default option
+      countrySelect.append('<option value="">Select a country</option>');
 
-  // Sort: selected one first (after default), rest follow
-  const sortedCountries = [
-    ...countries.filter((c) => c.id == selectedCountryId),
-    ...countries.filter((c) => c.id != selectedCountryId),
-  ];
+      // Sort: selected one first (after default), rest follow
+      const sortedCountries = [
+        ...countries.filter((c) => c.id == selectedCountryId),
+        ...countries.filter((c) => c.id != selectedCountryId),
+      ];
 
-  sortedCountries.forEach((c) => {
-    countrySelect.append(
-      `<option value="${c.id}" ${
-        c.id == selectedCountryId ? "selected" : ""
-      }>${c.name}</option>`
-    );
-  });
+      sortedCountries.forEach((c) => {
+        countrySelect.append(
+          `<option value="${c.id}" ${
+            c.id == selectedCountryId ? "selected" : ""
+          }>${c.name}</option>`
+        );
+      });
 
-  // Reinit Smart Select
-  const ssEl = document.querySelector(".smart-select");
-  if (ssEl?.f7SmartSelect) ssEl.f7SmartSelect.destroy();
+      // Reinit Smart Select
+      const ssEl = document.querySelector(".smart-select");
+      if (ssEl?.f7SmartSelect) ssEl.f7SmartSelect.destroy();
 
-  const app = Framework7?.instance || new Framework7();
-  app.smartSelect.create({ el: ".smart-select" });
+      const app = Framework7?.instance || new Framework7();
+      app.smartSelect.create({ el: ".smart-select" });
 
-  if (selectedCountryId) {
-    fetchPhone(selectedCountryId);
-    fetchCity(selectedCountryId);
-  }
+      if (selectedCountryId) {
+        fetchPhone(selectedCountryId);
+        fetchCity(selectedCountryId);
+      }
 
-  countrySelect.off("change").on("change", function () {
-    const selectedId = $(this).val();
-    if (selectedId) {
-      fetchPhone(selectedId);
-      fetchCity(selectedId);
-    } else {
-      $("#phone-code").text("XXX");
-      $("#cities").html('<option value="">Select a city</option>');
-    }
-  });
-};
-
+      countrySelect.off("change").on("change", function () {
+        const selectedId = $(this).val();
+        if (selectedId) {
+          fetchPhone(selectedId);
+          fetchCity(selectedId);
+        } else {
+          $("#phone-code").text("XXX");
+          $("#cities").html('<option value="">Select a city</option>');
+        }
+      });
+    };
 
     const fetchCity = async (countryId, selectedCityId = "") => {
       try {
@@ -770,7 +808,8 @@
         let selectedCityIdFromProfile = "";
         if (profileData) {
           try {
-            const data = JSON.parse(profileData).data.original;
+            const data = JSON.parse(profileData).candidateProfile.original;
+            console.log("CITY",data.data.city);
             selectedCityIdFromProfile = data.data.city?.id || "";
           } catch (err) {
             console.warn("Could not extract city ID from profile data.");
@@ -822,43 +861,42 @@
 
     // Function to populate the cities dropdown
     const populateCitiesDropdown = (cities, selectedCityId = "") => {
-  const citySelect = $("#cities");
-  citySelect.empty();
+      const citySelect = $("#cities");
+      citySelect.empty();
 
-  // Add default option
-  citySelect.append('<option value="">Select a city</option>');
+      // Add default option
+      citySelect.append('<option value="">Select a city</option>');
 
-  // Sort: selected one first (after default), rest follow
-  const sortedCities = [
-    ...cities.filter((c) => c.id == selectedCityId),
-    ...cities.filter((c) => c.id != selectedCityId),
-  ];
+      // Sort: selected one first (after default), rest follow
+      const sortedCities = [
+        ...cities.filter((c) => c.id == selectedCityId),
+        ...cities.filter((c) => c.id != selectedCityId),
+      ];
 
-  sortedCities.forEach((c) => {
-    citySelect.append(
-      `<option value="${c.id}" ${
-        c.id == selectedCityId ? "selected" : ""
-      }>${c.name}</option>`
-    );
-  });
+      sortedCities.forEach((c) => {
+        citySelect.append(
+          `<option value="${c.id}" ${
+            c.id == selectedCityId ? "selected" : ""
+          }>${c.name}</option>`
+        );
+      });
 
-  const ssEl = document.querySelector("#cities");
-  if (ssEl?.f7SmartSelect) ssEl.f7SmartSelect.destroy();
+      const ssEl = document.querySelector("#cities");
+      if (ssEl?.f7SmartSelect) ssEl.f7SmartSelect.destroy();
 
-  const app = Framework7?.instance || new Framework7();
-  app.smartSelect.create({ el: "#cities" });
+      const app = Framework7?.instance || new Framework7();
+      app.smartSelect.create({ el: "#cities" });
 
-  citySelect.off("change").on("change", function () {
-    const selectedId = $(this).val();
-    if (selectedId) {
-      console.log(`City selected: ${selectedId}`);
-    } else {
-      console.log("No city selected");
-      $("#city-details").html("");
-    }
-  });
-};
-
+      citySelect.off("change").on("change", function () {
+        const selectedId = $(this).val();
+        if (selectedId) {
+          console.log(`City selected: ${selectedId}`);
+        } else {
+          console.log("No city selected");
+          $("#city-details").html("");
+        }
+      });
+    };
 
     //phone phone code
     const fetchPhone = async (countryId) => {

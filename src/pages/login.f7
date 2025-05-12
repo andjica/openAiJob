@@ -31,10 +31,10 @@
           </li>
         </ul>
         <div class="block">
-            <button type="submit" class="button button-fill login-button">
-              Sign In
-            </button>
-          </div>
+          <button type="submit" class="button button-fill login-button">
+            Sign In
+          </button>
+        </div>
       </form>
       <div class="block text-align-center">
         <a href="/register/">Create an account?</a>
@@ -44,10 +44,10 @@
 </template>
 
 <style>
-    .login-screen-title{
-        margin-top: 50%;
-        height: 10%;
-    }
+  .login-screen-title {
+    margin-top: 50%;
+    height: 10%;
+  }
   .login-screen-content .list {
     max-width: 350px;
     margin: 0 auto;
@@ -71,91 +71,104 @@
 </style>
 
 <script>
-    export default (props, { $, $on, $f7, $f7router }) => {
-      $on("pageInit", () => {
-        const $email = $("#emailInput");
-        const $password = $("#passwordInput");
-    
-        function validateEmail(email) {
-          const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          return re.test(email);
-        }
-    
-        $("#loginForm").on("submit", (e) => {
-          e.preventDefault();
-          const email = $email.val().trim();
-          const password = $password.val();
-          const errors = [];
-    
-          if (!email) {
-            errors.push("Email is required!");
-          } else if (!validateEmail(email)) {
-            errors.push("Email is not valid!");
-          }
-          if (!password) {
-            errors.push("Password is required");
-          } else if (password.length < 6) {
-            errors.push("Password must be at least 6 characters");
-          }
-    
-          if (errors.length) {
-            const msgHtml = errors.map((msg) => `<div>${msg}</div>`).join("");
-            $f7.dialog.alert(msgHtml, "Validation Errors");
-            return;
-          }
+  export default (props, { $, $on, $f7, $f7router }) => {
+    $on("pageInit", () => {
+      const $email = $("#emailInput");
+      const $password = $("#passwordInput");
 
-          // const doLogin = () => loginUser(email, password); // da se posle doda device_token
+      function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      }
+
+      $("#loginForm").on("submit", (e) => {
+        e.preventDefault();
+        const email = $email.val().trim();
+        const password = $password.val();
+        const errors = [];
+
+        if (!email) {
+          errors.push("Email is required!");
+        } else if (!validateEmail(email)) {
+          errors.push("Email is not valid!");
+        }
+        if (!password) {
+          errors.push("Password is required");
+        } else if (password.length < 6) {
+          errors.push("Password must be at least 6 characters");
+        }
+
+        if (errors.length) {
+          const msgHtml = errors.map((msg) => `<div>${msg}</div>`).join("");
+          $f7.dialog.alert(msgHtml, "Validation Errors");
+          return;
+        }
+
+        // const doLogin = () => loginUser(email, password); // da se posle doda device_token
         // if (window.FirebasePlugin) {
         //   window.FirebasePlugin.getToken(
         //     (token) => {
         //       console.log("Device token:", token);
-        //       doLogin();
+        //       loginUser();
         //     },
         //     (err) => {
         //       console.warn("Token error", err);
-        //       doLogin();
+        //       loginUser();
         //     }
         //   );
         // } else {
-        //   doLogin();
+        //   loginUser();
         // }
-    
-          loginUser(email, password);
-        });
-    
-        function loginUser(email, password) {
-          $f7.dialog.preloader("Logging in...");
-          fetch("http://127.0.0.1:8000/api/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          })
-            .then((response) => {
-              if (!response.ok) throw new Error(`HTTP ${response.status}`);
-              return response.json();
-            })
-            .then((data) => {
-              $f7.dialog.close();
-              if (data.token) {
-                localStorage.setItem("jwt_token", data.token);
-                localStorage.setItem("candidatProfile", JSON.stringify(data.user));
-                $f7router.navigate('/home/');
-              } else {
-                $f7.dialog.alert(data.message || "Invalid credentials.");
-              }
-            })
-            .catch((err) => {
-              $f7.dialog.close();
-              console.error("Login error", err);
-              $f7.dialog.alert("Error: " + err.message);
-            });
-        }
+
+        loginUser(email, password);
       });
-    
-      return $render;
-    };
-    </script>
-    
+
+      function loginUser(email, password) {
+        $f7.dialog.preloader("Logging in...");
+
+        fetch("http://127.0.0.1:8000/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        })
+          .then(async (response) => {
+            const data = await response.json();
+            console.log("DATA", data);
+            $f7.dialog.close();
+            alert(data);
+            if (
+              response.status === 200 &&
+              data.user?.is_mobile_verified === 1
+            ) {
+              localStorage.setItem("jwt_token", data.jwt_token);
+              // localStorage.setItem(
+              //   "candidatProfile",
+              //   JSON.stringify(data.user)
+              // );
+              localStorage.setItem("userVerify", "1");
+              $f7router.navigate("/main/");
+            } else if (
+              response.status === 403 &&
+              data.error === "Mobile number not verified."
+            ) {
+              localStorage.setItem("userVerify", "0");
+              $f7.dialog.alert("Verifikujte broj da biste nastavili.");
+              $f7router.navigate("/verify/");
+            } else {
+              $f7.dialog.alert(data.message || "Invalid credentials.");
+            }
+          })
+          .catch((err) => {
+            $f7.dialog.close();
+            console.error("Login error", err);
+            $f7.dialog.alert("Greška pri logovanju. Pokušajte ponovo.");
+          });
+      }
+    });
+
+    return $render;
+  };
+</script>

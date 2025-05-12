@@ -1,44 +1,44 @@
-import HomePage from '../pages/home.f7';
-import MainPage from '../pages/main.f7';
-import profilePage from '../pages/profile.f7';
+import HomePage from "../pages/home.f7";
+import MainPage from "../pages/main.f7";
+import profilePage from "../pages/profile.f7";
 
-import RegisterPage from '../pages/register.f7';
-import LoginPage from '../pages/login.f7';
-import VerifyPage from '../pages/verify.f7';
+import RegisterPage from "../pages/register.f7";
+import LoginPage from "../pages/login.f7";
+import VerifyPage from "../pages/verify.f7";
 
-import NotFoundPage from '../pages/404.f7';
+import NotFoundPage from "../pages/404.f7";
 
 var routes = [
   {
-    path: '/',
+    path: "/",
     component: HomePage,
   },
   {
-    path: '/login/',
+    path: "/login/",
     component: LoginPage,
   },
   {
-    path: '/register/',
+    path: "/register/",
     component: RegisterPage,
   },
   {
-    path: '/verify/',
+    path: "/verify/",
     component: VerifyPage,
   },
   {
-    path: '/home/',
+    path: "/home/",
     component: HomePage,
   },
   {
-    path: '/main/',
+    path: "/main/",
     component: MainPage,
   },
   {
-    path: '/profile/',
+    path: "/profile/",
     component: profilePage,
   },
   {
-    path: '(.*)',
+    path: "(.*)",
     component: NotFoundPage,
   },
 ];
