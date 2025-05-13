@@ -5,31 +5,37 @@
         <img src="./assets/images/logo1.png" width="150px" />
       </div>
 
-      <form id="loginForm" class="list no-hairlines-md">
-        <ul class="inset">
-          <li class="item-content item-input">
-            <div class="item-inner">
-              <div class="item-title item-label">Email</div>
-              <div class="item-input-wrap">
-                <input id="emailInput" type="email" placeholder="Your email" />
-                <span class="input-clear-button"></span>
+      <form id="loginForm">
+        <div class="list inset no-hairlines-md">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Email</div>
+                <div class="item-input-wrap">
+                  <input
+                    id="emailInput"
+                    type="email"
+                    placeholder="Your email"
+                  />
+                  <span class="input-clear-button"></span>
+                </div>
               </div>
-            </div>
-          </li>
-          <li class="item-content item-input">
-            <div class="item-inner">
-              <div class="item-title item-label">Password</div>
-              <div class="item-input-wrap">
-                <input
-                  id="passwordInput"
-                  type="password"
-                  placeholder="Your password"
-                />
-                <span class="input-clear-button"></span>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Password</div>
+                <div class="item-input-wrap">
+                  <input
+                    id="passwordInput"
+                    type="password"
+                    placeholder="Your password"
+                  />
+                  <span class="input-clear-button"></span>
+                </div>
               </div>
-            </div>
-          </li>
-        </ul>
+            </li>
+          </ul>
+        </div>
         <div class="block">
           <button type="submit" class="button button-fill login-button">
             Sign In
@@ -99,7 +105,7 @@
         }
 
         if (errors.length) {
-          const msgHtml = errors.map((msg) => `<div>${msg}</div>`).join("");
+          const msgHtml = errors.map((msg) => `<div>• ${msg}</div>`).join("");
           $f7.dialog.alert(msgHtml, "Validation Errors");
           return;
         }
@@ -136,20 +142,24 @@
         })
           .then(async (response) => {
             const data = await response.json();
-            console.log("DATA", data);
+            console.log("Login response:", data);
             $f7.dialog.close();
-            alert(data);
+
             if (
               response.status === 200 &&
               data.user?.is_mobile_verified === 1
             ) {
+              console.log("Logovanje: ",data);
+              const userId = data.user.id;
+              console.log("User ID:", userId);
+
               localStorage.setItem("jwt_token", data.jwt_token);
-              // localStorage.setItem(
-              //   "candidatProfile",
-              //   JSON.stringify(data.user)
-              // );
+              localStorage.setItem("user", JSON.stringify(data.user));
               localStorage.setItem("userVerify", "1");
+              localStorage.setItem("candidatProfile", 0);
               $f7router.navigate("/main/");
+              // ✅ Fetch candidatProfile after login
+              
             } else if (
               response.status === 403 &&
               data.error === "Mobile number not verified."
@@ -164,7 +174,7 @@
           .catch((err) => {
             $f7.dialog.close();
             console.error("Login error", err);
-            $f7.dialog.alert("Greška pri logovanju. Pokušajte ponovo.");
+            $f7.dialog.alert("Error throw login. Please try again.");
           });
       }
     });

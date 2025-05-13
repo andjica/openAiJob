@@ -96,8 +96,9 @@
                       placeholder="Enter your phone number"
                       name="phone_number"
                       id="phoneNumber"
-                      pattern="^[0-9]+$"
+                      inputmode="numeric"
                       class="ml-5 fontSize-18"
+                      maxlength="10"
                     />
                   </div>
                 </div>
@@ -264,6 +265,9 @@
 </template>
 
 <style>
+  .form-block > h4 {
+    padding-left: 18px;
+  }
   .setting__title {
     position: static !important;
     width: 100%;
@@ -290,9 +294,21 @@
     margin-top: 10px;
   }
 
+  .btn-upload {
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  .btn-upload .custom-file-upload {
+    background-color: #007aff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    color: white;
+  }
   .list .item-link {
     display: block;
     padding-top: 9px;
+    text-align: left;
   }
 
   .item-content.item-input {
@@ -329,6 +345,12 @@
     padding: 5px;
   }
 
+  .item-radio .item-inner {
+    padding-top: 0;
+    padding-bottom: 5px;
+    align-items: flex-end;
+  }
+
   .select-content .item-after {
     font-size: 18px;
     text-align: left;
@@ -348,7 +370,7 @@
     background-color: #005bb5;
   }
 
-    .button-fill-2 {
+  .button-fill-2 {
     width: 100%;
     background-color: #ec3838;
     border: none;
@@ -367,7 +389,7 @@
   }
 
   .sheet-modal {
-        height: 500px;
+    height: 500px;
   }
 
   select#font-family {
@@ -393,6 +415,7 @@
 
   input[type="number"] {
     font-size: 18px;
+    font-weight: 500;
   }
 
   /* Label styling (already styled but enhanced) */
@@ -406,18 +429,112 @@
     color: #007aff;
     font-weight: 600;
   }
+
+  .message_required::first-letter {
+    text-transform: uppercase;
+  }
 </style>
 <script>
   export default (props, { $, $f7, $on, $f7router }) => {
     $on("pageInit", async () => {
-      const candidat = [];
+      let candidatProfile = null;
 
+      ///kada se inicijalizuje stranica ispitati dal candit popunio podatke
       const user = JSON.parse(localStorage.getItem("user"));
+      const jwtToken = localStorage.getItem("jwt_token");
+      fetch(`http://127.0.0.1:8000/api/candidat/${user.id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data.candidateProfile.is_finished_profile == 1) {
+            console.log("DA LI JE UZEO ", data.candidateProfile);
 
-      const candidatProfile = localStorage.getItem("candidatProfile");
+            localStorage.setItem(
+              "candidatProfile",
+              JSON.stringify(data.candidateProfile)
+            );
+            const candidatProfile = JSON.parse(
+              localStorage.getItem("candidatProfile")
+            );
+            console.log("andjica", candidatProfile);
+
+            try {
+            } catch (e) {
+              console.error("Invalid JSON in localStorage[candidatProfile]", e);
+            }
+
+            // Continue safely with your field population code...
+            $("#full-name").val(
+              `${candidatProfile.user.first_name || ""} ${
+                candidatProfile.user.last_name || ""
+              }`
+            );
+            $("#email").val(candidatProfile.user.email || "");
+            $("#phoneNumber").val(candidatProfile.phone || "");
+            $("#user_birthday").val(candidatProfile.birthday || "");
+
+            const fullPhone = candidatProfile.phone || "";
+            const countryCode = candidatProfile.country?.phone_code || "";
+            const localPhone = fullPhone.replace(
+              new RegExp(`^\\+?${countryCode}`),
+              ""
+            );
+            $("#phoneNumber").val(localPhone);
+            $("#phone-code").text(`+${countryCode}`);
+
+            if (candidatProfile.profile_image) {
+              $("#profile_image_preview").attr(
+                "src",
+                candidatProfile.profile_image
+              );
+            }
+
+            $("#current_company").val(candidatProfile.current_company || "");
+            $("#current_title_job").val(
+              candidatProfile.current_title_job || ""
+            );
+            $("#years_of_experience").val(
+              candidatProfile.years_of_experience || ""
+            );
+
+            $("#school_name").val(candidatProfile.school_name || "");
+            $("#school_degree").val(candidatProfile.school_degree || "");
+            $("#school_year_start").val(
+              candidatProfile.school_year_start || ""
+            );
+            $("#school_year_end").val(candidatProfile.school_year_end || "");
+            console.log("CV", candidatProfile.cv);
+            // const $cvInput = $("#cv_upload");
+            // if ($cvInput.length && candidat.cv) {
+            //   $cvInput.after(
+            //     `<a href="${data.data.cv}" target="_blank">View Uploaded CV</a>`
+            //   );
+            // }
+          } else {
+            alert("0 novo ");
+            candidatProfile = localStorage.setItem("candidatProfile", 0);
+            fetchCountry();
+            fetchCity();  
+          }
+        })
+        .catch((error) => {
+          console.error("Fetch error:", error);
+          $f7.dialog.alert("Something wrong to fetch", "Error");
+        });
+
       const backLink = document.getElementById("backLink");
       const profileTitle = document.getElementById("profileTitle");
-
       // Check if candidatProfile is 0
       if (candidatProfile === 0) {
         backLink.style.display = "none"; // Hide the element
@@ -429,6 +546,14 @@
         profileTitle.textContent = "Your Profile";
       } else {
         profileTitle.textContent = "Finish Profile";
+      }
+
+      // Ensure phone number only contains digits as the user types
+      const phoneInput = document.getElementById("phoneNumber");
+      if (phoneInput) {
+        phoneInput.addEventListener("input", function () {
+          this.value = this.value.replace(/[^0-9]/g, "");
+        });
       }
 
       if (user) {
@@ -469,73 +594,10 @@
         });
       }
 
-      if (candidatProfile) {
-        let parsedProfile;
-        try {
-          parsedProfile = JSON.parse(candidatProfile);
-        } catch (e) {
-          console.error("Invalid JSON in localStorage[candidatProfile]", e);
-        }
-
-        if (
-          parsedProfile &&
-          parsedProfile.candidateProfile &&
-          parsedProfile.candidateProfile.original &&
-          parsedProfile.candidateProfile.original.data &&
-          parsedProfile.candidateProfile.original.data.user
-        ) {
-          const data = parsedProfile.candidateProfile.original;
-          const user = data.data.user;
-
-          // Continue safely with your field population code...
-          $("#full-name").val(
-            `${user.first_name || ""} ${user.last_name || ""}`
-          );
-          $("#email").val(user.email || "");
-          $("#phoneNumber").val(data.data.phone || "");
-          $("#user_birthday").val(data.data.birthday || "");
-
-          const fullPhone = data.data.phone || "";
-          const countryCode = data.data.country?.phone_code || "";
-          const localPhone = fullPhone.replace(
-            new RegExp(`^\\+?${countryCode}`),
-            ""
-          );
-          $("#phoneNumber").val(localPhone);
-          $("#phone-code").text(`+${countryCode}`);
-
-          if (data.data.profile_image) {
-            $("#profile_image_preview").attr("src", data.data.profile_image);
-          }
-
-          $("#current_company").val(data.data.current_company || "");
-          $("#current_title_job").val(data.data.current_title_job || "");
-          $("#years_of_experience").val(data.data.years_of_experience || "");
-
-          $("#school_name").val(data.data.school_name || "");
-          $("#school_degree").val(data.data.school_degree || "");
-          $("#school_year_start").val(data.data.school_year_start || "");
-          $("#school_year_end").val(data.data.school_year_end || "");
-          console.log("CV", data.data.cv);
-          // const $cvInput = $("#cv_upload");
-          // if ($cvInput.length && data.data.cv) {
-          //   $cvInput.after(
-          //     `<a href="${data.data.cv}" target="_blank">View Uploaded CV</a>`
-          //   );
-          // }
-        } else {
-          console.warn("candidatProfile structure is invalid or incomplete.");
-        }
-        
-      } else {
-        console.warn("No candidatProfile found in localStorage.");
-      }
-
       await fetchCountry();
 
       $("#verifyProfileForm").on("submit", (e) => {
         e.preventDefault();
-        console.log("Form submitted");
         submitProfile(e);
       });
 
@@ -627,7 +689,12 @@
 
         // Show all collected errors if any
         if (!isValid) {
-          const msgHtml = errors.map((msg) => `<div>${msg}</div>`).join("");
+          const msgHtml = errors
+            .map(
+              (msg) =>
+                `<div>• <span class="message_required">${msg}</span></div>`
+            )
+            .join("");
           $f7.dialog.alert(msgHtml, "Validation Errors");
           return;
         }
@@ -658,7 +725,7 @@
 
         if (profileFile) formData.append("profile_image", profileFile);
         if (cvFile) formData.append("cv", cvFile);
-
+        console.log("FORM DATA: ", formData);
         const preloader = $f7.dialog.preloader("Updating...");
         try {
           const url = `http://127.0.0.1:8000/api/candidat/profile/update/${user.id}`;
@@ -669,11 +736,10 @@
             },
             body: formData,
           });
-          console.log("Format data for user", formData);
           if (response.ok) {
             const data = await response.json();
-            console.log("Candidate profile ", data);
-            localStorage.setItem("candidatProfile", JSON.stringify(data));
+            console.log("PODACI",data);
+            localStorage.setItem("candidatProfile", JSON.stringify(data.original.data));
             $f7.dialog.close();
             $f7router.navigate("/main/");
           } else {
@@ -691,10 +757,12 @@
       };
 
       $(".logout").on("click", function () {
-      localStorage.removeItem("jwt_token");
-      localStorage.removeItem("user");
-      $f7router.navigate("/login/");
-    });
+        localStorage.removeItem("jwt_token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("userVerify");
+        localStorage.removeItem("userId");
+        $f7router.navigate("/login/");
+      });
     });
 
     const fetchCountry = async () => {
@@ -703,17 +771,19 @@
 
         if (!token) throw new Error("Token not found! Please log in.");
 
-        const profileData = localStorage.getItem("candidatProfile");
+        const profileData = JSON.parse(localStorage.getItem("candidatProfile"));
         let selectedCountryId = "";
 
         if (profileData) {
           try {
-            const data = JSON.parse(profileData).candidateProfile.original;
-            console.log("COUNTRY",data.data.country);
-            selectedCountryId = data?.data?.country?.id || "";
+            const countryData = profileData;
+            selectedCountryId = countryData?.country?.id || "";
           } catch (err) {
             console.warn("Could not extract country ID from profile data.");
           }
+        }
+        else if(profileData === "0"){
+
         }
 
         const storedCountries = localStorage.getItem("countriesData");
@@ -786,6 +856,7 @@
       countrySelect.off("change").on("change", function () {
         const selectedId = $(this).val();
         if (selectedId) {
+          alert(selectedId);
           fetchPhone(selectedId);
           fetchCity(selectedId);
         } else {
@@ -804,13 +875,12 @@
         }
 
         // Get selectedCityId from candidatProfile
-        const profileData = localStorage.getItem("candidatProfile");
+        const profileData = JSON.parse(localStorage.getItem("candidatProfile"));
         let selectedCityIdFromProfile = "";
         if (profileData) {
           try {
-            const data = JSON.parse(profileData).candidateProfile.original;
-            console.log("CITY",data.data.city);
-            selectedCityIdFromProfile = data.data.city?.id || "";
+            const cityData = profileData;
+            selectedCityIdFromProfile = cityData.city?.id || "";
           } catch (err) {
             console.warn("Could not extract city ID from profile data.");
           }

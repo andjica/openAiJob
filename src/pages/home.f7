@@ -35,8 +35,9 @@
     $on("pageInit", () => {
       const userVerify = localStorage.getItem("userVerify");
       const user = localStorage.getItem("candidatProfile");
+      const token = localStorage.getItem("jwt_token");
       setTimeout(() => {
-        if (!userVerify) {
+        if (!userVerify || !token) {
           $f7router.navigate("/login/", { reloadCurrent: true });
         }
         if (userVerify === "0") {

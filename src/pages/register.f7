@@ -80,6 +80,9 @@
           </button>
         </div>
       </form>
+      <div class="block text-align-center">
+        <a href="/login/">If you already have an account, please go to login</a>
+      </div>
     </div>
   </div>
 </template>
@@ -106,12 +109,6 @@
         const password = $password.val();
         const confirmPassword = $confirmPassword.val();
         const errors = [];
-
-        console.log("firstName:", firstName);
-        console.log("lastName:", lastName);
-        console.log("email:", email);
-        console.log("password:", password);
-        console.log("confirmPassword:", confirmPassword);
 
         if (!firstName) {
           errors.push("First name is required!");
@@ -145,7 +142,7 @@
 
         if (errors.length) {
           // Show all errors in one alert
-          const msgHtml = errors.map((msg) => `<div>${msg}</div>`).join("");
+          const msgHtml = errors.map((msg) => `<div>• ${msg}</div>`).join("");
           $f7.dialog.alert(msgHtml, "Validation Errors");
           return;
         }
@@ -184,7 +181,6 @@
             return response.json();
           })
           .then((data) => {
-            console.log("User data", data);
             if (data) {
               localStorage.setItem("user", JSON.stringify(data.user));
               localStorage.setItem("userVerify", 0);
