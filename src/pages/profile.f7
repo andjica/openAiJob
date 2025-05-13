@@ -63,7 +63,12 @@
                   class="item-link smart-select smart-select-init w-100"
                   data-open-in="sheet"
                 >
-                  <select name="country" id="countries" data-open-in="sheet">
+                  <select
+                    name="country"
+                    id="countries"
+                    data-open-in="sheet"
+                    value=""
+                  >
                     <option value="">Select a country</option>
                   </select>
                   <div class="select-content">
@@ -76,7 +81,7 @@
                   class="item-link smart-select smart-select-init w-100"
                   data-open-in="sheet"
                 >
-                  <select name="city" id="cities">
+                  <select name="city" id="cities" data-open-in="sheet" value="">
                     <option value="">Select a city</option>
                   </select>
                   <div class="select-content">
@@ -464,74 +469,57 @@
               "candidatProfile",
               JSON.stringify(data.candidateProfile)
             );
-            const candidatProfile = JSON.parse(
+            candidatProfile = JSON.parse(
               localStorage.getItem("candidatProfile")
             );
+            populateCandidateFields(candidatProfile);
             console.log("andjica", candidatProfile);
-
-            try {
-            } catch (e) {
-              console.error("Invalid JSON in localStorage[candidatProfile]", e);
-            }
-
-            // Continue safely with your field population code...
-            $("#full-name").val(
-              `${candidatProfile.user.first_name || ""} ${
-                candidatProfile.user.last_name || ""
-              }`
-            );
-            $("#email").val(candidatProfile.user.email || "");
-            $("#phoneNumber").val(candidatProfile.phone || "");
-            $("#user_birthday").val(candidatProfile.birthday || "");
-
-            const fullPhone = candidatProfile.phone || "";
-            const countryCode = candidatProfile.country?.phone_code || "";
-            const localPhone = fullPhone.replace(
-              new RegExp(`^\\+?${countryCode}`),
-              ""
-            );
-            $("#phoneNumber").val(localPhone);
-            $("#phone-code").text(`+${countryCode}`);
-
-            if (candidatProfile.profile_image) {
-              $("#profile_image_preview").attr(
-                "src",
-                candidatProfile.profile_image
-              );
-            }
-
-            $("#current_company").val(candidatProfile.current_company || "");
-            $("#current_title_job").val(
-              candidatProfile.current_title_job || ""
-            );
-            $("#years_of_experience").val(
-              candidatProfile.years_of_experience || ""
-            );
-
-            $("#school_name").val(candidatProfile.school_name || "");
-            $("#school_degree").val(candidatProfile.school_degree || "");
-            $("#school_year_start").val(
-              candidatProfile.school_year_start || ""
-            );
-            $("#school_year_end").val(candidatProfile.school_year_end || "");
-            console.log("CV", candidatProfile.cv);
-            // const $cvInput = $("#cv_upload");
-            // if ($cvInput.length && candidat.cv) {
-            //   $cvInput.after(
-            //     `<a href="${data.data.cv}" target="_blank">View Uploaded CV</a>`
-            //   );
-            // }
           } else {
             alert("0 novo ");
             candidatProfile = localStorage.setItem("candidatProfile", 0);
             fetchCountry();
-            fetchCity();  
+            fetchCity();
           }
         })
         .catch((error) => {
           console.error("Fetch error:", error);
           $f7.dialog.alert("Something wrong to fetch", "Error");
         });
+
+      function populateCandidateFields(candidatProfile) {
+        $("#full-name").val(
+          `${candidatProfile.user.first_name || ""} ${
+            candidatProfile.user.last_name || ""
+          }`
+        );
+        $("#email").val(candidatProfile.user.email || "");
+
+        const fullPhone = candidatProfile.phone || "";
+        const countryCode = candidatProfile.country?.phone_code || "";
+        const localPhone = fullPhone.replace(
+          new RegExp(`^\\+?${countryCode}`),
+          ""
+        );
+        $("#phoneNumber").val(localPhone);
+        $("#phone-code").text(`+${countryCode}`);
+
+        if (candidatProfile.profile_image) {
+          $("#profile_image_preview").attr(
+            "src",
+            candidatProfile.profile_image
+          );
+        }
+
+        $("#current_company").val(candidatProfile.current_company || "");
+        $("#current_title_job").val(candidatProfile.current_title_job || "");
+        $("#years_of_experience").val(
+          candidatProfile.years_of_experience || ""
+        );
+        $("#school_name").val(candidatProfile.school_name || "");
+        $("#school_degree").val(candidatProfile.school_degree || "");
+        $("#school_year_start").val(candidatProfile.school_year_start || "");
+        $("#school_year_end").val(candidatProfile.school_year_end || "");
+      }
 
       const backLink = document.getElementById("backLink");
       const profileTitle = document.getElementById("profileTitle");
@@ -600,7 +588,7 @@
         e.preventDefault();
         submitProfile(e);
       });
-
+      // === Submit Profile Function ===
       const submitProfile = async (event) => {
         let isValid = true;
         const errors = [];
@@ -615,7 +603,6 @@
         const cvInput = document.getElementById("cv_upload");
         const cvFile = cvInput?.files?.[0] || null;
 
-        // List of required fields
         const requiredFields = [
           "full-name",
           "email",
@@ -631,30 +618,20 @@
           "cv_upload",
         ];
 
-        // Validate each field
         requiredFields.forEach((id) => {
           const input = document.getElementById(id);
-          if (!input) {
-            console.error(`Element with id '${id}' not found.`);
-            return;
-          }
+          if (!input) return;
 
           const value =
             input.type === "file" ? input.files[0] : input.value.trim();
 
           if (id === "years_of_experience") {
-            if (
-              !/^\d{1,2}$/.test(value) ||
-              parseInt(value) < 1 ||
-              parseInt(value) > 99
-            ) {
+            if (!/^\d{1,2}$/.test(value) || +value < 1 || +value > 99) {
               errors.push("Experience must be a number between 1 and 99.");
               isValid = false;
             }
           } else if (id === "phoneNumber") {
-            const phoneValue = value;
-            const regex = /^[0-9]*$/;
-            if (!regex.test(phoneValue)) {
+            if (!/^\d+$/.test(value)) {
               errors.push("Phone number must contain only digits.");
               isValid = false;
             }
@@ -663,31 +640,24 @@
               errors.push("School years must be 4-digit numbers.");
               isValid = false;
             }
-          } else if (id === "cv_upload") {
-            if (!value) {
-              errors.push("CV is required.");
-              isValid = false;
-            } else if (value.size > 5 * 1024 * 1024) {
-              errors.push("CV file must be 5MB or smaller.");
-              isValid = false;
-            }
-          } else if (id === "profile_image") {
-            if (!profileFile) {
-              errors.push("Profile image is required.");
-              isValid = false;
-            } else if (profileFile.size > 5 * 1024 * 1024) {
-              errors.push("Profile image must be 5MB or smaller.");
-              isValid = false;
-            }
-          } else {
-            if (!value) {
-              errors.push(`${id.replace(/_/g, " ")} is required.`);
-              isValid = false;
-            }
+          } else if (
+            id === "cv_upload" &&
+            (!value || value.size > 5 * 1024 * 1024)
+          ) {
+            errors.push("CV is required and must be under 5MB.");
+            isValid = false;
+          } else if (
+            id === "profile_image" &&
+            (!profileFile || profileFile.size > 5 * 1024 * 1024)
+          ) {
+            errors.push("Profile image is required and must be under 5MB.");
+            isValid = false;
+          } else if (!value) {
+            errors.push(`${id.replace(/_/g, " ")} is required.`);
+            isValid = false;
           }
         });
 
-        // Show all collected errors if any
         if (!isValid) {
           const msgHtml = errors
             .map(
@@ -702,7 +672,6 @@
         const fullName = $("#full-name").val().trim();
         const [firstName, ...rest] = fullName.split(" ");
         const lastName = rest.join(" ");
-
         const phoneCode = $("#phone-code").text().trim();
         const phoneNumber = $("#phoneNumber").val().trim();
         const fullPhone = phoneCode + phoneNumber;
@@ -725,27 +694,27 @@
 
         if (profileFile) formData.append("profile_image", profileFile);
         if (cvFile) formData.append("cv", cvFile);
-        console.log("FORM DATA: ", formData);
+
         const preloader = $f7.dialog.preloader("Updating...");
+
         try {
           const url = `http://127.0.0.1:8000/api/candidat/profile/update/${user.id}`;
           const response = await fetch(url, {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
             body: formData,
           });
-          if (response.ok) {
-            const data = await response.json();
-            console.log("PODACI",data);
-            localStorage.setItem("candidatProfile", JSON.stringify(data.original.data));
-            $f7.dialog.close();
-            $f7router.navigate("/main/");
-          } else {
-            console.log(response.message);
-            throw new Error("Failed to save user profile!");
-          }
+
+          if (!response.ok) throw new Error("Failed to save user profile!");
+
+          const data = await response.json();
+
+          localStorage.setItem(
+            "candidatProfile",
+            JSON.stringify(data?.candidateProfile.original?.data)
+          );
+          $f7.dialog.close();
+          $f7router.navigate("/main/");
         } catch (error) {
           console.error("Error:", error);
           $f7.dialog.close();
@@ -765,39 +734,25 @@
       });
     });
 
+    // === Fetch Country & Populate ===
     const fetchCountry = async () => {
+      const token = localStorage.getItem("jwt_token");
+      if (!token) return console.error("Token not found!");
+
+      const profileData = JSON.parse(localStorage.getItem("candidatProfile"));
+      const selectedCountryId = profileData?.country?.id || "";
+
+      const storedCountries = localStorage.getItem("countriesData");
+      if (storedCountries) {
+        populateCountriesDropdown(
+          JSON.parse(storedCountries),
+          selectedCountryId
+        );
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("jwt_token");
-
-        if (!token) throw new Error("Token not found! Please log in.");
-
-        const profileData = JSON.parse(localStorage.getItem("candidatProfile"));
-        let selectedCountryId = "";
-
-        if (profileData) {
-          try {
-            const countryData = profileData;
-            selectedCountryId = countryData?.country?.id || "";
-          } catch (err) {
-            console.warn("Could not extract country ID from profile data.");
-          }
-        }
-        else if(profileData === "0"){
-
-        }
-
-        const storedCountries = localStorage.getItem("countriesData");
-        if (storedCountries) {
-          populateCountriesDropdown(
-            JSON.parse(storedCountries),
-            selectedCountryId
-          );
-          return;
-        }
-
-        const url = `http://127.0.0.1:8000/api/countries`;
-        const response = await fetch(url, {
-          method: "GET",
+        const response = await fetch(`http://127.0.0.1:8000/api/countries`, {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
@@ -805,58 +760,48 @@
           },
         });
 
-        if (!response.ok) throw new Error("Failed to fetch countries!");
-
         const data = await response.json();
-        const countries = Array.isArray(data) ? data : data?.countries;
-
-        if (!Array.isArray(countries))
-          throw new Error("Countries data is not an array!");
+        const countries = Array.isArray(data) ? data : data?.countries || [];
 
         localStorage.setItem("countriesData", JSON.stringify(countries));
         populateCountriesDropdown(countries, selectedCountryId);
-      } catch (error) {
-        console.error("Error:", error.message);
+      } catch (err) {
+        console.error("Error fetching countries:", err.message);
       }
     };
 
     const populateCountriesDropdown = (countries, selectedCountryId = "") => {
       const countrySelect = $("#countries");
-      countrySelect.empty();
+      countrySelect
+        .empty()
+        .append('<option value="">Select a country</option>');
 
-      // Add default option
-      countrySelect.append('<option value="">Select a country</option>');
-
-      // Sort: selected one first (after default), rest follow
-      const sortedCountries = [
-        ...countries.filter((c) => c.id == selectedCountryId),
-        ...countries.filter((c) => c.id != selectedCountryId),
-      ];
-
-      sortedCountries.forEach((c) => {
-        countrySelect.append(
-          `<option value="${c.id}" ${
-            c.id == selectedCountryId ? "selected" : ""
-          }>${c.name}</option>`
-        );
-      });
-
-      // Reinit Smart Select
-      const ssEl = document.querySelector(".smart-select");
-      if (ssEl?.f7SmartSelect) ssEl.f7SmartSelect.destroy();
-
-      const app = Framework7?.instance || new Framework7();
-      app.smartSelect.create({ el: ".smart-select" });
+      [...countries]
+        .sort((a, b) => (a.id == selectedCountryId ? -1 : 1))
+        .forEach((c) => {
+          countrySelect.append(
+            `<option value="${c.id}" ${
+              c.id == selectedCountryId ? "selected" : ""
+            }>${c.name}</option>`
+          );
+        });
 
       if (selectedCountryId) {
         fetchPhone(selectedCountryId);
         fetchCity(selectedCountryId);
       }
 
+      const ssEl = document.querySelector("#countries");
+      if (ssEl?.f7SmartSelect) {
+        ssEl.f7SmartSelect.destroy();
+      }
+
+      const app = Framework7?.instance || new Framework7();
+      app.smartSelect.create({ el: "#countries" });
+
       countrySelect.off("change").on("change", function () {
         const selectedId = $(this).val();
         if (selectedId) {
-          alert(selectedId);
           fetchPhone(selectedId);
           fetchCity(selectedId);
         } else {
@@ -866,105 +811,79 @@
       });
     };
 
+    // === Fetch City & Populate ===
     const fetchCity = async (countryId, selectedCityId = "") => {
+      if (!countryId || countryId === "undefined") {
+        console.warn("Invalid country ID for city fetch.");
+        $("#cities").html('<option value="">Select a city</option>');
+        return;
+      }
+
+      const token = localStorage.getItem("jwt_token");
+      if (!token) return console.error("Token not found!");
+
+      const profileData = JSON.parse(localStorage.getItem("candidatProfile"));
+      selectedCityId = selectedCityId || profileData?.city?.id || "";
+
+      const cacheKey = `citiesData-${countryId}`;
+      const storedCities = localStorage.getItem(cacheKey);
+      if (storedCities) {
+        populateCitiesDropdown(JSON.parse(storedCities), selectedCityId);
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("jwt_token");
-
-        if (!token) {
-          throw new Error("Token not found! Please log in.");
-        }
-
-        // Get selectedCityId from candidatProfile
-        const profileData = JSON.parse(localStorage.getItem("candidatProfile"));
-        let selectedCityIdFromProfile = "";
-        if (profileData) {
-          try {
-            const cityData = profileData;
-            selectedCityIdFromProfile = cityData.city?.id || "";
-          } catch (err) {
-            console.warn("Could not extract city ID from profile data.");
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/cities/${countryId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        }
-
-        // Use selectedCityId from profile data or the passed selectedCityId
-        selectedCityId = selectedCityId || selectedCityIdFromProfile;
-
-        // Check if cities data is stored in localStorage
-        const storedCities = localStorage.getItem(`citiesData-${countryId}`);
-        if (storedCities) {
-          populateCitiesDropdown(JSON.parse(storedCities), selectedCityId);
-          return;
-        }
-
-        // Fetch cities from the API
-        const url = `http://127.0.0.1:8000/api/cities/${countryId}`;
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch cities!");
-        }
+        );
 
         const data = await response.json();
-        const cities = Array.isArray(data) ? data : data.cities;
+        const cities = Array.isArray(data) ? data : data?.cities || [];
 
-        if (!Array.isArray(cities)) {
-          throw new Error("Cities data is not an array!");
-        }
-
-        // Store cities in localStorage for future use
-        localStorage.setItem(`citiesData-${countryId}`, JSON.stringify(cities));
-
-        // Populate the dropdown
+        localStorage.setItem(cacheKey, JSON.stringify(cities));
         populateCitiesDropdown(cities, selectedCityId);
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching cities:", error);
         $("#cities").html('<option value="">Select a city</option>');
       }
     };
 
-    // Function to populate the cities dropdown
     const populateCitiesDropdown = (cities, selectedCityId = "") => {
       const citySelect = $("#cities");
-      citySelect.empty();
+      citySelect.empty().append('<option value="">Select a city</option>');
 
-      // Add default option
-      citySelect.append('<option value="">Select a city</option>');
+      [...cities]
+        .sort((a, b) => (a.id == selectedCityId ? -1 : 1))
+        .forEach((c) => {
+          citySelect.append(
+            `<option value="${c.id}" ${
+              c.id == selectedCityId ? "selected" : ""
+            }>${c.name}</option>`
+          );
+        });
 
-      // Sort: selected one first (after default), rest follow
-      const sortedCities = [
-        ...cities.filter((c) => c.id == selectedCityId),
-        ...cities.filter((c) => c.id != selectedCityId),
-      ];
-
-      sortedCities.forEach((c) => {
-        citySelect.append(
-          `<option value="${c.id}" ${
-            c.id == selectedCityId ? "selected" : ""
-          }>${c.name}</option>`
-        );
-      });
+      if (selectedCityId) {
+        citySelect.val(selectedCityId);
+      }
 
       const ssEl = document.querySelector("#cities");
-      if (ssEl?.f7SmartSelect) ssEl.f7SmartSelect.destroy();
+      if (ssEl?.f7SmartSelect) {
+        ssEl.f7SmartSelect.destroy();
+      }
 
       const app = Framework7?.instance || new Framework7();
       app.smartSelect.create({ el: "#cities" });
 
       citySelect.off("change").on("change", function () {
         const selectedId = $(this).val();
-        if (selectedId) {
-          console.log(`City selected: ${selectedId}`);
-        } else {
-          console.log("No city selected");
-          $("#city-details").html("");
-        }
+        console.log(`City selected: ${selectedId || "None"}`);
       });
     };
 
