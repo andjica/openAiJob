@@ -28,36 +28,7 @@
 
         <!-- Swiper -->
         <div class="swiper-container">
-          <div class="swiper-wrapper">
-            <!-- Job Post 1 -->
-            <div class="swiper-slide">
-              <div class="job-post">
-                <h2>Software Engineer</h2>
-                <p>Looking for an experienced software engineer...</p>
-                <a href="/job/1" class="button">View Details</a>
-              </div>
-            </div>
-
-            <!-- Job Post 2 -->
-            <div class="swiper-slide">
-              <div class="job-post">
-                <h2>Product Manager</h2>
-                <p>Join our team as a product manager...</p>
-                <a href="/job/2" class="button">View Details</a>
-              </div>
-            </div>
-
-            <!-- Job Post 3 -->
-            <div class="swiper-slide">
-              <div class="job-post">
-                <h2>UX Designer</h2>
-                <p>We are seeking a talented UX designer...</p>
-                <a href="/job/3" class="button">View Details</a>
-              </div>
-            </div>
-
-            <!-- Add more job posts here if needed -->
-          </div>
+          <div class="swiper-wrapper"></div>
 
           <!-- Add Pagination and Navigation if needed -->
           <div class="swiper-pagination"></div>
@@ -70,8 +41,9 @@
 
     <!-- Begin of footer -->
     <div class="toolbar toolbar-bottom">
-      <div class="toolbar-inner">
-        <a class="link">Link 1</a>
+      <div class="toolbar-inner plr-10">
+        <a href="/search/"><i class="icon f7-icons if-not-md">search</i>
+            <i class="icon material-icons if-md">search</i></a>
         <a class="link">Link 2</a>
         <a class="link">Link 3</a>
       </div>
@@ -86,12 +58,32 @@
     padding-top: 20px;
   }
 
-  /* Styling for the job post */
+  .swiper-container {
+    height: 400px;
+    margin-top: 20px;
+    padding: 0 20px;
+  }
+
+  .swiper-wrapper {
+    height: 100%;
+  }
+
+  .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
   .job-post {
+    width: 100%;
+    height: 90%;
     border: 1px solid #ddd;
     padding: 20px;
-    margin: 10px 0;
     background-color: #f9f9f9;
+    overflow-y: auto;
+    box-sizing: border-box;
   }
 
   .job-post h2 {
@@ -110,41 +102,110 @@
     color: white;
   }
 
-  /* Styling for swiper container */
-  .swiper-container {
-    margin-top: 20px;
-    padding: 0 20px; /* Optional: Add padding to make the swiper look better */
-  }
-
   .swiper-pagination {
-    bottom: 10px !important;
+    bottom: 0px !important;
   }
 
   .swiper-button-next,
   .swiper-button-prev {
     color: #007bff;
   }
+
+  .pos_abs {
+    position: absolute;
+    top: 36px;
+    right: 9px;
+  }
 </style>
 
 <script>
-  export default (props, { $on, $f7router }) => {
+  export default (props, { $, $on, $f7, $f7router }) => {
+    let jobs = [];
     // Initialize the Swiper after the page is initialized
-    $on('page:init', () => {
-      var swiper = new Swiper('.swiper-container', {
-        slidesPerView: 1, // Display 1 slide at a time
-        spaceBetween: 10, // Space between slides
-        loop: true, // Enable looping of slides
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true, // Make the pagination clickable
-        },
-        navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev',
-        },
-      });
+    $on("page:init", () => {
+      const jwtToken = localStorage.getItem("jwt_token");
 
-      
+      if (!jwtToken) {
+        $f7.dialog.alert(
+          "You are not logged in. Please login to continue.",
+          "Auth Error"
+        );
+        $f7router.navigate("/login");
+        return;
+      }
+
+      $f7.dialog.preloader("Loading jobs...");
+
+      fetch(`http://127.0.0.1:8000/api/jobs/active`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Jobs data: ", data);
+          jobs = data.randomFiveJobs || data;
+          renderSlides(jobs);
+          initSwiper();
+        })
+        .catch((error) => {
+          console.error("Fetch error:", error);
+          $f7.dialog.alert("Something wrong to fetch", "Error");
+        })
+        .finally(() => {
+          // ✅ Always close the preloader
+          $f7.dialog.close();
+        });
+      function renderSlides(jobs) {
+        const wrapper = document.querySelector(".swiper-wrapper");
+        wrapper.innerHTML = ""; // Clear existing slides
+
+        jobs.forEach((job) => {
+          const badge = job.job_world_type
+            ? '<span class="badge color-orange">national</span>'
+            : '<span class="badge color-blue">international</span>';
+          const slide = document.createElement("div");
+          slide.className = "swiper-slide";
+          slide.innerHTML = `
+            <div class="job-post">
+              ${badge}
+              <h3>${job.title} <br> <i><small class="font-sm w-200"> ${job.category.name}, ${job.sub_category.name}</small></i></h3>
+              <p>
+              <br>
+              ${job.country.name}, ${job.city.name}<br>
+              Company: ${job.company.name}<br>
+              </p>
+              <img src="http://127.0.0.1:8000/storage/${job.company.logo}" alt="${job.company.name}" class="rounded-circle pos_abs" width="60" height="60"/>
+              <a href="/job/${job.id}" class="button">View Details</a>
+            </div>
+          `;
+          wrapper.appendChild(slide);
+        });
+      }
+
+      function initSwiper() {
+        new Swiper(".swiper-container", {
+          slidesPerView: 1,
+          spaceBetween: 10,
+          loop: true,
+          pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+          },
+          navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+          },
+        });
+      }
     });
 
     return $render;

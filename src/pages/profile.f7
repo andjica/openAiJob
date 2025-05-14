@@ -273,11 +273,6 @@
   .form-block > h4 {
     padding-left: 18px;
   }
-  .setting__title {
-    position: static !important;
-    width: 100%;
-    margin-left: 60px;
-  }
 
   .file-input {
     margin-top: 10px;
@@ -447,6 +442,14 @@
       ///kada se inicijalizuje stranica ispitati dal candit popunio podatke
       const user = JSON.parse(localStorage.getItem("user"));
       const jwtToken = localStorage.getItem("jwt_token");
+      console.log(jwtToken);
+
+      if (!jwtToken) {
+        $f7.dialog.alert('You are not logged in. Please login to continue.', 'Auth Error');
+        $f7router.navigate('/login');
+        return;
+      }
+
       fetch(`http://127.0.0.1:8000/api/candidat/${user.id}`, {
         method: "GET",
         headers: {
@@ -493,6 +496,7 @@
           }`
         );
         $("#email").val(candidatProfile.user.email || "");
+        $("#user_birthday").val(candidatProfile.birthday || "");
 
         const fullPhone = candidatProfile.phone || "";
         const countryCode = candidatProfile.country?.phone_code || "";
@@ -531,9 +535,9 @@
       }
 
       if (candidatProfile) {
-        profileTitle.textContent = "Your Profile";
-      } else {
         profileTitle.textContent = "Finish Profile";
+      } else {
+        profileTitle.textContent = "Your Profile";
       }
 
       // Ensure phone number only contains digits as the user types

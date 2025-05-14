@@ -1,0 +1,179 @@
+<template>
+  <div class="page" data-name="activeJob">
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text" id="activeJobTitle">Active Job</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-content pt-60 pb-30">
+      <div class="block">
+        <div id="job-details"></div>
+      </div>
+    </div>
+    <!-- Begin of footer -->
+    <div class="toolbar toolbar-bottom">
+      <div class="toolbar-inner plr-10">
+        <a href="/search/"
+          ><i class="icon f7-icons if-not-md">search</i>
+          <i class="icon material-icons if-md">search</i></a
+        >
+        <a class="link">Link 2</a>
+        <a class="link">Link 3</a>
+      </div>
+    </div>
+    <!-- End of footer -->
+  </div>
+</template>
+
+<style>
+  .job__details {
+    padding: 0 16px;
+  }
+  .job__section {
+    margin-top: 20px;
+  }
+  .job__title--flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .job__valid-until {
+    font-size: 0.9em;
+    color: #888;
+  }
+</style>
+<script>
+  export default (props, { $, $f7, $on, $f7router }) => {
+    $on("pageInit", async () => {
+      const jobId = $f7router.currentRoute.params.id;
+      console.log("Viewing job with ID:", jobId);
+      const jwtToken = localStorage.getItem("jwt_token");
+      const candidat = JSON.parse(localStorage.getItem("candidatProfile"));
+      console.log("Candidat id: ", candidat);
+      // Fetch and display job details
+      fetch(`http://127.0.0.1:8000/api/job/${jobId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch job");
+          return res.json();
+        })
+        .then((data) => {
+          console.log("Job details:", data);
+
+          const job = data.job;
+
+          // Prepare required skills
+          const requiredSkillsList = job.skills.filter(
+            (skill) => skill.is_required === 1
+          );
+          const requiredSkillsHTML = requiredSkillsList.length
+            ? `<ul>${requiredSkillsList
+                .map((skill) => `<li>${skill.skill}</li>`)
+                .join("")}</ul>`
+            : `<p><i>Not required</i></p>`;
+
+          // Inject into DOM
+          $("#job-details").html(`
+      <div class="job__details">
+        <!-- Title and Valid Until -->
+        <div class="job__title--flex">
+          <h2>${job.title}</h2>
+          <p class="job__valid-until">Valid until: ${job.valid_until}</p>
+        </div>
+
+        <!-- Description -->
+        <div class="job__section">
+          <h4>Description</h4>
+          <p>${job.description}</p>
+        </div>
+
+        <!-- Category Info -->
+        <div class="job__section">
+          <h4>Category</h4>
+          <p><strong>${job.category.name}</strong>, ${job.sub_category.name}</p>
+          <p>${job.category.description}</p>
+        </div>
+
+        <!-- Location -->
+        <div class="job__section">
+          <h4>Location</h4>
+          <p>${job.country.name}, ${job.city.name}</p>
+        </div>
+
+        <!-- Job Details -->
+        <div class="job__section">
+          <h4>Job Info</h4>
+          <p>Level: ${job.experience_level}</p>
+          <p>Type: ${job.job_type.name}</p>
+          <p>Salary: ${job.salary_min} - ${job.salary_max}</p>
+        </div>
+
+        <!-- Skills -->
+        <div class="job__section">
+          <h4>Required Skills</h4>
+          ${requiredSkillsHTML}
+        </div>
+
+        <!-- Apply Button -->
+        <div class="job__section">
+          <a href="#" id="apply-btn" class="button button-fill" data-id=${job.id}>Apply</a>
+        </div>
+      </div>
+    `);
+        })
+        .catch((err) => {
+          console.error("Job fetch error:", err);
+          $f7.dialog.alert("Unable to load job details", "Error");
+        });
+
+      // Set apply method to aplly for the job
+      $("#job-details").on("click", "#apply-btn", () => {
+        console.log("CLICK");
+        alert("CLICK");
+        fetch(
+          `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidat.id}/apply`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              Authorization: `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify({ user_id: candidat.user_id }),
+          }
+        )
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to apply for job");
+            return res.json();
+          })
+          .then((result) => {
+            console.log("Apply success:", result);
+            $f7.dialog.alert(
+              "You have successfully applied for this job!",
+              "Success"
+            );
+          })
+          .catch((err) => {
+            console.error("Job fetch error:", err);
+            $f7.dialog.alert("Unable to load job details", "Error");
+          });
+      });
+    });
+
+    return $render;
+  };
+</script>

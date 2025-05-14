@@ -1,0 +1,57 @@
+<template>
+  <div class="page" data-name="main">
+    <!-- Begin of header -->
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- End of header -->
+
+    <!-- Begin of content -->
+    <div class="page-content pt-30">
+      <div class="block">
+        <h3 class="title">Search Page</h3>
+      </div>
+    </div>
+    <!-- End of content -->
+
+    <!-- Begin of footer -->
+    <div class="toolbar toolbar-bottom">
+      <div class="toolbar-inner plr-10">
+        <a href="/search/"
+          ><i class="icon f7-icons if-not-md">search</i>
+          <i class="icon material-icons if-md">search</i></a
+        >
+        <a class="link">Link 2</a>
+        <a class="link">Link 3</a>
+      </div>
+    </div>
+    <!-- End of footer -->
+  </div>
+</template>
+
+<script>
+  export default (props, { $, $on, $f7, $f7router }) => {
+    // Initialize the Swiper after the page is initialized
+    $on("page:init", () => {
+      const jwtToken = localStorage.getItem("jwt_token");
+
+      if (!jwtToken) {
+        $f7.dialog.alert(
+          "You are not logged in. Please login to continue.",
+          "Auth Error"
+        );
+        $f7router.navigate("/login");
+        return;
+      }
+    });
+
+    return $render;
+  };
+</script>

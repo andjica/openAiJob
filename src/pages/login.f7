@@ -74,6 +74,11 @@
     max-width: 150px;
     margin: 0 auto;
   }
+  .item-title{
+    top: 0!important;
+    left: 0!important;
+    background: transparent!important;
+  }
 </style>
 
 <script>
