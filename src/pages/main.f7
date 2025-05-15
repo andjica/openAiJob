@@ -13,8 +13,7 @@
         </div>
         <div class="right">
           <a href="/profile/">
-            <i class="icon f7-icons if-not-md">person-badge-plus-fill</i>
-            <i class="icon material-icons if-md">person_add</i>
+            <img src="../assets/person.svg" alt="person" width="40" height="40" />  
           </a>
         </div>
       </div>
@@ -24,30 +23,33 @@
     <!-- Begin of content -->
     <div class="page-content pt-30">
       <div class="block">
-        <h3 class="title">All Jobs</h3>
+        <h3 class="title">Main Page</h3>
 
-        <!-- Swiper -->
-        <div class="swiper-container">
-          <div class="swiper-wrapper"></div>
-
-          <!-- Add Pagination and Navigation if needed -->
-          <div class="swiper-pagination"></div>
-          <div class="swiper-button-next"></div>
-          <div class="swiper-button-prev"></div>
-        </div>
+        
       </div>
     </div>
     <!-- End of content -->
 
     <!-- Begin of footer -->
-    <div class="toolbar toolbar-bottom">
-      <div class="toolbar-inner plr-10">
-        <a href="/search/"><i class="icon f7-icons if-not-md">search</i>
-            <i class="icon material-icons if-md">search</i></a>
-        <a class="link">Link 2</a>
-        <a class="link">Link 3</a>
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <img src="../assets/employers.svg" class="ft-img" alt="icon" width="50" height="50" />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+              <img src="../assets/circle.svg" class="ft-img" alt="icon" width="70" height="70"/>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chats/">
+            <img src="../assets/feedback.svg" class="ft-img" alt="icon" width="50" height="50" />
+          </a>
+        </div>
       </div>
-    </div>
+    </footer>
     <!-- End of footer -->
   </div>
 </template>
@@ -116,12 +118,15 @@
     top: 36px;
     right: 9px;
   }
+
+  .icon-ai {
+    position: absolute;
+    bottom: 0px;
+  }
 </style>
 
 <script>
   export default (props, { $, $on, $f7, $f7router }) => {
-    let jobs = [];
-    // Initialize the Swiper after the page is initialized
     $on("page:init", () => {
       const jwtToken = localStorage.getItem("jwt_token");
 
@@ -132,80 +137,7 @@
         );
         $f7router.navigate("/login");
         return;
-      }
-
-      $f7.dialog.preloader("Loading jobs...");
-
-      fetch(`http://127.0.0.1:8000/api/jobs/active`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${jwtToken}`,
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Jobs data: ", data);
-          jobs = data.randomFiveJobs || data;
-          renderSlides(jobs);
-          initSwiper();
-        })
-        .catch((error) => {
-          console.error("Fetch error:", error);
-          $f7.dialog.alert("Something wrong to fetch", "Error");
-        })
-        .finally(() => {
-          // ✅ Always close the preloader
-          $f7.dialog.close();
-        });
-      function renderSlides(jobs) {
-        const wrapper = document.querySelector(".swiper-wrapper");
-        wrapper.innerHTML = ""; // Clear existing slides
-
-        jobs.forEach((job) => {
-          const badge = job.job_world_type
-            ? '<span class="badge color-orange">national</span>'
-            : '<span class="badge color-blue">international</span>';
-          const slide = document.createElement("div");
-          slide.className = "swiper-slide";
-          slide.innerHTML = `
-            <div class="job-post">
-              ${badge}
-              <h3>${job.title} <br> <i><small class="font-sm w-200"> ${job.category.name}, ${job.sub_category.name}</small></i></h3>
-              <p>
-              <br>
-              ${job.country.name}, ${job.city.name}<br>
-              Company: ${job.company.name}<br>
-              </p>
-              <img src="http://127.0.0.1:8000/storage/${job.company.logo}" alt="${job.company.name}" class="rounded-circle pos_abs" width="60" height="60"/>
-              <a href="/job/${job.id}" class="button">View Details</a>
-            </div>
-          `;
-          wrapper.appendChild(slide);
-        });
-      }
-
-      function initSwiper() {
-        new Swiper(".swiper-container", {
-          slidesPerView: 1,
-          spaceBetween: 10,
-          loop: true,
-          pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
-          },
-          navigation: {
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
-          },
-        });
-      }
+      }      
     });
 
     return $render;

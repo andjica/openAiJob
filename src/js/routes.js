@@ -2,7 +2,9 @@ import HomePage from "../pages/home.f7";
 import MainPage from "../pages/main.f7";
 import ProfilePage from "../pages/profile.f7";
 import ActiveJob from "../pages/activeJob.f7";
-import SearchPage from "../pages/search.f7";
+import SearchJobsPage from "../pages/searchJob.f7";
+import ChatPage from "../pages/chats.f7";
+import AiPage from "../pages/ai.f7";
 
 import RegisterPage from "../pages/register.f7";
 import LoginPage from "../pages/login.f7";
@@ -44,8 +46,16 @@ var routes = [
     component: ActiveJob,
   },
   {
-    path: "/search/",
-    component: SearchPage,
+    path: "/searchJob/",
+    component: SearchJobsPage,
+  },
+  {
+    path: "/chats/",
+    component: ChatPage,
+  },
+  {
+    path: "/ai/",
+    component: AiPage,
   },
   {
     path: "(.*)",

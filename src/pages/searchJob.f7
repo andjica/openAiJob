@@ -1,0 +1,179 @@
+<template>
+  <div class="page" data-name="searchJob">
+    <!-- Begin of header -->
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text" id="activeJobTitle">Search Job</div>
+        </div>
+      </div>
+    </div>
+    <!-- End of header -->
+
+    <!-- Begin of content -->
+    <div class="page-content pt-30">
+      <div class="block">
+        <input type="text" class="search-input" placeholder="Search job" />
+
+        <!-- Swiper -->
+        <div class="swiper-container">
+          <div class="swiper-wrapper"></div>
+
+          <!-- Add Pagination and Navigation if needed -->
+          <div class="swiper-pagination"></div>
+          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev"></div>
+        </div>
+      </div>
+    </div>
+    <!-- End of content -->
+
+    <!-- Begin of footer -->
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <i class="icon f7-icons if-not-md">bag_fill</i>
+            <i class="icon material-icons if-md">shopping_bag</i>
+            <span>Jobs</span>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+            <i class="icon f7-icons if-not-md">cube</i>
+            <i class="icon material-icons if-md">smart_toy</i>
+            <span>AI</span>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chats/">
+            <i class="icon f7-icons if-not-md">chat_bubble_2</i>
+            <i class="icon material-icons if-md">chat</i>
+            <span>Chat</span>
+          </a>
+        </div>
+      </div>
+    </footer>
+    <!-- End of footer -->
+  </div>
+</template>
+<style>
+  .search-input {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 40px!important;
+    padding: 10px 16px!important;
+    font-size: 16px!important;
+    border: 1px solid #ccc!important;
+    border-radius: 25px!important;
+    outline: none!important;
+    transition: border-color 0.3s, box-shadow 0.3s!important;
+    background-color: #f9f9f9!important;
+    box-sizing: border-box!important;
+  }
+
+  .search-input:focus {
+    border-color: #3b82f6; /* Blue */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: #fff;
+  }
+</style>
+<script>
+  export default (props, { $, $on, $f7, $f7router }) => {
+    let jobs = [];
+    // Initialize the Swiper after the page is initialized
+    $on("page:init", () => {
+      const jwtToken = localStorage.getItem("jwt_token");
+
+      if (!jwtToken) {
+        $f7.dialog.alert(
+          "You are not logged in. Please login to continue.",
+          "Auth Error"
+        );
+        $f7router.navigate("/login");
+        return;
+      }
+
+      $f7.dialog.preloader("Loading jobs...");
+
+      fetch(`http://127.0.0.1:8000/api/jobs/active`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Jobs data: ", data);
+          jobs = data.randomFiveJobs || data;
+          renderSlides(jobs);
+          initSwiper();
+        })
+        .catch((error) => {
+          console.error("Fetch error:", error);
+          $f7.dialog.alert("Something wrong to fetch", "Error");
+        })
+        .finally(() => {
+          // ✅ Always close the preloader
+          $f7.dialog.close();
+        });
+      function renderSlides(jobs) {
+        const wrapper = document.querySelector(".swiper-wrapper");
+        wrapper.innerHTML = ""; // Clear existing slides
+
+        jobs.forEach((job) => {
+          const badge = job.job_world_type
+            ? '<span class="badge color-orange">national</span>'
+            : '<span class="badge color-blue">international</span>';
+          const slide = document.createElement("div");
+          slide.className = "swiper-slide";
+          slide.innerHTML = `
+            <div class="job-post">
+              ${badge}
+              <h3>${job.title} <br> <i><small class="font-sm w-200"> ${job.category.name}, ${job.sub_category.name}</small></i></h3>
+              <p>
+              <br>
+              ${job.country.name}, ${job.city.name}<br>
+              Company: ${job.company.name}<br>
+              </p>
+              <img src="http://127.0.0.1:8000/storage/${job.company.logo}" alt="${job.company.name}" class="rounded-circle pos_abs" width="60" height="60"/>
+              <a href="/job/${job.id}" class="button">View Details</a>
+            </div>
+          `;
+          wrapper.appendChild(slide);
+        });
+      }
+
+      function initSwiper() {
+        new Swiper(".swiper-container", {
+          slidesPerView: 1,
+          spaceBetween: 10,
+          loop: true,
+          pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+          },
+          navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+          },
+        });
+      }
+    });
+
+    return $render;
+  };
+</script>

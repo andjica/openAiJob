@@ -1,0 +1,59 @@
+<template>
+<div class="page" data-name="chats">
+    <!-- Begin of header -->
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text" id="activeJobTitle">Chats</div>
+        </div>
+      </div>
+    </div>
+    <!-- End of header -->
+     <!-- Begin of content -->
+    <div class="page-content pt-30">
+      <div class="block">
+      </div>
+      </div>
+      <!-- Begin of footer -->
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <i class="icon f7-icons if-not-md">bag_fill</i>
+            <i class="icon material-icons if-md">shopping_bag</i>
+            <span>Jobs</span>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+            <i class="icon f7-icons if-not-md">cube</i>
+            <i class="icon material-icons if-md">smart_toy</i>
+            <span>AI</span>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chats/">
+            <i class="icon f7-icons if-not-md">chat_bubble_2</i>
+            <i class="icon material-icons if-md">chat</i>
+            <span>Chat</span>
+          </a>
+        </div>
+      </div>
+    </footer>
+</div>
+</template>
+<style>
+
+</style>
+<script>
+    export default (props, { $, $on, $f7, $f7router }) => {
+        $on("page:init", () => {});
+        return $render;
+    }
+</script>

@@ -14,21 +14,36 @@
       </div>
     </div>
     <div class="page-content pt-60 pb-30">
-      <div class="block">
+      <div class="block mb-50">
         <div id="job-details"></div>
       </div>
     </div>
     <!-- Begin of footer -->
-    <div class="toolbar toolbar-bottom">
-      <div class="toolbar-inner plr-10">
-        <a href="/search/"
-          ><i class="icon f7-icons if-not-md">search</i>
-          <i class="icon material-icons if-md">search</i></a
-        >
-        <a class="link">Link 2</a>
-        <a class="link">Link 3</a>
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <i class="icon f7-icons if-not-md">bag_fill</i>
+            <i class="icon material-icons if-md">shopping_bag</i>
+            <span>Jobs</span>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+            <i class="icon f7-icons if-not-md">cube</i>
+            <i class="icon material-icons if-md">smart_toy</i>
+            <span>AI</span>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chats/">
+            <i class="icon f7-icons if-not-md">chat_bubble_2</i>
+            <i class="icon material-icons if-md">chat</i>
+            <span>Chat</span>
+          </a>
+        </div>
       </div>
-    </div>
+    </footer>
     <!-- End of footer -->
   </div>
 </template>
@@ -37,114 +52,132 @@
   .job__details {
     padding: 0 16px;
   }
+
   .job__section {
     margin-top: 20px;
   }
+
   .job__title--flex {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
+
   .job__valid-until {
     font-size: 0.9em;
     color: #888;
   }
 </style>
 <script>
-  export default (props, { $, $f7, $on, $f7router }) => {
-    $on("pageInit", async () => {
-      const jobId = $f7router.currentRoute.params.id;
-      console.log("Viewing job with ID:", jobId);
-      const jwtToken = localStorage.getItem("jwt_token");
-      const candidat = JSON.parse(localStorage.getItem("candidatProfile"));
-      console.log("Candidat id: ", candidat);
-      // Fetch and display job details
-      fetch(`http://127.0.0.1:8000/api/job/${jobId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${jwtToken}`,
-        },
+export default (props, { $, $f7, $on, $f7router }) => {
+  $on("pageInit", async () => {
+    const jobId = $f7router.currentRoute.params.id;
+    const jwtToken = localStorage.getItem("jwt_token");
+    const candidat = JSON.parse(localStorage.getItem("candidatProfile"));
+    let alreadyApplied = false;
+    $f7.dialog.preloader("Loading job...");
+    // Step 1: Check if already applied
+    try {
+      const checkResponse = await fetch(
+        `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidat.id}/apply`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      );
+      if (checkResponse.status === 409) {
+        alreadyApplied = true;
+      }
+    } catch (e) {
+      console.error("Error checking application status:", e);
+    }
+
+    // Step 2: Fetch and render job details
+    fetch(`http://127.0.0.1:8000/api/job/${jobId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch job");
+        return res.json();
       })
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch job");
-          return res.json();
-        })
-        .then((data) => {
-          console.log("Job details:", data);
+      .then((data) => {
+        $f7.dialog.close();
+        const job = data.job;
 
-          const job = data.job;
+        const requiredSkillsList = job.skills.filter(
+          (skill) => skill.is_required === 1
+        );
+        const requiredSkillsHTML = requiredSkillsList.length
+          ? `<ul>${requiredSkillsList
+              .map((skill) => `<li>${skill.skill}</li>`)
+              .join("")}</ul>`
+          : `<p><i>Not required</i></p>`;
 
-          // Prepare required skills
-          const requiredSkillsList = job.skills.filter(
-            (skill) => skill.is_required === 1
-          );
-          const requiredSkillsHTML = requiredSkillsList.length
-            ? `<ul>${requiredSkillsList
-                .map((skill) => `<li>${skill.skill}</li>`)
-                .join("")}</ul>`
-            : `<p><i>Not required</i></p>`;
+        const applyBtnHtml = alreadyApplied
+          ? `<a href="#" id="apply-btn" class="button button-fill disabled" disabled>Applied</a>`
+          : `<a href="#" id="apply-btn" class="button button-fill" data-id=${job.id}>Apply</a>`;
 
-          // Inject into DOM
-          $("#job-details").html(`
-      <div class="job__details">
-        <!-- Title and Valid Until -->
-        <div class="job__title--flex">
-          <h2>${job.title}</h2>
-          <p class="job__valid-until">Valid until: ${job.valid_until}</p>
-        </div>
+        $("#job-details").html(`
+          <div class="job__details">
+            <div class="job__title--flex">
+              <h2>${job.title}</h2>
+              <p class="job__valid-until">Valid until: ${job.valid_until}</p>
+            </div>
 
-        <!-- Description -->
-        <div class="job__section">
-          <h4>Description</h4>
-          <p>${job.description}</p>
-        </div>
+            <div class="job__section">
+              <h4>Description</h4>
+              <p>${job.description}</p>
+            </div>
 
-        <!-- Category Info -->
-        <div class="job__section">
-          <h4>Category</h4>
-          <p><strong>${job.category.name}</strong>, ${job.sub_category.name}</p>
-          <p>${job.category.description}</p>
-        </div>
+            <div class="job__section">
+              <h4>Category</h4>
+              <p><strong>${job.category.name}</strong>, ${job.sub_category.name}</p>
+              <p>${job.category.description}</p>
+            </div>
 
-        <!-- Location -->
-        <div class="job__section">
-          <h4>Location</h4>
-          <p>${job.country.name}, ${job.city.name}</p>
-        </div>
+            <div class="job__section">
+              <h4>Location</h4>
+              <p>${job.country.name}, ${job.city.name}</p>
+            </div>
 
-        <!-- Job Details -->
-        <div class="job__section">
-          <h4>Job Info</h4>
-          <p>Level: ${job.experience_level}</p>
-          <p>Type: ${job.job_type.name}</p>
-          <p>Salary: ${job.salary_min} - ${job.salary_max}</p>
-        </div>
+            <div class="job__section">
+              <h4>Job Info</h4>
+              <p>Level: ${job.experience_level}</p>
+              <p>Type: ${job.job_type.name}</p>
+              <p>Salary: ${job.salary_min} - ${job.salary_max}</p>
+            </div>
 
-        <!-- Skills -->
-        <div class="job__section">
-          <h4>Required Skills</h4>
-          ${requiredSkillsHTML}
-        </div>
+            <div class="job__section">
+              <h4>Required Skills</h4>
+              ${requiredSkillsHTML}
+            </div>
 
-        <!-- Apply Button -->
-        <div class="job__section">
-          <a href="#" id="apply-btn" class="button button-fill" data-id=${job.id}>Apply</a>
-        </div>
-      </div>
-    `);
-        })
-        .catch((err) => {
-          console.error("Job fetch error:", err);
-          $f7.dialog.alert("Unable to load job details", "Error");
-        });
+            <div class="job__section">
+              ${applyBtnHtml}
+            </div>
+          </div>
+        `);
+      })
+      .catch((err) => {
+        console.error("Job fetch error:", err);
+        $f7.dialog.alert("Unable to load job details", "Error");
+      });
 
-      // Set apply method to aplly for the job
-      $("#job-details").on("click", "#apply-btn", () => {
-        console.log("CLICK");
-        alert("CLICK");
-        fetch(
+    // Step 3: Handle Apply button click
+    $("#job-details").on("click", "#apply-btn", async () => {
+      if (alreadyApplied) return; // Prevent applying again
+
+      try {
+        const applyResponse = await fetch(
           `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidat.id}/apply`,
           {
             method: "POST",
@@ -155,25 +188,28 @@
             },
             body: JSON.stringify({ user_id: candidat.user_id }),
           }
-        )
-          .then((res) => {
-            if (!res.ok) throw new Error("Failed to apply for job");
-            return res.json();
-          })
-          .then((result) => {
-            console.log("Apply success:", result);
-            $f7.dialog.alert(
-              "You have successfully applied for this job!",
-              "Success"
-            );
-          })
-          .catch((err) => {
-            console.error("Job fetch error:", err);
-            $f7.dialog.alert("Unable to load job details", "Error");
-          });
-      });
-    });
+        );
 
-    return $render;
-  };
+        if (!applyResponse.ok) {
+          throw new Error("Failed to apply for job");
+        }
+
+        const result = await applyResponse.json();
+        $f7.dialog.alert(
+          "You have successfully applied for this job!",
+          "Success"
+        );
+
+        // Optional: Update button after applying
+        $("#apply-btn").text("Applied").addClass("disabled").attr("disabled", true);
+        alreadyApplied = true;
+      } catch (err) {
+        console.error(err);
+        $f7.dialog.alert("An error occurred. Please try again.", "Error");
+      }
+    });
+  });
+
+  return $render;
+};
 </script>
