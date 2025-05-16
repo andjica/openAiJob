@@ -1,5 +1,5 @@
 <template>
-  <div class="page" data-name="setting">
+  <div class="page" data-name="profile">
     <div class="navbar navbar-large">
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
@@ -325,14 +325,12 @@
 
   .item-content .form_select-control {
     width: 100%;
-    /* Make it responsive */
     height: auto;
     background-color: transparent !important;
     padding: 5px 0;
     font-size: 16px;
     font-weight: bold;
     color: #333;
-    /* Text color */
     outline: none;
     cursor: pointer;
   }
@@ -448,15 +446,14 @@
 
       if (!token || !user) return redirectToLogin();
       
-      if(candidat){
-          $f7.dialog.preloader("Loading person data...");
-      }
       
       let candidateProfile = null;
 
       try {
+        $f7.dialog.preloader("Loading person data...");
         candidateProfile = await fetchCandidateProfile(user.id, token);
         handleProfileStorage(candidateProfile);
+        $f7.dialog.close();
         await fetchAndPopulateCountry();
 
         if (candidateProfile?.is_finished_profile) {
@@ -478,8 +475,6 @@
       } catch (err) {
         console.error("Fetch error:", err);
         $f7.dialog.alert("Something went wrong while fetching data.", "Error");
-      } finally {
-        $f7.dialog.close(); // ✅ Close preloader in both success and error cases
       }
     });
 

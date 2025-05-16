@@ -43,6 +43,13 @@
   width: 100%;
 }
 
+.b-12 {
+  bottom: 12%;
+}
+.h-80 {
+  height: 80% !important;
+}
+
 .fontSize-18 {
   font-size: 18px !important;
 }
@@ -81,14 +88,14 @@
   position: fixed;
   bottom: 0;
   z-index: 1 !important;
-  background-color: #EAEEFA
+  background-color: #eaeefa;
 }
 
 .footer .footer-nav {
-      display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .footer-nav {
@@ -117,8 +124,7 @@
   color: black;
 }
 
-.ft-img
-{
-    position: absolute;
-    bottom: 20px;
+.ft-img {
+  position: absolute;
+  bottom: 20px;
 }

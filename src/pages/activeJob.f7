@@ -23,23 +23,35 @@
       <div class="footer-nav">
         <div class="trty">
           <a href="/searchJob/">
-            <i class="icon f7-icons if-not-md">bag_fill</i>
-            <i class="icon material-icons if-md">shopping_bag</i>
-            <span>Jobs</span>
+            <img
+              src="../assets/employers.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
           </a>
         </div>
         <div class="trty">
           <a href="/ai/">
-            <i class="icon f7-icons if-not-md">cube</i>
-            <i class="icon material-icons if-md">smart_toy</i>
-            <span>AI</span>
+            <img
+              src="../assets/circle.svg"
+              class="ft-img"
+              alt="icon"
+              width="70"
+              height="70"
+            />
           </a>
         </div>
         <div class="trty">
           <a href="/chats/">
-            <i class="icon f7-icons if-not-md">chat_bubble_2</i>
-            <i class="icon material-icons if-md">chat</i>
-            <span>Chat</span>
+            <img
+              src="../assets/feedback.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
           </a>
         </div>
       </div>
@@ -69,64 +81,70 @@
   }
 </style>
 <script>
-export default (props, { $, $f7, $on, $f7router }) => {
-  $on("pageInit", async () => {
-    const jobId = $f7router.currentRoute.params.id;
-    const jwtToken = localStorage.getItem("jwt_token");
-    const candidat = JSON.parse(localStorage.getItem("candidatProfile"));
-    let alreadyApplied = false;
-    $f7.dialog.preloader("Loading job...");
-    // Step 1: Check if already applied
-    try {
-      const checkResponse = await fetch(
-        `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidat.id}/apply`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Bearer ${jwtToken}`,
-          },
-        }
-      );
-      if (checkResponse.status === 409) {
-        alreadyApplied = true;
-      }
-    } catch (e) {
-      console.error("Error checking application status:", e);
-    }
-
-    // Step 2: Fetch and render job details
-    fetch(`http://127.0.0.1:8000/api/job/${jobId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch job");
-        return res.json();
-      })
-      .then((data) => {
-        $f7.dialog.close();
-        const job = data.job;
-
-        const requiredSkillsList = job.skills.filter(
-          (skill) => skill.is_required === 1
+  export default (props, { $, $f7, $on, $f7router }) => {
+    $on("pageInit", async () => {
+      const jobId = $f7router.currentRoute.params.id;
+      const jwtToken = localStorage.getItem("jwt_token");
+      const candidat = JSON.parse(localStorage.getItem("candidatProfile"));
+      let alreadyApplied = false;
+      $f7.dialog.preloader("Loading job...");
+      // Step 1: Check if already applied
+      try {
+        const checkResponse = await fetch(
+          `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidat.id}/apply`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          }
         );
-        const requiredSkillsHTML = requiredSkillsList.length
-          ? `<ul>${requiredSkillsList
-              .map((skill) => `<li>${skill.skill}</li>`)
-              .join("")}</ul>`
-          : `<p><i>Not required</i></p>`;
+        if (checkResponse.status === 409) {
+          alreadyApplied = true;
+        }
+      } catch (e) {
+        console.error("Error checking application status:", e);
+      }
 
-        const applyBtnHtml = alreadyApplied
-          ? `<a href="#" id="apply-btn" class="button button-fill disabled" disabled>Applied</a>`
-          : `<a href="#" id="apply-btn" class="button button-fill" data-id=${job.id}>Apply</a>`;
+      // Step 2: Fetch and render job details
+      fetch(`http://127.0.0.1:8000/api/job/${jobId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch job");
+          return res.json();
+        })
+        .then((data) => {
+          $f7.dialog.close();
+          const job = data.job;
+          console.log("Job details", job);
+          const requiredSkillsList = job.skills.filter(
+            (skill) => skill.is_required === 1
+          );
 
-        $("#job-details").html(`
+          const subCategory =
+            job.sub_category.name === "Other"
+              ? job.custom_subcategory
+              : job.sub_category.name;
+              
+          const requiredSkillsHTML = requiredSkillsList.length
+            ? `<ul>${requiredSkillsList
+                .map((skill) => `<li>${skill.skill}</li>`)
+                .join("")}</ul>`
+            : `<p><i>Not required</i></p>`;
+
+          const applyBtnHtml = alreadyApplied
+            ? `<a href="#" id="apply-btn" class="button button-fill disabled" disabled>Applied</a>`
+            : `<a href="#" id="apply-btn" class="button button-fill" data-id=${job.id}>Apply</a>`;
+
+          $("#job-details").html(`
           <div class="job__details">
             <div class="job__title--flex">
               <h2>${job.title}</h2>
@@ -140,7 +158,7 @@ export default (props, { $, $f7, $on, $f7router }) => {
 
             <div class="job__section">
               <h4>Category</h4>
-              <p><strong>${job.category.name}</strong>, ${job.sub_category.name}</p>
+              <p><strong>${job.category.name}</strong>, ${subCategory}</p>
               <p>${job.category.description}</p>
             </div>
 
@@ -166,50 +184,53 @@ export default (props, { $, $f7, $on, $f7router }) => {
             </div>
           </div>
         `);
-      })
-      .catch((err) => {
-        console.error("Job fetch error:", err);
-        $f7.dialog.alert("Unable to load job details", "Error");
-      });
+        })
+        .catch((err) => {
+          console.error("Job fetch error:", err);
+          $f7.dialog.alert("Unable to load job details", "Error");
+        });
 
-    // Step 3: Handle Apply button click
-    $("#job-details").on("click", "#apply-btn", async () => {
-      if (alreadyApplied) return; // Prevent applying again
+      // Step 3: Handle Apply button click
+      $("#job-details").on("click", "#apply-btn", async () => {
+        if (alreadyApplied) return; // Prevent applying again
 
-      try {
-        const applyResponse = await fetch(
-          `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidat.id}/apply`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              Authorization: `Bearer ${jwtToken}`,
-            },
-            body: JSON.stringify({ user_id: candidat.user_id }),
+        try {
+          const applyResponse = await fetch(
+            `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidat.id}/apply`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                Authorization: `Bearer ${jwtToken}`,
+              },
+              body: JSON.stringify({ user_id: candidat.user_id }),
+            }
+          );
+
+          if (!applyResponse.ok) {
+            throw new Error("Failed to apply for job");
           }
-        );
 
-        if (!applyResponse.ok) {
-          throw new Error("Failed to apply for job");
+          const result = await applyResponse.json();
+          $f7.dialog.alert(
+            "You have successfully applied for this job!",
+            "Success"
+          );
+
+          // Optional: Update button after applying
+          $("#apply-btn")
+            .text("Applied")
+            .addClass("disabled")
+            .attr("disabled", true);
+          alreadyApplied = true;
+        } catch (err) {
+          console.error(err);
+          $f7.dialog.alert("An error occurred. Please try again.", "Error");
         }
-
-        const result = await applyResponse.json();
-        $f7.dialog.alert(
-          "You have successfully applied for this job!",
-          "Success"
-        );
-
-        // Optional: Update button after applying
-        $("#apply-btn").text("Applied").addClass("disabled").attr("disabled", true);
-        alreadyApplied = true;
-      } catch (err) {
-        console.error(err);
-        $f7.dialog.alert("An error occurred. Please try again.", "Error");
-      }
+      });
     });
-  });
 
-  return $render;
-};
+    return $render;
+  };
 </script>

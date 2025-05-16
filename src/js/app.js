@@ -14,7 +14,7 @@ import store from './store.js';
 import App from '../app.f7';
 
 // Lista ruta koje su javne (bez autentifikacije)
-const publicRoutes = ['/', '/login', '/register', '/verify'];
+const publicRoutes = ['/', '/login', '/register', '/verify', '/profile'];
 
 // Helper: Provera da li je JWT token istekao
 function isTokenExpired(token) {
