@@ -1,6 +1,6 @@
 <template>
-    <div class="page" data-name="settings">
-        <div class="navbar navbar-large">
+  <div class="page" data-name="settings">
+    <div class="navbar navbar-large">
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
         <div class="left">
@@ -9,12 +9,237 @@
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text pl-0" id="activeJobTitle">Settings</div>
+          <div class="title-large-text pl-0" id="settingsTitle">Settings</div>
         </div>
       </div>
     </div>
     <div class="block pt-30">
-        <h1>This is Settings page</h1>
+      <div class="list list-strong-ios list-dividers-ios inset-ios">
+        <form id="uploadEmail" class="form__settings">
+          <div class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">Email</div>
+              <div class="item-input-wrap">
+                <input id="email-input" type="text" placeholder="Your email" />
+                <span class="input-clear-button"></span>
+              </div>
+            </div>
+          </div>
+
+          <button id="update-email-btn" class="button button-upload" disabled>
+            Update Email
+          </button>
+        </form>
+
+        <form id="uploadPassword" class="form__settings">
+          <div class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">Password</div>
+              <div class="item-input-wrap">
+                <input
+                  id="current-password"
+                  type="password"
+                  placeholder="Current password"
+                />
+                <span class="input-clear-button"></span>
+              </div>
+            </div>
+          </div>
+          <div class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">New Password</div>
+              <div class="item-input-wrap">
+                <input
+                  id="new-password"
+                  type="password"
+                  placeholder="Your new password"
+                />
+                <span class="input-clear-button"></span>
+              </div>
+            </div>
+          </div>
+          <div class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">Confirm New Password</div>
+              <div class="item-input-wrap">
+                <input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Confirm new password"
+                />
+                <span class="input-clear-button"></span>
+              </div>
+            </div>
+          </div>
+          <button
+            id="update-password-btn"
+            class="button button-upload"
+            disabled
+          >
+            Update Password
+          </button>
+        </form>
+      </div>
     </div>
-    </div>
+  </div>
 </template>
+
+<script>
+  export default (props, { $, $f7, $on, $f7router }) => {
+    let originalEmail = "";
+
+    $on("pageInit", () => {
+      // Load user from localStorage
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      originalEmail = user.email || "";
+
+      // Set email input initial value
+      $("#email-input").val(originalEmail);
+
+      // References to DOM elements
+      const $emailInput = $("#email-input");
+      const $updateEmailBtn = $("#update-email-btn");
+
+      // Enable/Disable update email button on input change
+      $emailInput.on("input", () => {
+        const currentEmail = $emailInput.val().trim();
+        if (currentEmail && currentEmail !== originalEmail) {
+          $updateEmailBtn.removeAttr("disabled");
+        } else {
+          $updateEmailBtn.attr("disabled", true);
+        }
+      });
+
+      // Confirm email update
+      $updateEmailBtn.on("click", (e) => {
+        e.preventDefault();
+        const confirmDialog = $f7.dialog.create({
+          title: "Confirm",
+          text: "Do you want to update email?",
+          buttons: [
+            {
+              text: "No",
+              close: true,
+              onClick: () => {
+                $emailInput.val(originalEmail);
+              },
+            },
+            {
+              text: "Yes",
+              bold: true,
+              onClick: () => {
+                originalEmail = $emailInput.val().trim();
+                $updateEmailBtn.addClass("disabled");
+                localStorage.setItem("newEmail", originalEmail);
+                localStorage.setItem("userVerify", 0);
+
+                fetch(`http://127.0.0.1:8000/api/verify/resend/${user.id}`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: user.email }),
+                });
+
+                $f7router.navigate("/verify/");
+                console.log("Email updated to:", originalEmail);
+              },
+            },
+          ],
+        });
+
+        confirmDialog.open();
+      });
+
+      // Setup password update form behavior
+      setupUploadPassword();
+
+      // --- function definitions ---
+
+      function setupUploadPassword() {
+        const $currentPass = $("#current-password");
+        const $newPass = $("#new-password");
+        const $confirmPass = $("#confirm-password");
+        const $updatePassBtn = $("#update-password-btn");
+
+        function checkPasswordFields() {
+          const currentPassVal = $currentPass.val().trim();
+          const newPassVal = $newPass.val().trim();
+          const confirmPassVal = $confirmPass.val().trim();
+
+          if (
+            currentPassVal &&
+            newPassVal &&
+            confirmPassVal &&
+            newPassVal === confirmPassVal
+          ) {
+            $updatePassBtn.removeAttr("disabled");
+          } else {
+            $updatePassBtn.attr("disabled", true);
+          }
+        }
+
+        $currentPass.on("input", checkPasswordFields);
+        $newPass.on("input", checkPasswordFields);
+        $confirmPass.on("input", checkPasswordFields);
+
+        $updatePassBtn.on("click", (e) => {
+          e.preventDefault();
+
+          const currentPassVal = $currentPass.val().trim();
+          const newPassVal = $newPass.val().trim();
+          const confirmPassVal = $confirmPass.val().trim();
+
+          if (!currentPassVal || !newPassVal || !confirmPassVal) {
+            $f7.ready(() => {
+              $f7.dialog.alert(
+                "All password fields are required.",
+                "Validation Error"
+              );
+            });
+            return;
+          }
+
+          if (newPassVal !== confirmPassVal) {
+            $f7.ready(() => {
+              $f7.dialog.alert(
+                "Passwords are not matched.",
+                "Validation Error"
+              );
+            });
+
+            return;
+          }
+
+          // TODO: Add API call here for password update
+          console.log("Password updated");
+
+          // Clear fields and disable button after update
+          $currentPass.val("");
+          $newPass.val("");
+          $confirmPass.val("");
+          $updatePassBtn.attr("disabled", true);
+        });
+      }
+    });
+
+    return $render;
+  };
+</script>
+
+<style>
+  .form__settings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .form__settings .item-content {
+    width: 100%;
+  }
+
+  .button-upload {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    width: 200px;
+  }
+</style>

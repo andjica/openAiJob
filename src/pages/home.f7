@@ -34,13 +34,20 @@
   export default (props, { $on, $f7router }) => {
     $on("pageInit", () => {
       const userVerify = localStorage.getItem("userVerify");
-      const user = localStorage.getItem("candidatProfile");
+      const candidate = localStorage.getItem("candidatProfile");
+      const user = JSON.parse(localStorage.getItem("user"));
       const token = localStorage.getItem("jwt_token");
       setTimeout(() => {
         if (!userVerify || !token) {
           $f7router.navigate("/login/", { reloadCurrent: true });
         }
         if (userVerify === "0") {
+          localStorage.setItem("userVerify", 0);
+          fetch(`http://127.0.0.1:8000/api/verify-user/${user?.id}/resend-code`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email })
+          });
           $f7router.navigate("/verify/", { reloadCurrent: true });
         } else if (user === "0") {
           $f7router.navigate("/profile/", { reloadCurrent: true });

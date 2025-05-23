@@ -1,6 +1,6 @@
 <template>
-    <div class="page" data-name="recruiterJob">
-        <div class="navbar navbar-large">
+  <div class="page" data-name="recruiterJob">
+    <div class="navbar navbar-large">
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
         <div class="left">
@@ -9,38 +9,20 @@
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text pl-0" id="activeJobTitle">Your apply Job</div>
+          <div class="title-large-text pl-0" id="activeJobTitle">
+            Your apply Job
+          </div>
         </div>
       </div>
     </div>
-     <!-- Begin of Content -->
+    <!-- Begin of Content -->
     <div class="block">
-        <div class="jobs-recrtuter mt-80">
-        <div class="job-post">
-          <div class="job-post__details">
-            national
-            <h3>Title</h3>
-            <br />
-            <button class="btn btn__pedding" disabled>In pending</button>
-            <button class="btn btn__process">In recruiter process</button>
-            <a href="/chats/">
-            <img
-              src="../assets/feedback.svg"
-              alt="icon"
-              width="30"
-              height="30"
-            />
-          </a>
-            <p>Company: Company name</p>
-            <br />
-            <img src="https://cdn.pixabay.com/photo/2015/04/23/22/00/new-year-background-736885_1280.jpg" alt="Company image" class="rounded-circle pos_abs" width="60" height="60"/>
-          </div>
-          <a href="#" class="button">View Proces</a>
-        </div>
-        </div>
+      <div class="jobs-recrtuter mt-80">
+        <div id="job-post" class="job-scroll"></div>
+      </div>
     </div>
     <!-- End of Content -->
-     <!-- Begin of footer -->
+    <!-- Begin of footer -->
     <footer class="footer">
       <div class="footer-nav">
         <div class="trty">
@@ -79,42 +61,189 @@
       </div>
     </footer>
     <!-- End of footer -->
-    </div>
+  </div>
 </template>
 
 <style>
-    .jobs-recrtuter{
-        position: relative;
-    }
+  .jobs-recrtuter {
+    position: relative;
+  }
 
-    .btn{
-          border-radius: 30px;
-          border: none;
-          width: 100px;
-          height: 36px;
-    }
+  .job-scroll {
+      max-height: 566px;
+      overflow-y: auto;
+  }
 
-    .btn__pedding{
-      background-color: #ebbf6c;
-    }
+  .job-post__details {
+    padding: 5px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+  }
 
-    .btn__process{
-      background-color: #21ec21;
-    }
+  .job-post__card {
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .job-post__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .job-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .company-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .job-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-top: 6px;
+  }
+
+  .job-post__status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .chat-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .job-location,
+  .job-company {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .view-process-btn {
+    margin-top: 10px;
+    width: 100%;
+    background: #007bff;
+  }
+
+  .btn {
+    border-radius: 30px;
+    border: none;
+    width: 100px;
+    height: 36px;
+  }
+
+  .btn__pedding {
+    background-color: #ebbf6c;
+  }
+
+  .btn__process {
+    background-color: #21ec21;
+  }
 </style>
 
 <script>
-export default (props, { $, $on, $f7, $f7router }) => {
-  $on("page:init", () => {
-    const jwtToken = localStorage.getItem("jwt_token");
-    if (!jwtToken) {
-      $f7.dialog.alert("You are not logged in. Please login to continue.", "Auth Error");
-      $f7router.navigate("/login/");
-      return;
-    }
-  });
+  export default (props, { $, $on, $f7, $f7router }) => {
+    $on("page:init", () => {
+      const jwtToken = localStorage.getItem("jwt_token");
+      let jobs = [];
 
-  // ✅ This correctly hooks into the <template> above
-  return $render;
-};
+      if (!jwtToken) {
+        $f7.dialog.alert(
+          "You are not logged in. Please login to continue.",
+          "Auth Error"
+        );
+        $f7router.navigate("/login/");
+        return;
+      }
+
+      const fetchApplyJob = () => {
+        fetch(`http://127.0.0.1:8000/api/applied-jobs`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        })
+          .then((response) => {
+            console.log("Response: ", response);
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            jobs = data.jobs;
+            console.log(jobs);
+            displayApplyJobs(jobs);
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+            $f7.dialog.alert("Something wrong to fetch", "Error");
+          });
+      };
+
+      const displayApplyJobs = (jobs) => {
+        const jobPosts = document.querySelector("#job-post");
+        jobPosts.innerHTML = ""; // clear any existing posts
+
+        jobs.forEach((jobWrapper) => {
+          const job = jobWrapper.job;
+
+          const status =
+            jobWrapper.status === "accept"
+              ? '<div class="status__accept"><button class="btn btn__process">In recruiter process</button><a href="/chats/" class="chat-link"><img src="../assets/feedback.svg" alt="Chat" class="chat-icon"/></a></div>'
+              : '<button class="btn btn__pedding" disabled>In pending</button>';
+
+          const national =
+            job.job_world_type === "national"
+              ? '<span class="badge color-orange">national</span>'
+              : '<span class="badge color-blue">international</span>';
+
+          const companyLogo = job.company?.logo ? `http://127.0.0.1:8000/storage/${job.company.logo}` : "";
+
+          const logoHTML = companyLogo
+          ? `<img src="${companyLogo}" alt="Company" class="company-logo" />`
+          : "";
+
+          const jobHTML = `
+          <div class="job-post__card">
+            <div class="job-post__header">
+              ${national}
+              ${logoHTML}
+            </div>
+            <h3 class="job-title">${job.title}</h3>
+            <p class="job-subtitle">${job.category.name}, ${job.sub_category.name}</p>
+            <div class="job-post__status">
+              ${status}
+            </div>
+            <p class="job-location">${job.country.name}, ${job.city.name}</p>
+            <p class="job-company">Company: <strong>${
+              job.company?.name ?? "Company name"
+            }</strong></p>
+            <a href="/recruiter-process/${job.id}" class="button button-small button-fill view-process-btn">View Process</a>
+          </div>
+        `;  
+
+          // Append job post
+          jobPosts.insertAdjacentHTML("beforeend", jobHTML);
+        });
+      };
+
+      fetchApplyJob();
+    });
+
+    return $render;
+  };
 </script>

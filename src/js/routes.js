@@ -4,6 +4,7 @@ import ProfilePage from "../pages/profile.f7";
 import ActiveJob from "../pages/activeJob.f7";
 import SearchJobsPage from "../pages/searchJob.f7";
 import ApplyJobPage from "../pages/applyJobs.f7";
+import RecruitmenProcessPage from "../pages/recruitmenProcess.f7";
 import SettingsPage from "../pages/settings.f7"
 import ChatPage from "../pages/chats.f7";
 import AiPage from "../pages/ai.f7";
@@ -54,6 +55,10 @@ var routes = [
   {
     path: "/applyJobs/",
     component: ApplyJobPage,
+  },
+  {
+    path: "/recruitmenProcess/:id",
+    component: RecruitmenProcessPage,
   },
   {
     path: "/settings/",

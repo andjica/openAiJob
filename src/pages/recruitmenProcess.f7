@@ -1,0 +1,75 @@
+<template>
+    <div class="page" data-name="recruitmenProcess">
+        <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text pl-0" id="recruitmenProcessTitle">
+            Your Process
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="block">
+        <h1>This is recruiter process</h1>
+    </div>
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <img
+              src="../assets/employers.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+            <img
+              src="../assets/circle.svg"
+              class="ft-img"
+              alt="icon"
+              width="70"
+              height="70"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chats/">
+            <img
+              src="../assets/feedback.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
+    </div>
+</template>
+
+<style>
+
+</style>
+
+<script>
+    export default(props, {$, $f7, $on, $f7router}) => {
+        $on("pageInit", async () => {
+            const jobId = $f7router.currentRoute.params.id;
+            console.log("Job id: ", jobId);
+            const jwtToken = localStorage.getItem("jwt_token");
+        })
+
+        return $render;
+    };
+</script>
