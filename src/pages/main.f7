@@ -225,3 +225,5 @@
     return $render;
   };
 </script>
+if(data.subCategory.name == "Other")
+data.custom_subcategory
