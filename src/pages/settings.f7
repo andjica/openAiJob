@@ -1,0 +1,20 @@
+<template>
+    <div class="page" data-name="settings">
+        <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text pl-0" id="activeJobTitle">Settings</div>
+        </div>
+      </div>
+    </div>
+    <div class="block pt-30">
+        <h1>This is Settings page</h1>
+    </div>
+    </div>
+</template>

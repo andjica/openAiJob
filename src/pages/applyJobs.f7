@@ -1,0 +1,120 @@
+<template>
+    <div class="page" data-name="recruiterJob">
+        <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text pl-0" id="activeJobTitle">Your apply Job</div>
+        </div>
+      </div>
+    </div>
+     <!-- Begin of Content -->
+    <div class="block">
+        <div class="jobs-recrtuter mt-80">
+        <div class="job-post">
+          <div class="job-post__details">
+            national
+            <h3>Title</h3>
+            <br />
+            <button class="btn btn__pedding" disabled>In pending</button>
+            <button class="btn btn__process">In recruiter process</button>
+            <a href="/chats/">
+            <img
+              src="../assets/feedback.svg"
+              alt="icon"
+              width="30"
+              height="30"
+            />
+          </a>
+            <p>Company: Company name</p>
+            <br />
+            <img src="https://cdn.pixabay.com/photo/2015/04/23/22/00/new-year-background-736885_1280.jpg" alt="Company image" class="rounded-circle pos_abs" width="60" height="60"/>
+          </div>
+          <a href="#" class="button">View Proces</a>
+        </div>
+        </div>
+    </div>
+    <!-- End of Content -->
+     <!-- Begin of footer -->
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <img
+              src="../assets/employers.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+            <img
+              src="../assets/circle.svg"
+              class="ft-img"
+              alt="icon"
+              width="70"
+              height="70"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chats/">
+            <img
+              src="../assets/feedback.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
+    <!-- End of footer -->
+    </div>
+</template>
+
+<style>
+    .jobs-recrtuter{
+        position: relative;
+    }
+
+    .btn{
+          border-radius: 30px;
+          border: none;
+          width: 100px;
+          height: 36px;
+    }
+
+    .btn__pedding{
+      background-color: #ebbf6c;
+    }
+
+    .btn__process{
+      background-color: #21ec21;
+    }
+</style>
+
+<script>
+export default (props, { $, $on, $f7, $f7router }) => {
+  $on("page:init", () => {
+    const jwtToken = localStorage.getItem("jwt_token");
+    if (!jwtToken) {
+      $f7.dialog.alert("You are not logged in. Please login to continue.", "Auth Error");
+      $f7router.navigate("/login/");
+      return;
+    }
+  });
+
+  // ✅ This correctly hooks into the <template> above
+  return $render;
+};
+</script>

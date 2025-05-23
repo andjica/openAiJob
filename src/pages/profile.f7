@@ -9,7 +9,7 @@
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text" id="profileTitle">Profile</div>
+          <div class="title-large-text pl-0" id="profileTitle">Profile</div>
         </div>
       </div>
     </div>
@@ -437,6 +437,7 @@
     text-transform: uppercase;
   }
 </style>
+
 <script>
   export default (props, { $, $f7, $on, $f7router }) => {
     $on("pageInit", async () => {

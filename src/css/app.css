@@ -1,7 +1,7 @@
 /* Your app custom styles here */
 
 .page {
-  background: white !important;
+  background: #ffffff !important;
 }
 
 .login-screen-title {
@@ -10,6 +10,45 @@
 
 .navbar-large .navbar-bg {
   height: 100%;
+}
+
+.panel {
+  background: #007bff !important;
+  color: #ffffff;
+}
+.sidebar__links {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 90%;
+  align-items: center;
+}
+
+.sidebar__item::after {
+  content: "arrow_forward";
+  font-family: "Material Icons";
+  font-size: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.sidebar__close {
+  text-align: right;
+  margin: 5px;
+  padding-bottom: 20px;
+}
+
+.sidebar__close > i {
+  font-size: 30px;
+}
+
+.sidebar__item > a {
+  font-size: 17px;
+  color: #ffffff;
+}
+
+.mt-80 {
+  margin-top: 80px;
 }
 
 .ml-5 {
@@ -28,9 +67,17 @@
   padding-top: 60px;
 }
 
+.pr-100 {
+  padding-right: 100px;
+}
+
 .pb-30 {
   padding-bottom: 30px;
 }
+.pl-0 {
+  padding-left: 0 !important;
+}
+
 .plr-10 {
   padding: 0 10px;
 }
@@ -82,7 +129,7 @@
 
 .footer {
   width: 100%;
-  color: white;
+  color: #ffffff;
   text-align: center;
   box-sizing: border-box;
   position: fixed;
@@ -115,13 +162,13 @@
 
 .trty i {
   font-size: 24px;
-  color: black;
+  color: #000000;
 }
 
 .trty span {
   font-size: 12px;
   margin-top: 4px;
-  color: black;
+  color: #000000;
 }
 
 .ft-img {
