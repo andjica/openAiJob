@@ -26,7 +26,7 @@
             </div>
           </div>
 
-          <button id="update-email-btn" class="button button-upload" disabled>
+          <button id="update-email-btn" class="button button-upload">
             Update Email
           </button>
         </form>
@@ -74,7 +74,6 @@
           <button
             id="update-password-btn"
             class="button button-upload"
-            disabled
           >
             Update Password
           </button>
@@ -86,54 +85,70 @@
 
 <script>
   export default (props, { $, $f7, $on, $f7router }) => {
-    let originalEmail = "";
-
     $on("pageInit", () => {
-      // Load user from localStorage
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      originalEmail = user.email || "";
-
-      // Set email input initial value
+      let originalEmail = user.email || "";
       $("#email-input").val(originalEmail);
 
-      // References to DOM elements
       const $emailInput = $("#email-input");
-      const $updateEmailBtn = $("#update-email-btn");
+      const $currentPassword = $("#current-password");
+      const $newPassword = $("#new-password");
+      const $confirmPassword = $("#confirm-password");
+      const $updatePasswordBtn = $("#update-password-btn");
 
-      // Enable/Disable update email button on input change
-      $emailInput.on("input", () => {
-        const currentEmail = $emailInput.val().trim();
-        if (currentEmail && currentEmail !== originalEmail) {
-          $updateEmailBtn.removeAttr("disabled");
-        } else {
-          $updateEmailBtn.attr("disabled", true);
+      $("#uploadEmail").on("submit", (e) => {
+        e.preventDefault();
+
+        const newEmail = $emailInput.val().trim();
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!newEmail) {
+          $f7.dialog.alert("Email is required.", "Validation Error");
+          return;
+        }else if(!re.test(newEmail)) {
+          $f7.dialog.alert("Email is not valid!");
+          return;
         }
+
+        showConfirmEmailDialog(newEmail);
       });
 
-      // Confirm email update
-      $updateEmailBtn.on("click", (e) => {
-        e.preventDefault();
-        const confirmDialog = $f7.dialog.create({
-          title: "Confirm",
-          text: "Do you want to update email?",
+      function showConfirmEmailDialog(email) {
+        $f7.dialog.create({
+          title: "Confirm Email Change",
+          text: `Are you sure you want to update your email to <b>${email}</b>?`,
           buttons: [
             {
               text: "No",
-              close: true,
+              color: "red",
               onClick: () => {
+                console.log("User canceled email update");
                 $emailInput.val(originalEmail);
               },
             },
             {
               text: "Yes",
-              bold: true,
+              close: true,
               onClick: () => {
-                originalEmail = $emailInput.val().trim();
-                $updateEmailBtn.addClass("disabled");
-                localStorage.setItem("newEmail", originalEmail);
-                localStorage.setItem("userVerify", 0);
+                updateEmail(email);
+              },
+            },
+          ],
+          verticalButtons: false,
+        }).open();
+      }
 
-                fetch(`http://127.0.0.1:8000/api/verify/resend/${user.id}`, {
+      function updateEmail(email) {
+        console.log("Email updated to:", email);
+        $f7.dialog.alert("Email has been updated!", "Success");
+
+        // Optionally save to localStorage
+        // const user = JSON.parse(localStorage.getItem("user") || "{}");
+        // user.email = email;
+        // localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("newEmail", originalEmail);
+        localStorage.setItem("userVerify", 0);
+        fetch(`http://127.0.0.1:8000/api/verify/resend/${user.id}`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: user.email }),
@@ -141,83 +156,57 @@
 
                 $f7router.navigate("/verify/");
                 console.log("Email updated to:", originalEmail);
-              },
-            },
-          ],
-        });
+      }
 
-        confirmDialog.open();
-      });
+      
+      $("#uploadPassword").on("submit", (e) => {
+        e.preventDefault();
+        const password = $currentPassword.val().trim();
+        const newPassword = $newPassword.val().trim();
+        const confirmPassword = $confirmPassword.val().trim();
 
-      // Setup password update form behavior
-      setupUploadPassword();
+        const errors = [];
 
-      // --- function definitions ---
-
-      function setupUploadPassword() {
-        const $currentPass = $("#current-password");
-        const $newPass = $("#new-password");
-        const $confirmPass = $("#confirm-password");
-        const $updatePassBtn = $("#update-password-btn");
-
-        function checkPasswordFields() {
-          const currentPassVal = $currentPass.val().trim();
-          const newPassVal = $newPass.val().trim();
-          const confirmPassVal = $confirmPass.val().trim();
-
-          if (
-            currentPassVal &&
-            newPassVal &&
-            confirmPassVal &&
-            newPassVal === confirmPassVal
-          ) {
-            $updatePassBtn.removeAttr("disabled");
-          } else {
-            $updatePassBtn.attr("disabled", true);
-          }
+        if (!password) {
+          errors.push("Current password is required!");
+        } else if (password.length < 6) {
+          errors.push("Current password must be at least 6 characters.");
         }
 
-        $currentPass.on("input", checkPasswordFields);
-        $newPass.on("input", checkPasswordFields);
-        $confirmPass.on("input", checkPasswordFields);
+        if (!newPassword) {
+          errors.push("New password is required!");
+        } else if (newPassword.length < 6) {
+          errors.push("New password must be at least 6 characters.");
+        }
 
-        $updatePassBtn.on("click", (e) => {
-          e.preventDefault();
+        if (!confirmPassword) {
+          errors.push("Confirm password is required!");
+        } else if (confirmPassword.length < 6) {
+          errors.push("Confirm password must be at least 6 characters.");
+        }
 
-          const currentPassVal = $currentPass.val().trim();
-          const newPassVal = $newPass.val().trim();
-          const confirmPassVal = $confirmPass.val().trim();
+        if (newPassword !== confirmPassword) {
+          errors.push("New password and confirm password do not match.");
+        }
 
-          if (!currentPassVal || !newPassVal || !confirmPassVal) {
-            $f7.ready(() => {
-              $f7.dialog.alert(
-                "All password fields are required.",
-                "Validation Error"
-              );
-            });
-            return;
-          }
+        updatePassword(errors, password, newPassword);
+      });
 
-          if (newPassVal !== confirmPassVal) {
-            $f7.ready(() => {
-              $f7.dialog.alert(
-                "Passwords are not matched.",
-                "Validation Error"
-              );
-            });
+      function updatePassword(errors, password, newPassword) {
+        if (errors.length > 0) {
+          $f7.dialog.alert(errors.join("<br>"), "Validation Error");
+          return;
+        }
 
-            return;
-          }
+        // Simulate a successful password update (you can replace with API call)
+        console.log("Password updated successfully");
 
-          // TODO: Add API call here for password update
-          console.log("Password updated");
+        $f7.dialog.alert("Password is updated!", "Success");
 
-          // Clear fields and disable button after update
-          $currentPass.val("");
-          $newPass.val("");
-          $confirmPass.val("");
-          $updatePassBtn.attr("disabled", true);
-        });
+        // Optionally clear fields
+        $currentPassword.val("");
+        $newPassword.val("");
+        $confirmPassword.val("");
       }
     });
 
