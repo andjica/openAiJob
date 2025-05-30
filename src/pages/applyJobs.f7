@@ -9,7 +9,7 @@
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text pl-0" id="activeJobTitle">
+          <div class="title-large-text pl-0" id="activeApplyTitle">
             Your apply Job
           </div>
         </div>
@@ -48,7 +48,7 @@
           </a>
         </div>
         <div class="trty">
-          <a href="/chats/">
+          <a href="/chatList/">
             <img
               src="../assets/feedback.svg"
               class="ft-img"
@@ -70,8 +70,8 @@
   }
 
   .job-scroll {
-      max-height: 566px;
-      overflow-y: auto;
+    max-height: 566px;
+    overflow-y: auto;
   }
 
   .job-post__details {
@@ -177,7 +177,6 @@
           },
         })
           .then((response) => {
-            console.log("Response: ", response);
             if (!response.ok) {
               throw new Error("Network response was not ok");
             }
@@ -185,7 +184,6 @@
           })
           .then((data) => {
             jobs = data.jobs;
-            console.log(jobs);
             displayApplyJobs(jobs);
           })
           .catch((error) => {
@@ -197,34 +195,37 @@
       const displayApplyJobs = (jobs) => {
         const jobPosts = document.querySelector("#job-post");
         jobPosts.innerHTML = ""; // clear any existing posts
+        if (jobs.length > 0) {
+          jobs.forEach((jobWrapper) => {
+            const job = jobWrapper.job;
+            const status =
+              jobWrapper.status === "accept"
+                ? `<div class="status__accept"><button class="btn btn__process">In recruiter process</button><a href="/chatroom/${job.recruiter.user_id}" class="chat-link"><img src="../assets/feedback.svg" alt="Chat" class="chat-icon"/></a></div>`
+                : '<button class="btn btn__pedding" disabled>In pending</button>';
 
-        jobs.forEach((jobWrapper) => {
-          const job = jobWrapper.job;
+            const national =
+              job.job_world_type === "national"
+                ? '<span class="badge color-orange">national</span>'
+                : '<span class="badge color-blue">international</span>';
 
-          const status =
-            jobWrapper.status === "accept"
-              ? '<div class="status__accept"><button class="btn btn__process">In recruiter process</button><a href="/chats/" class="chat-link"><img src="../assets/feedback.svg" alt="Chat" class="chat-icon"/></a></div>'
-              : '<button class="btn btn__pedding" disabled>In pending</button>';
+            const companyLogo = job.company?.logo
+              ? `http://127.0.0.1:8000/storage/${job.company.logo}`
+              : "";
 
-          const national =
-            job.job_world_type === "national"
-              ? '<span class="badge color-orange">national</span>'
-              : '<span class="badge color-blue">international</span>';
+            const logoHTML = companyLogo
+              ? `<img src="${companyLogo}" alt="Company" class="company-logo" />`
+              : "";
 
-          const companyLogo = job.company?.logo ? `http://127.0.0.1:8000/storage/${job.company.logo}` : "";
-
-          const logoHTML = companyLogo
-          ? `<img src="${companyLogo}" alt="Company" class="company-logo" />`
-          : "";
-
-          const jobHTML = `
+            const jobHTML = `
           <div class="job-post__card">
             <div class="job-post__header">
               ${national}
               ${logoHTML}
             </div>
             <h3 class="job-title">${job.title}</h3>
-            <p class="job-subtitle">${job.category.name}, ${job.sub_category.name}</p>
+            <p class="job-subtitle">${job.category.name}, ${
+              job.sub_category.name
+            }</p>
             <div class="job-post__status">
               ${status}
             </div>
@@ -232,13 +233,22 @@
             <p class="job-company">Company: <strong>${
               job.company?.name ?? "Company name"
             }</strong></p>
-            <a href="/recruiter-process/${job.id}" class="button button-small button-fill view-process-btn">View Process</a>
+            <a href="/recruiter-process/${
+              job.id
+            }" class="button button-small button-fill view-process-btn">View Process</a>
           </div>
-        `;  
+        `;
 
-          // Append job post
-          jobPosts.insertAdjacentHTML("beforeend", jobHTML);
-        });
+            // Append job post
+            jobPosts.insertAdjacentHTML("beforeend", jobHTML);
+          });
+        } else {
+          const jobHTML = `
+          <div class="job-post__card">
+            <h4>You didn't apply in any jobs</h4>
+          </div>`;
+          jobPosts.innerHTML = jobHTML;
+        }
       };
 
       fetchApplyJob();

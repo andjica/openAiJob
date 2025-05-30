@@ -1,25 +1,28 @@
-import $ from 'dom7';
-import Framework7 from 'framework7/bundle';
+import Framework7, { getDevice } from "framework7/bundle";
 
 // Import F7 Styles
-import 'framework7/css/bundle';
+import "framework7/css/bundle";
 
 // Import Icons and App Custom Styles
-import '../css/icons.css';
-import '../css/app.css';
+import "../css/icons.css";
+import "../css/app.css";
 
 // Import Routes
-import routes from './routes.js';
-import store from './store.js';
-import App from '../app.f7';
+import routes from "./routes.js";
+import store from "./store.js";
+import App from "../app.f7";
+
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
 // Lista ruta koje su javne (bez autentifikacije)
-const publicRoutes = ['/', '/login', '/register', '/verify', '/profile'];
+const publicRoutes = ["/", "/login", "/register", "/verify", "/profile"];
 
+let device = getDevice();
 // Helper: Provera da li je JWT token istekao
 function isTokenExpired(token) {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     const now = Math.floor(Date.now() / 1000);
     return payload.exp < now;
   } catch (err) {
@@ -29,60 +32,167 @@ function isTokenExpired(token) {
 
 // Inicijalizuj Framework7 aplikaciju
 var app = new Framework7({
-  name: 'openAiJob',
-  theme: 'auto',
-  el: '#app',
+  name: "openAiJob",
+  theme: "auto",
+  el: "#app",
   component: App,
   store: store,
   routes: routes,
+  input: {
+    scrollIntoViewOnFocus: device.cordova,
+    scrollIntoViewCentered: device.cordova,
+  },
+  statusbar: {
+    iosOverlaysWebView: true,
+    androidOverlaysWebView: true,
+  },
+  on: {
+    init: function () {
+      if (window.cordova) cordovaApp.init(this);
+    },
+  },
 });
-
-// Globalni fetch wrapper za API pozive sa JWT
-window.apiFetch = async function (url, options = {}) {
-  const token = localStorage.getItem('jwt_token');
-  const headers = options.headers || {};
-
-  if (token) {
-    headers['Authorization'] = 'Bearer ' + token;
-  }
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    if (response.status === 401) {
-      localStorage.removeItem('jwt_token');
-      app.dialog.alert('Session expired. Please login again.', () => {
-        if (app.views.main?.router) {
-          app.views.main.router.navigate('/login');
-        }
-      });
-      return;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('API Error:', error);
-    app.dialog.alert('API Error: ' + error.message);
-  }
-};
-
-// Globalna provera tokena pri promeni rute
-app.on('init', () => {
+app.on("pageInit", () => {
   const mainRouter = app.views.main?.router;
-
+  // alert(3);
   if (mainRouter) {
-    mainRouter.on('routeChange', (to, from) => {
-      const token = localStorage.getItem('jwt_token');
+    mainRouter.on("routeChange", (to, from) => {
+      const token = localStorage.getItem("jwt_token");
 
       if (publicRoutes.includes(to.url)) return;
 
       if (!token || isTokenExpired(token)) {
-        localStorage.removeItem('jwt_token');
-        mainRouter.navigate('/login');
+        localStorage.removeItem("jwt_token");
+        mainRouter.navigate("/login");
+        return;
+      }
+
+      window.initEcho();
+
+      const chatRouteMatch = to.url.match(/^\/chatroom\/([^/]+)\/?$/);
+      if (chatRouteMatch) {
+        const chatId = chatRouteMatch[1];
+        localStorage.setItem("active_chat_id", chatId);
+        console.log("🟢 Ušao u chat sa ID: " + chatId);
       }
     });
   }
+
+  app.on("pageBeforeOut", (page) => {
+    if (page.route.url && page.route.url.includes("/chatroom/")) {
+      localStorage.setItem("active_chat_id", 0);
+      console.log("🚪 Napustio chat – obrisan active_chat_id");
+    }
+  });
 });
+window.Pusher = Pusher;
+let echoInitialized = false;
+
+window.initEcho = function () {
+  const token = localStorage.getItem("jwt_token");
+
+  if (!token || echoInitialized) return;
+
+  if (window.Echo && window.Echo.connector) {
+    try {
+      window.Echo.disconnect();
+    } catch (e) {}
+  }
+
+  window.Pusher = Pusher;
+
+  window.Echo = new Echo({
+    broadcaster: "pusher",
+    key: "localkey",
+    cluster: "mt1",
+    wsHost: "127.0.0.1",
+    wsPort: 6001,
+    forceTLS: false,
+    encrypted: false,
+    disableStats: true,
+    enabledTransports: ["ws"],
+    authEndpoint: "http://127.0.0.1/broadcasting/auth",
+    auth: {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    },
+  });
+
+  // document.addEventListener("deviceready", () => {
+  //   const ws = new WebSocket(
+  //     "ws://api.unisharp.nl:6001/app/local?protocol=7&client=js&version=8.4.0&flash=false"
+  //   );
+
+  //   ws.onopen = () => alert("✅ WebSocket connected iz APK!");
+  //   ws.onerror = (e) => alert("❌ WebSocket error: " + JSON.stringify(e));
+  // });
+
+  window.Echo.connector.pusher.connection.bind("connected", () => {
+    console.log("🟢 Echo povezan!");
+    initGlobalMessageListener();
+  });
+
+  echoInitialized = true;
+  console.log("✅ Echo je inicijalizovan sa tokenom:", token);
+};
+
+// Globalna provera tokena pri promeni rute
+
+function initGlobalMessageListener() {
+  if (window.globalListenerAttached) return;
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  console.log("app.js ", user);
+
+  const myId = user.id;
+  console.log("🔍 Pozvana initGlobalMessageListener");
+
+  if (window.globalListenerAttached) {
+    console.log("⛔ Listener već aktivan – izlazim");
+    return;
+  }
+
+
+  console.log("🔍 LocalStorage user:", user);
+
+  if (!user || !user.id) {
+    console.log("⛔ Nema user-a ili nema ID – izlazim");
+    return;
+  }
+  console.log("📡 Subscribujem se na chat." + myId);
+
+  console.log("🔊 Listening on chat." + myId);
+
+  window.Echo.private(`chat.${myId}`)
+    .listen(".MessageSent", (msg) => {
+      console.log("📥 Nova poruka stigla:", msg);
+      alert("poruka");
+      // ⛔ Ako smo trenutno u chatu sa tim korisnikom – ne inkrementiraj
+      const activeChatId = parseInt(
+        localStorage.getItem("active_chat_id") || "0"
+      );
+      if (msg.sender_id == activeChatId) {
+        console.log("⏭️ Poruka je iz aktivnog chata – ne brojim kao unread.");
+        return;
+      }
+
+      let count = parseInt(localStorage.getItem("unread_count")) || 0;
+      count++;
+      localStorage.setItem("unread_count", count);
+
+      let map = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
+      map[msg.sender_id] = (map[msg.sender_id] || 0) + 1;
+      localStorage.setItem("unread_sender_map", JSON.stringify(map));
+
+      window.updateGlobalUnreadBadge?.();
+      window.refreshUnreadInMatchRows?.();
+
+      if (typeof window.chatAddMessageUI === "function") {
+        window.chatAddMessageUI(msg);
+      }
+    })
+    .error((err) => console.error("❌ Echo error:", err));
+
+  window.globalListenerAttached = true;
+}

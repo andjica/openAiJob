@@ -125,10 +125,7 @@
                   >Upload Image</label
                 >
                 <input type="file" id="profile_image" accept="image/*" hidden />
-                <span
-                  id="profile_filename"
-                  style="font-size: 12px; color: #555"
-                ></span>
+                <div id="image_file"></div>
               </div>
             </li>
           </ul>
@@ -446,8 +443,7 @@
       const candidat = localStorage.getItem("candidatProfile");
 
       if (!token || !user) return redirectToLogin();
-      
-      
+
       let candidateProfile = null;
 
       try {
@@ -526,7 +522,7 @@
       const user = getUser();
       if (user) {
         $("#full-name").val(`${user.first_name} ${user.last_name}`);
-        $("#email").val(user.email);
+        $("#email").val(user.email || profile.user.email);
       }
 
       $("#phoneNumber").on("input", function () {
@@ -549,8 +545,51 @@
       $("#phoneNumber").val(cleanPhone);
       $("#phone-code").text(`+${phoneCode}`);
 
+      // CV file
+      if (profile.cv) {
+        const fileName = profile.cv.split("/").pop();
+        const fileUrl = `http://127.0.0.1:8000/api/candidat/${profile.cv}`;
+        const fullName = `${profile.user.first_name} ${profile.user.last_name}`;
+
+        const span = document.getElementById("cv_filename");
+        if (span) {
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.target = "_blank";
+          link.download = fileName;
+          link.style.color = "#007aff";
+          link.id = "cv_filename";
+          link.textContent = `${fullName} - CV`;
+
+          span.parentNode.replaceChild(link, span);
+        }
+      }
+
+      // Image file
       if (profile.profile_image) {
-        $("#profile_image_preview").attr("src", profile.profile_image);
+        const defaultImage = "../assets/user-default.png";
+        const imageUrl = profile.profile_image
+          ? `http://127.0.0.1:8000/storage/${profile.profile_image}`
+          : defaultImage;
+        console.log(imageUrl)
+        const imageSpan = document.getElementById("image_file");
+
+        // Clear previous image if any
+        imageSpan.innerHTML = "";
+
+        // Create and inject image
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.alt = "Profile";
+        img.id = "profile_image_preview";
+        img.style.width = "120px";
+        img.style.height = "120px";
+        img.style.objectFit = "cover";
+        img.style.borderRadius = "50%";
+        img.style.margin = "10px 0";
+        img.style.border = "1px solid grey";
+
+        imageSpan.appendChild(img);
       }
 
       const fields = [
@@ -582,19 +621,53 @@
     };
 
     const bindFileInputs = () => {
-      const bind = (inputId, labelId) => {
+      const bind = (inputId, labelId, onChangeCallback) => {
         const input = document.getElementById(inputId);
         const label = document.getElementById(labelId);
         if (input && label) {
           input.addEventListener("change", () => {
             const file = input.files[0];
+            alert(file);
             if (file) label.textContent = file.name;
+            if (onChangeCallback) onChangeCallback(file);
           });
         }
       };
 
-      bind("profile_image", "profile_filename");
-      bind("cv_upload", "cv_filename");
+      bind("profile_image", null, (file) => {
+        const imageSpan = document.getElementById("image_file");
+        if (!imageSpan) return;
+
+        imageSpan.innerHTML = "";
+
+        const img = document.createElement("img");
+        const objectUrl = URL.createObjectURL(file);
+        img.src = `${objectUrl}#${Date.now()}`;
+        img.alt = "Profile Preview";
+        img.id = "profile_image_preview";
+        img.style.width = "120px";
+        img.style.height = "120px";
+        img.style.objectFit = "cover";
+        img.style.borderRadius = "50%";
+        img.style.margin = "10px 0";
+        img.style.border = "1px solid grey";
+
+        img.onload = () => URL.revokeObjectURL(objectUrl);
+
+        imageSpan.appendChild(img);
+      });
+
+      bind("cv_upload", "cv_filename", (file) => {
+        const label = document.getElementById("cv_filename");
+        const profile = JSON.parse(localStorage.getItem("candidatProfile"));
+        const firstName = profile?.user?.first_name || "First";
+        const lastName = profile?.user?.last_name || "Last";
+
+        if (file && label) {
+          const fullName = `${firstName} ${lastName}`;
+          label.textContent = `${fullName} - CV`;
+        }
+      });
     };
 
     const fetchAndPopulateCountry = async () => {
@@ -716,7 +789,7 @@
       }
     };
 
-    const handleSubmit = async (userId, token) => {
+    const handleSubmit = (userId, token) => {
       const errors = validateForm();
       if (errors.length > 0) {
         const msgHtml = errors
@@ -729,33 +802,52 @@
       const formData = buildFormData(userId);
       const preloader = $f7.dialog.preloader("Updating...");
 
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/candidat/profile/update/${userId}`,
-          {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
+      fetch(`http://127.0.0.1:8000/api/candidat/profile/update/${userId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to save user profile!");
           }
-        );
+          return response.json();
+        })
+        .then((data) => {
+          localStorage.setItem(
+            "candidatProfile",
+            JSON.stringify(data?.candidateProfile?.original?.data)
+          );
+          $f7.dialog.close();
+          $f7.dialog.alert(data.message, "Update");
+          const url= data?.candidateProfile?.original?.data.profile_image;
+          if (url) {
+            const imageUrl = `http://127.0.0.1:8000/storage/${url}`;
+            const imageSpan = document.getElementById("image_file");
+            imageSpan.innerHTML = "";
 
-        if (!response.ok) throw new Error("Failed to save user profile!");
+            const img = document.createElement("img");
+            img.src = imageUrl;
+            img.alt = "Profile";
+            img.id = "profile_image_preview";
+            img.style.width = "120px";
+            img.style.height = "120px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "50%";
+            img.style.margin = "10px 0";
+            img.style.border = "1px solid grey";
 
-        const data = await response.json();
-        localStorage.setItem(
-          "candidatProfile",
-          JSON.stringify(data?.candidateProfile?.original?.data)
-        );
-        $f7.dialog.close();
-        $f7router.navigate("/main/");
-      } catch (err) {
-        console.error("Submit error:", err);
-        $f7.dialog.close();
-        $f7.dialog.alert(
-          "Something went wrong while submitting the profile.",
-          "Error"
-        );
-      }
+            imageSpan.appendChild(img);
+          }
+        })
+        .catch((err) => {
+          console.error("Submit error:", err);
+          $f7.dialog.close();
+          $f7.dialog.alert(
+            "Something went wrong while submitting the profile.",
+            "Error"
+          );
+        });
     };
 
     const validateForm = () => {
@@ -796,9 +888,13 @@
         "School year end must be a 4-digit year."
       );
 
-      const cv = document.getElementById("cv_upload")?.files[0];
-      if (!cv || cv.size > 5 * 1024 * 1024)
+      const cvInput = document.getElementById("cv_upload");
+      const cvFile = cvInput?.files[0];
+      const cvLink = document.querySelector("#cv_filename[href]"); // check if it's a link
+
+      if ((!cvFile && !cvLink) || (cvFile && cvFile.size > 5 * 1024 * 1024)) {
         errors.push("CV is required and must be under 5MB.");
+      }
 
       return errors;
     };
@@ -835,8 +931,8 @@
     };
 
     const logout = () => {
-      ["jwt_token", "user", "userVerify", "userId, candidatProfile"].forEach((key) =>
-        localStorage.removeItem(key)
+      ["jwt_token", "user", "userVerify", "userId, candidatProfile"].forEach(
+        (key) => localStorage.removeItem(key)
       );
       $f7router.navigate("/login/");
     };

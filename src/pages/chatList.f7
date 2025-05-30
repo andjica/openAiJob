@@ -1,0 +1,148 @@
+<template>
+  <div class="page" data-name="chatList">
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text" id="chatListTitle">Chat List</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block">
+        <div id="recuiter-chat"></div>
+      </div>
+    </div>
+    <!-- Begin of footer -->
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <img
+              src="../assets/employers.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+            <img
+              src="../assets/circle.svg"
+              class="ft-img"
+              alt="icon"
+              width="70"
+              height="70"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chatList/">
+            <img
+              src="../assets/feedback.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
+    <!-- End of footer -->
+  </div>
+</template>
+<style>
+  .recruiter-chat__card{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .message-sent .message-bubble {
+    background: #7f7fea !important;
+  }
+</style>
+<script>
+  export default (props, { $f7, $el, $on, $ }) => {
+    $on("pageInit", () => {
+      const jwtToken = localStorage.getItem("jwt_token");
+      console.log(jwtToken);
+      if (!jwtToken) {
+        console.error("No JWT token found.");
+        $f7.dialog.alert("You are not authenticated", "Error");
+        return;
+      }
+
+      const fetchRecruiter = () => {
+        fetch(`http://127.0.0.1:8000/api/applied-jobs`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            displayRecruiter(data.jobs);
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+            $f7.dialog.alert("Something wrong to fetch", "Error");
+          });
+      };
+
+      const displayRecruiter = (recruiters) => {
+        console.log(recruiters);
+        const jobPosts = document.querySelector("#recuiter-chat");
+        const acceptJobs = recruiters.filter(j => j.status === "accept");
+        console.log(acceptJobs);
+        jobPosts.innerHTML = ""; // clear any existing posts
+        if (acceptJobs.length > 0) {
+          acceptJobs.forEach((recruiter) => {
+            console.log("Job details: ", recruiter);
+
+            const jobHTML = `
+          <div class="recruiter-chat__card">
+            <h1>${recruiter.job.job_world_type}</h1>
+            <a class="button button-small button-fill view-process-btn" href="${recruiter.job.id}">Chat</a>
+          </div>
+        `;
+
+            // Append recruiter chat
+            jobPosts.insertAdjacentHTML("beforeend", jobHTML);
+          });
+        } else {
+          const jobHTML = `
+          <div class="recruiter-chat__card">
+            <h4>You didn't apply in any jobs</h4>
+          </div>`;
+          jobPosts.innerHTML = jobHTML;
+        }
+      };
+
+
+      fetchRecruiter();
+    });
+
+    $on('pageBeforeOut', () => {
+  if (document.activeElement) {
+    document.activeElement.blur();
+  }
+});
+
+
+    return $render;
+  };
+</script>

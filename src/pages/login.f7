@@ -155,6 +155,7 @@
               const userId = data.user.id;
 
               localStorage.setItem("jwt_token", data.jwt_token);
+              // window.initEcho();
               localStorage.setItem("user", JSON.stringify(data.user));
               localStorage.setItem("userVerify", "1");
               localStorage.setItem("candidatProfile", 0);

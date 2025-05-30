@@ -4,7 +4,7 @@
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
         <div class="left">
-          <a id="backLink" href="#" class="link back">
+          <a href="/main/" class="link back">
             <i class="icon icon-back"></i>
           </a>
         </div>
@@ -71,10 +71,7 @@
               </div>
             </div>
           </div>
-          <button
-            id="update-password-btn"
-            class="button button-upload"
-          >
+          <button id="update-password-btn" class="button button-upload">
             Update Password
           </button>
         </form>
@@ -87,6 +84,18 @@
   export default (props, { $, $f7, $on, $f7router }) => {
     $on("pageInit", () => {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const jwtToken = localStorage.getItem("jwt_token");
+      console.log(user);
+      if (!jwtToken) {
+        $f7.dialog.alert(
+          "You are not logged in. Please login to continue.",
+          "Auth Error"
+        );
+        localStorage.clear();
+        $f7router.navigate("/login");
+        return;
+      }
+
       let originalEmail = user.email || "";
       $("#email-input").val(originalEmail);
 
@@ -105,8 +114,11 @@
         if (!newEmail) {
           $f7.dialog.alert("Email is required.", "Validation Error");
           return;
-        }else if(!re.test(newEmail)) {
+        } else if (!re.test(newEmail)) {
           $f7.dialog.alert("Email is not valid!");
+          return;
+        } else if(newEmail === originalEmail) {
+          $f7.dialog.alert("Email has not change.", "No Update Needed");
           return;
         }
 
@@ -114,51 +126,45 @@
       });
 
       function showConfirmEmailDialog(email) {
-        $f7.dialog.create({
-          title: "Confirm Email Change",
-          text: `Are you sure you want to update your email to <b>${email}</b>?`,
-          buttons: [
-            {
-              text: "No",
-              color: "red",
-              onClick: () => {
-                console.log("User canceled email update");
-                $emailInput.val(originalEmail);
+        $f7.dialog
+          .create({
+            title: "Confirm Email Change",
+            text: `Are you sure you want to update your email to <b>${email}</b>?`,
+            buttons: [
+              {
+                text: "No",
+                color: "red",
+                onClick: () => {
+                  console.log("User canceled email update");
+                  $emailInput.val(originalEmail);
+                },
               },
-            },
-            {
-              text: "Yes",
-              close: true,
-              onClick: () => {
-                updateEmail(email);
+              {
+                text: "Yes",
+                close: true,
+                onClick: () => {
+                  updateEmail(email);
+                },
               },
-            },
-          ],
-          verticalButtons: false,
-        }).open();
+            ],
+            verticalButtons: false,
+          })
+          .open();
       }
 
       function updateEmail(email) {
         console.log("Email updated to:", email);
-        $f7.dialog.alert("Email has been updated!", "Success");
+        const user = JSON.parse(localStorage.getItem("user"));
+        localStorage.setItem("newEmail", email);
+        fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email }),
+        });
 
-        // Optionally save to localStorage
-        // const user = JSON.parse(localStorage.getItem("user") || "{}");
-        // user.email = email;
-        // localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("newEmail", originalEmail);
-        localStorage.setItem("userVerify", 0);
-        fetch(`http://127.0.0.1:8000/api/verify/resend/${user.id}`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email: user.email }),
-                });
-
-                $f7router.navigate("/verify/");
-                console.log("Email updated to:", originalEmail);
+        $f7router.navigate("/verifyUpdate/");
       }
 
-      
       $("#uploadPassword").on("submit", (e) => {
         e.preventDefault();
         const password = $currentPassword.val().trim();
@@ -192,21 +198,51 @@
         updatePassword(errors, password, newPassword);
       });
 
-      function updatePassword(errors, password, newPassword) {
+      async function updatePassword(errors, password, newPassword) {
         if (errors.length > 0) {
           $f7.dialog.alert(errors.join("<br>"), "Validation Error");
           return;
         }
 
-        // Simulate a successful password update (you can replace with API call)
-        console.log("Password updated successfully");
+        try {
+          const url = `http://127.0.0.1:8000/api/update-password`;
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify({
+              current_password: password,
+              new_password: newPassword,
+              confirm_password: newPassword,
+            }),
+          });
 
-        $f7.dialog.alert("Password is updated!", "Success");
+          const data = await response.json();
+          console.log(data);
+          if (response.ok) {
+            $f7.dialog.alert(
+              data.message,
+              "Success"
+            );
 
-        // Optionally clear fields
-        $currentPassword.val("");
-        $newPassword.val("");
-        $confirmPassword.val("");
+            // Clear input fields if you're using jQuery references like:
+            $("#currentPassword").val("");
+            $("#newPassword").val("");
+            $("#confirmPassword").val("");
+
+            $f7router.navigate("/main/");
+          } else {
+            $f7.dialog.alert(
+              data.error || "Failed to update password.",
+              "Error"
+            );
+          }
+        } catch (error) {
+          console.error("Password update error:", error);
+          $f7.dialog.alert("Something went wrong. Please try again.", "Error");
+        }
       }
     });
 

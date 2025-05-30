@@ -10,7 +10,7 @@
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text" id="activeJobTitle">Search Job</div>
+          <div class="title-large-text" id="activeSearchTitle">Search Job</div>
         </div>
       </div>
     </div>
@@ -39,7 +39,7 @@
           </a>
         </div>
         <div class="trty">
-          <a href="/chats/">
+          <a href="/chatList/">
             <img src="../assets/feedback.svg" class="ft-img" alt="icon" width="50" height="50" />
           </a>
         </div>

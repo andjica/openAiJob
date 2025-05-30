@@ -1,0 +1,239 @@
+<template>
+  <div class="page" data-name="chatroom">
+    <!-- Begin of header -->
+    <div class="navbar navbar-large">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left">
+          <a id="backLink" href="#" class="link back">
+            <i class="icon icon-back"></i>
+          </a>
+        </div>
+        <div class="title-large setting__title">
+          <div class="title-large-text" id="activeChatTitle">Chat Room</div>
+        </div>
+      </div>
+    </div>
+    <!-- End of header -->
+    <div class="block h-100">
+      <div class="page-content messages-content pt-60 h-74">
+        <div class="messages"></div>
+      </div>
+      <div
+        class="toolbar messagebar b-12"
+        @messagebar:attachmentdelete="${deleteAttachment}"
+      >
+        <div class="toolbar-inner mt-100">
+          <div class="messagebar-area">
+            <textarea class="resizable" placeholder="Message"></textarea>
+          </div>
+          <a
+            class="link icon-only demo-send-message-link"
+            @click="${sendMessage}"
+          >
+            <i class="icon f7-icons if-not-md">arrow_up_circle_fill</i>
+            <i class="icon material-icons md-only">send</i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- Begin of footer -->
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/searchJob/">
+            <img
+              src="../assets/employers.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/ai/">
+            <img
+              src="../assets/circle.svg"
+              class="ft-img"
+              alt="icon"
+              width="70"
+              height="70"
+            />
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chatList/">
+            <img
+              src="../assets/feedback.svg"
+              class="ft-img"
+              alt="icon"
+              width="50"
+              height="50"
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
+    <!-- End of footer -->
+  </div>
+</template>
+
+<style>
+  .h-100 {
+    height: 100%;
+  }
+  .h-74 {
+    height: 74%;
+  }
+  .mt-100 {
+    margin-top: 100px;
+  }
+  .message-sent {
+    text-align: right;
+  }
+  .message-received {
+    text-align: left;
+  }
+  .message-bubble {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: #eee;
+    /* max-width: 75%; */
+  }
+  .message-sent .message-bubble {
+    background: #005bc1;
+  }
+
+  .message.no-radius .message-bubble {
+    border-radius: 20px !important;
+  }
+</style>
+
+<script>
+  export default (props, { $, $f7, $on, $f7router }) => {
+    let jwtToken = localStorage.getItem("jwt_token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    console.log("USER: ", user);
+    const deleteAttachment = (e, index) => {
+      var image = messagebar.attachments.splice(index, 1)[0];
+      messagebar.renderAttachments();
+      checkAttachments();
+      // Uncheck in sheet
+    };
+    const checkAttachments = () => {
+      if (messagebar.attachments.length > 0) {
+        messagebar.attachmentsShow();
+        messagebar.setPlaceholder("Add comment or Send");
+      } else {
+        messagebar.attachmentsHide();
+        messagebar.setPlaceholder("Message");
+      }
+    };
+
+    const escapeHtml = (unsafe) => {
+      if (!unsafe) return "";
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+
+    const fetchMessage = (receiverId) => {
+      fetch(`http://127.0.0.1:8000/api/messages/${receiverId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          renderMessages(data);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch messages:", err);
+        });
+    };
+
+    const renderMessages = (messages) => {
+      const messagesContainer = document.querySelector(".messages");
+      messagesContainer.innerHTML = "";
+      const currentUserId = user.id;
+
+      messages.forEach((msg) => {
+        if (!msg.text) return;
+        const isSent = msg.user_id === currentUserId;
+        const messageEl = document.createElement("div");
+        messageEl.className = `message ${
+          isSent ? "message-sent" : "message-received"
+        } no-radius`;
+        messageEl.innerHTML = `
+        <div class="message-content">
+            <div class="message-bubble">
+            <div class="message-text">${escapeHtml(msg.text)}</div>
+            </div>
+        </div>
+        `;
+
+        messagesContainer.appendChild(messageEl);
+      });
+
+      // Scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
+    const sendMessage = () => {
+      const textarea = document.querySelector(".messagebar textarea");
+      const message = textarea.value.trim();
+      const recruiterId = $f7router.currentRoute.params.id;
+
+      if (!message) return;
+      fetch("http://127.0.0.1:8000/api/store/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({
+          text: message,
+          receiver_id: Number(recruiterId),
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            // Throw error for non-2xx HTTP status
+            return response.json().then((err) => {
+              throw err;
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Message sent:", data);
+          textarea.value = "";
+          fetchMessage(recruiterId);
+          textarea.focus();
+        })
+        .catch((error) => {
+          console.error("Failed to send message:", error);
+        });
+    };
+
+    $on("pageMounted", (e, page) => {
+      const recruiterId = page.route.params.id;
+      console.log("Recruiter ID:", recruiterId);
+
+      const titleEl = document.getElementById("activeChatTitle");
+      if (titleEl) {
+        titleEl.textContent = `Chat Room - #${recruiterId}`;
+      }
+
+      fetchMessage(recruiterId);
+    });
+    return $render;
+  };
+</script>

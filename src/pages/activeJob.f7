@@ -9,7 +9,7 @@
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text" id="activeJobTitle">Active Job</div>
+          <div class="title-large-text" id="activeTitle">Active Job</div>
         </div>
       </div>
     </div>
@@ -86,6 +86,16 @@
       const jobId = $f7router.currentRoute.params.id;
       const jwtToken = localStorage.getItem("jwt_token");
       const candidat = JSON.parse(localStorage.getItem("candidatProfile"));
+      if (!jwtToken) {
+        $f7.dialog.alert(
+          "You are not logged in. Please login to continue.",
+          "Auth Error"
+        );
+        localStorage.clear();
+        $f7router.navigate("/login");
+        return;
+      }
+      
       let alreadyApplied = false;
       $f7.dialog.preloader("Loading job...");
       // Step 1: Check if already applied
@@ -124,7 +134,6 @@
         .then((data) => {
           $f7.dialog.close();
           const job = data.job;
-          console.log("Job details", job);
           const requiredSkillsList = job.skills.filter(
             (skill) => skill.is_required === 1
           );

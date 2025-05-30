@@ -80,7 +80,7 @@
           </a>
         </div>
         <div class="trty">
-          <a href="/chats/">
+          <a href="/chatList/">
             <img
               src="../assets/feedback.svg"
               class="ft-img"
@@ -177,11 +177,13 @@
       const jwtToken = localStorage.getItem("jwt_token");
 
       if (!jwtToken) {
+        localStorage.clear();
+        $f7router.navigate("/login");
         $f7.dialog.alert(
           "You are not logged in. Please login to continue.",
           "Auth Error"
         );
-        $f7router.navigate("/login");
+        
         return;
       }
 
@@ -265,5 +267,3 @@
     return $render;
   };
 </script>
-if(data.subCategory.name == "Other")
-data.custom_subcategory

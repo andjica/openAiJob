@@ -1,7 +1,7 @@
 <template>
   <div class="page" data-name="register">
     <div class="page-content">
-      <div class="login-screen-title">
+      <div class="register-screen-title">
         <img src="./assets/images/logo1.png" width="150px" />
       </div>
       <form id="registerForm">
@@ -204,6 +204,11 @@
 </script>
 
 <style>
+    .register-screen-title {
+    margin-top: 30%;
+    height: 10%;
+    text-align: center;
+  }
   .register-button {
     border-radius: 5px;
     max-width: 200px;

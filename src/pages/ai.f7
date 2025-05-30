@@ -5,12 +5,12 @@
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
         <div class="left">
-          <a id="backLink" href="#" class="link back">
+          <a id="backLink" href="/main/" class="link back">
             <i class="icon icon-back"></i>
           </a>
         </div>
         <div class="title-large setting__title">
-          <div class="title-large-text" id="activeJobTitle">AI</div>
+          <div class="title-large-text" id="aiTitle">AI</div>
         </div>
       </div>
     </div>
