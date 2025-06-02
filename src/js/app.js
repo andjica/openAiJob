@@ -101,23 +101,25 @@ window.initEcho = function () {
 
   window.Pusher = Pusher;
 
-  window.Echo = new Echo({
-    broadcaster: "pusher",
-    key: "localkey",
-    cluster: "mt1",
-    wsHost: "127.0.0.1",
-    wsPort: 6001,
-    forceTLS: false,
-    encrypted: false,
-    disableStats: true,
-    enabledTransports: ["ws"],
-    authEndpoint: "http://127.0.0.1/broadcasting/auth",
-    auth: {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
+window.Echo = new Echo({
+  broadcaster: 'pusher',
+  key: 'localkey',
+  cluster: 'mt1',
+  wsHost: '127.0.0.1:8000',
+  wsPort: 6001,
+  forceTLS: false,
+  encrypted: false,
+  disableStats: false,
+  enabledTransports: ['ws'],
+  authEndpoint: 'http://127.0.0.1:8000/broadcasting/auth',
+  auth: {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  });
+  },
+});
+
+
 
   // document.addEventListener("deviceready", () => {
   //   const ws = new WebSocket(

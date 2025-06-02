@@ -170,6 +170,7 @@
       }
 
       const fetchApplyJob = () => {
+        $f7.dialog.preloader("Loading applied jobs...");
         fetch(`http://127.0.0.1:8000/api/applied-jobs`, {
           method: "GET",
           headers: {
@@ -189,27 +190,40 @@
           .catch((error) => {
             console.error("Fetch error:", error);
             $f7.dialog.alert("Something wrong to fetch", "Error");
+          })
+          .finally(() => {
+            // ✅ Always close the preloader
+            $f7.dialog.close();
           });
       };
 
       const displayApplyJobs = (jobs) => {
         const jobPosts = document.querySelector("#job-post");
         jobPosts.innerHTML = ""; // clear any existing posts
+
         if (jobs.length > 0) {
           jobs.forEach((jobWrapper) => {
-            const job = jobWrapper.job;
             const status =
-              jobWrapper.status === "accept"
-                ? `<div class="status__accept"><button class="btn btn__process">In recruiter process</button><a href="/chatroom/${job.recruiter.user_id}" class="chat-link"><img src="../assets/feedback.svg" alt="Chat" class="chat-icon"/></a></div>`
+              jobWrapper.pivot.status === "accept"
+                ? `<div class="status__accept"><button class="btn btn__process">In recruiter process</button><a href="/chatroom/${jobWrapper.recruiter.user_id}" class="chat-link"><img src="../assets/feedback.svg" alt="Chat" class="chat-icon"/></a></div>`
                 : '<button class="btn btn__pedding" disabled>In pending</button>';
 
+            const linkToProccess = `
+        <button 
+          class="button button-small button-fill view-process-btn" 
+          data-job-id="${jobWrapper.pivot.id}" 
+          data-status="${jobWrapper.pivot.status}"
+        >
+          View Process
+        </button>`;
+
             const national =
-              job.job_world_type === "national"
+              jobWrapper.job_world_type === "national"
                 ? '<span class="badge color-orange">national</span>'
                 : '<span class="badge color-blue">international</span>';
 
-            const companyLogo = job.company?.logo
-              ? `http://127.0.0.1:8000/storage/${job.company.logo}`
+            const companyLogo = jobWrapper.company?.logo
+              ? `http://127.0.0.1:8000/storage/${jobWrapper.company.logo}`
               : "";
 
             const logoHTML = companyLogo
@@ -217,36 +231,50 @@
               : "";
 
             const jobHTML = `
-          <div class="job-post__card">
-            <div class="job-post__header">
-              ${national}
-              ${logoHTML}
-            </div>
-            <h3 class="job-title">${job.title}</h3>
-            <p class="job-subtitle">${job.category.name}, ${
-              job.sub_category.name
-            }</p>
-            <div class="job-post__status">
-              ${status}
-            </div>
-            <p class="job-location">${job.country.name}, ${job.city.name}</p>
-            <p class="job-company">Company: <strong>${
-              job.company?.name ?? "Company name"
-            }</strong></p>
-            <a href="/recruiter-process/${
-              job.id
-            }" class="button button-small button-fill view-process-btn">View Process</a>
+        <div class="job-post__card">
+          <div class="job-post__header">
+            ${national}
+            ${logoHTML}
           </div>
-        `;
+          <h3 class="job-title">${jobWrapper.title}</h3>
+          <p class="job-subtitle">${jobWrapper.category.name}, ${
+              jobWrapper.sub_category.name
+            }</p>
+          <div class="job-post__status">
+            ${status}
+          </div>
+          <p class="job-location">${jobWrapper.country.name}, ${
+              jobWrapper.city.name
+            }</p>
+          <p class="job-company">Company: <strong>${
+            jobWrapper.company?.name ?? "Company name"
+          }</strong></p>
+          ${linkToProccess}
+        </div>
+      `;
 
-            // Append job post
             jobPosts.insertAdjacentHTML("beforeend", jobHTML);
+          });
+
+          // ✅ AFTER all job HTML is rendered:
+          const viewButtons = jobPosts.querySelectorAll(".view-process-btn");
+          viewButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const status = btn.dataset.status;
+              const jobId = btn.dataset.jobId;
+
+              if (status === "accept") {
+                $f7router.navigate(`/recruitment/status/${jobId}`);
+              } else {
+                $f7.dialog.alert("The process is not started");
+              }
+            });
           });
         } else {
           const jobHTML = `
-          <div class="job-post__card">
-            <h4>You didn't apply in any jobs</h4>
-          </div>`;
+      <div class="job-post__card">
+        <h4>You didn't apply in any jobs</h4>
+      </div>`;
           jobPosts.innerHTML = jobHTML;
         }
       };

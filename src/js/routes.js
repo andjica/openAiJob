@@ -63,7 +63,7 @@ var routes = [
     component: ApplyJobPage,
   },
   {
-    path: "/recruitmenProcess/:id",
+    path: "/recruitment/status/:id",
     component: RecruitmenProcessPage,
   },
   {

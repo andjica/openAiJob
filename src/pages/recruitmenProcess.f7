@@ -1,6 +1,6 @@
 <template>
-    <div class="page" data-name="recruitmenProcess">
-        <div class="navbar navbar-large">
+  <div class="page" data-name="recruitmenProcess">
+    <div class="navbar navbar-large">
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
         <div class="left">
@@ -15,8 +15,14 @@
         </div>
       </div>
     </div>
-    <div class="block">
-        <h1>This is recruiter process</h1>
+    <div class="block mt-80">
+      <div class="phases">
+        <h2 id="selection-title">Selection Phase</h2>
+        <div id="selection-phase"></div>
+
+        <h2 id="offer-title">Offer Stage</h2>
+        <div id="offer-stage"></div>
+      </div>
     </div>
     <footer class="footer">
       <div class="footer-nav">
@@ -55,21 +61,140 @@
         </div>
       </div>
     </footer>
-    </div>
+  </div>
 </template>
 
 <style>
+  .phases {
+    overflow-y: auto;
+    max-height: 568px;
+  }
 
+  .current-phase {
+    border: 2px solid #21ec21 !important;
+  }
+
+  .phases__card-content {
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .phases__card-content h3 {
+    text-align: center;
+    padding: 5px 0;
+  }
+
+  .phases__link {
+    text-align: center;
+  }
 </style>
 
 <script>
-    export default(props, {$, $f7, $on, $f7router}) => {
-        $on("pageInit", async () => {
-            const jobId = $f7router.currentRoute.params.id;
-            console.log("Job id: ", jobId);
-            const jwtToken = localStorage.getItem("jwt_token");
-        })
+  export default (props, { $, $f7, $on, $f7router }) => {
+    $on("pageInit", async () => {
+      const jobId = $f7router.currentRoute.params.id;
+      console.log("Job id: ", jobId);
+      const jwtToken = localStorage.getItem("jwt_token");
 
-        return $render;
-    };
+      const fetchRecruitmentJobProcess = () => {
+        $f7.dialog.preloader("Loading phases process...");
+        fetch(`http://127.0.0.1:8000/api/recruitment/status/${jobId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const recruitmentProcess = data;
+            console.log("Recruitment Process: ", recruitmentProcess);
+            const selectionPhases = recruitmentProcess.subphases.filter(
+              (sub) => sub.phase === "selection"
+            );
+            const offerPhases = recruitmentProcess.subphases.filter(
+              (sub) => sub.phase === "offer_stage"
+            );
+
+            const selectionTitle = document.getElementById("selection-title");
+            const offerTitle = document.getElementById("offer-title");
+
+            const isPhaseFinished = (phases) =>
+              phases.length > 0 && phases.every((p) => p.completed === 1);
+
+            const currentPhase = recruitmentProcess.current_phase;
+
+            if (isPhaseFinished(selectionPhases)) {
+              selectionTitle.textContent += " - finished";
+            }
+            if (currentPhase === "selection") {
+              selectionTitle.textContent += " - current";
+            }
+
+            // OFFER STAGE
+            if (isPhaseFinished(offerPhases)) {
+              offerTitle.textContent += " - finished";
+            }
+            if (currentPhase === "offer_stage") {
+              offerTitle.textContent += " - current";
+            }
+
+            const currentSubphase = recruitmentProcess.current_subphase;
+
+            const renderSubphases = (targetId, subphases) => {
+              const container = document.querySelector(targetId);
+              container.innerHTML = "";
+
+              if (subphases.length === 0) {
+                container.innerHTML = "<p>No items in this phase.</p>";
+                return;
+              }
+
+              subphases.forEach((sub) => {
+                const feedback = sub?.completed
+                  ? `<p><strong>Feedback:</strong> ${sub.feedback ?? "N/A"}</p>`
+                  : "";
+                const isCurrent = sub.completed ? "" : "current-phase";
+
+                const html = ` <div class="card">
+          <div class="phases__card-content ${isCurrent}">
+            <h3>${sub.subphase_name}</h3>
+            <p><strong>Title:</strong> ${sub.meeting_title}</p>
+            <p><strong>Scheduled at:</strong> ${sub.scheduled_at}</p>
+            <p><strong>Completed:</strong> ${sub.completed ? "Yes" : "No"}</p>
+            ${feedback}
+            <p class="phases__link"><a href="${
+              sub.meeting_link
+            }" target="_blank">Meeting Link</a></p>
+          </div>
+        </div>`;
+
+                container.insertAdjacentHTML("beforeend", html);
+              });
+            };
+            renderSubphases("#selection-phase", selectionPhases);
+            renderSubphases("#offer-stage", offerPhases);
+          })
+          .catch((error) => {
+            console.error("Fetch error:", error);
+            $f7.dialog.alert("Something wrong to fetch", "Error");
+          })
+          .finally(() => {
+            // ✅ Always close the preloader
+            $f7.dialog.close();
+          });
+      };
+
+      fetchRecruitmentJobProcess();
+    });
+
+    return $render;
+  };
 </script>
