@@ -75,7 +75,7 @@
           </a>
         </div>
         <div class="trty">
-          <a href="/chats/">
+          <a href="/chatList/">
             <img
               src="../assets/feedback.svg"
               class="ft-img"
@@ -83,6 +83,8 @@
               width="50"
               height="50"
             />
+            <span id="unread-badge" style="display: none; position: absolute; background: red; color: white;"
+                class="badge unread-badge">0</span>
           </a>
         </div>
       </div>
@@ -95,6 +97,8 @@
 </style>
 <script>
 export default (props, { $f7, $el, $on, $ }) => {
+
+  window.updateGlobalUnreadBadge?.();
     const people = [
       {
         name: "Kate Johnson",

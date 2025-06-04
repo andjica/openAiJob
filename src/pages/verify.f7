@@ -195,7 +195,9 @@
           localStorage.setItem("userVerify", 1);
           localStorage.setItem("candidatProfile", 0);
           clearInterval(timerInterval);
-          $f7router.navigate("/profile/");
+          $f7.dialog.alert(data.message, "Update", () => {
+            $f7router.navigate("/profile/");
+          });
         } else {
           const errorData = await response.json();
           $f7.dialog.alert(errorData?.error || "Verification failed.");

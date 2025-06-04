@@ -101,25 +101,23 @@ window.initEcho = function () {
 
   window.Pusher = Pusher;
 
-window.Echo = new Echo({
-  broadcaster: 'pusher',
-  key: 'localkey',
-  cluster: 'mt1',
-  wsHost: '127.0.0.1:8000',
-  wsPort: 6001,
-  forceTLS: false,
-  encrypted: false,
-  disableStats: false,
-  enabledTransports: ['ws'],
-  authEndpoint: 'http://127.0.0.1:8000/broadcasting/auth',
-  auth: {
-    headers: {
-      Authorization: `Bearer ${token}`,
+  window.Echo = new Echo({
+    broadcaster: "pusher",
+    key: "localkey",
+    cluster: "mt1",
+    wsHost: "127.0.0.1",
+    wsPort: 6001,
+    forceTLS: false,
+    encrypted: false,
+    disableStats: true,
+    enabledTransports: ["ws"],
+    authEndpoint: "http://127.0.0.1:8000/api/broadcasting/auth",
+    auth: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     },
-  },
-});
-
-
+  });
 
   // document.addEventListener("deviceready", () => {
   //   const ws = new WebSocket(
@@ -147,14 +145,14 @@ function initGlobalMessageListener() {
   const user = JSON.parse(localStorage.getItem("user"));
   console.log("app.js ", user);
 
-  const myId = user.id;
+  const myId = user?.id;
+  console.log("myId: ", myId);
   console.log("🔍 Pozvana initGlobalMessageListener");
 
   if (window.globalListenerAttached) {
     console.log("⛔ Listener već aktivan – izlazim");
     return;
   }
-
 
   console.log("🔍 LocalStorage user:", user);
 
@@ -169,15 +167,24 @@ function initGlobalMessageListener() {
   window.Echo.private(`chat.${myId}`)
     .listen(".MessageSent", (msg) => {
       console.log("📥 Nova poruka stigla:", msg);
-      alert("poruka");
-      // ⛔ Ako smo trenutno u chatu sa tim korisnikom – ne inkrementiraj
-      const activeChatId = parseInt(
-        localStorage.getItem("active_chat_id") || "0"
-      );
-      if (msg.sender_id == activeChatId) {
-        console.log("⏭️ Poruka je iz aktivnog chata – ne brojim kao unread.");
+      // alert("poruka");
+      // Preskoči ako je poruka od mene (sender) ili ako sam ja receiver ali sam u tom chatu
+      if (msg.sender_id === myId) {
+        console.log("⏭️ Poruka je poslana od mene – ne brojim kao unread.");
         return;
       }
+
+      // ⛔ Ako smo trenutno u chatu sa tim korisnikom – ne inkrementiraj
+      // const activeChatId = parseInt(
+      //   localStorage.getItem("active_chat_id") || "0"
+      // );
+
+      // console.log(activeChatId);
+
+      // if (msg.sender_id === activeChatId || msg.receiver_id === activeChatId) {
+      //   console.log("⏭️ Poruka je iz aktivnog chata – ne brojim kao unread.");
+      //   return;
+      // }
 
       let count = parseInt(localStorage.getItem("unread_count")) || 0;
       count++;
@@ -198,3 +205,86 @@ function initGlobalMessageListener() {
 
   window.globalListenerAttached = true;
 }
+
+// 🔴 UNREAD BADGE
+window.updateGlobalUnreadBadge = function () {
+  let count = parseInt(localStorage.getItem("unread_count")) || 0;
+  let unreadMap = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
+
+  const myId = JSON.parse(localStorage.getItem("user"))?.id;
+
+  // Ukloni unread count za sebe (poruke koje si ti poslao)
+  if (myId && unreadMap[myId]) {
+    count -= unreadMap[myId]; // oduzmi od ukupnog count-a
+    delete unreadMap[myId]; // ukloni iz mape
+  }
+
+  // Update localStorage da bude konzistentno
+  localStorage.setItem("unread_count", count);
+  localStorage.setItem("unread_sender_map", JSON.stringify(unreadMap));
+
+  const badges = document.getElementsByClassName("unread-badge");
+
+  for (let i = 0; i < badges.length; i++) {
+    badges[i].textContent = count > 0 ? count : "";
+    badges[i].style.display = count > 0 ? "inline-block" : "none";
+  }
+
+  document.querySelectorAll(".match-row").forEach((row) => {
+    const btn = row.querySelector("a[data-id]");
+    const id = btn?.dataset?.id;
+    if (id && unreadMap[id]) {
+      let span = btn.querySelector(".unread-count");
+      if (!span) {
+        span = document.createElement("span");
+        span.className = "unread-count";
+        btn.appendChild(span);
+      }
+      span.textContent = `${unreadMap[id]} new`;
+      row.querySelector(".name").style.fontWeight = "bold";
+    }
+  });
+};
+
+window.refreshUnreadInMatchRows = function () {
+  window.updateGlobalUnreadBadge();
+};
+
+// 🔄 UNREAD COUNT FETCH
+window.updateUnreadCount = async function () {
+  try {
+    const activeChatId = parseInt(
+      localStorage.getItem("active_chat_id") || "0"
+    );
+
+    // ⛔ Ako si trenutno u chatu – ne resetuj badge!
+    if (window.location.href.includes("/chatroom/") && activeChatId) {
+      console.log("⏭️ Skip updateUnreadCount – u chatu si");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const res = await fetch(
+      "http://127.0.0.1:8000/api/messages/total/unread/count",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    console.log("data: ", data);
+    localStorage.setItem("unread_count", data.success ? data.count : 0);
+
+    const res2 = await fetch('http://127.0.0.1:8000/api/messages/unread/count', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data2 = await res2.json();
+    console.log("data2: ",data2);
+    if (data2.success) {
+      localStorage.setItem("unread_sender_map", JSON.stringify(data2.unread_senders));
+    }
+
+    window.updateGlobalUnreadBadge();
+  } catch (err) {
+    console.error("❌ updateUnreadCount error:", err);
+  }
+};

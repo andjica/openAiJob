@@ -819,7 +819,9 @@
             JSON.stringify(data?.candidateProfile?.original?.data)
           );
           $f7.dialog.close();
-          $f7.dialog.alert(data.message, "Update");
+          $f7.dialog.alert(data.message, "Update", () => {
+            $f7router.navigate("/main/");
+          });
           const url= data?.candidateProfile?.original?.data.profile_image;
           if (url) {
             const imageUrl = `http://127.0.0.1:8000/storage/${url}`;

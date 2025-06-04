@@ -71,6 +71,17 @@
               width="50"
               height="50"
             />
+            <span
+              id="unread-badge"
+              style="
+                display: none;
+                position: absolute;
+                background: red;
+                color: white;
+              "
+              class="badge unread-badge"
+              >0</span
+            >
           </a>
         </div>
       </div>
@@ -113,15 +124,18 @@
 
 <script>
   export default (props, { $, $f7, $on, $f7router }) => {
+    let receiver_id;
+    const lastMessageIds = new Set();
     let jwtToken = localStorage.getItem("jwt_token");
     const user = JSON.parse(localStorage.getItem("user"));
-    console.log("USER: ", user);
+    const myId = user.id;
+
     const deleteAttachment = (e, index) => {
-      var image = messagebar.attachments.splice(index, 1)[0];
+      const image = messagebar.attachments.splice(index, 1)[0];
       messagebar.renderAttachments();
       checkAttachments();
-      // Uncheck in sheet
     };
+
     const checkAttachments = () => {
       if (messagebar.attachments.length > 0) {
         messagebar.attachmentsShow();
@@ -142,6 +156,50 @@
         .replace(/'/g, "&#039;");
     };
 
+    const addMessageUI = (msg, currentUserId) => {
+      const messagesContainer = document.querySelector(".messages");
+      const isSent = msg.user_id === currentUserId;
+      const messageEl = document.createElement("div");
+      messageEl.className = `message ${
+        isSent ? "message-sent" : "message-received"
+      } no-radius`;
+      messageEl.innerHTML = `
+        <div class="message-content">
+          <div class="message-bubble">
+            <div class="message-text">${escapeHtml(msg.text)}</div>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(messageEl);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
+    const renderMessages = (messages) => {
+      const messagesContainer = document.querySelector(".messages");
+      messagesContainer.innerHTML = "";
+      lastMessageIds.clear();
+
+      const currentUserId = user.id;
+      messages.forEach((msg) => {
+        if (!msg.text || lastMessageIds.has(msg.id)) return;
+        lastMessageIds.add(msg.id);
+        const isSent = msg.user_id === currentUserId;
+        const messageEl = document.createElement("div");
+        messageEl.className = `message ${
+          isSent ? "message-sent" : "message-received"
+        } no-radius`;
+        messageEl.innerHTML = `
+      <div class="message-content">
+        <div class="message-bubble">
+          <div class="message-text">${escapeHtml(msg.text)}</div>
+        </div>
+      </div>
+    `;
+        messagesContainer.appendChild(messageEl);
+      });
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
     const fetchMessage = (receiverId) => {
       fetch(`http://127.0.0.1:8000/api/messages/${receiverId}`, {
         method: "GET",
@@ -158,38 +216,9 @@
         });
     };
 
-    const renderMessages = (messages) => {
-      const messagesContainer = document.querySelector(".messages");
-      messagesContainer.innerHTML = "";
-      const currentUserId = user.id;
-
-      messages.forEach((msg) => {
-        if (!msg.text) return;
-        const isSent = msg.user_id === currentUserId;
-        const messageEl = document.createElement("div");
-        messageEl.className = `message ${
-          isSent ? "message-sent" : "message-received"
-        } no-radius`;
-        messageEl.innerHTML = `
-        <div class="message-content">
-            <div class="message-bubble">
-            <div class="message-text">${escapeHtml(msg.text)}</div>
-            </div>
-        </div>
-        `;
-
-        messagesContainer.appendChild(messageEl);
-      });
-
-      // Scroll to bottom
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    };
-
     const sendMessage = () => {
       const textarea = document.querySelector(".messagebar textarea");
       const message = textarea.value.trim();
-      const recruiterId = $f7router.currentRoute.params.id;
-
       if (!message) return;
       fetch("http://127.0.0.1:8000/api/store/messages", {
         method: "POST",
@@ -200,12 +229,12 @@
         },
         body: JSON.stringify({
           text: message,
-          receiver_id: Number(recruiterId),
+          receiver_id: Number(receiver_id),
         }),
       })
         .then((response) => {
+          console.log("RESPONSE: ", response);
           if (!response.ok) {
-            // Throw error for non-2xx HTTP status
             return response.json().then((err) => {
               throw err;
             });
@@ -214,8 +243,9 @@
         })
         .then((data) => {
           console.log("Message sent:", data);
+          fetchMessage(receiver_id);
           textarea.value = "";
-          fetchMessage(recruiterId);
+           // Optionally just addMessageUI here
           textarea.focus();
         })
         .catch((error) => {
@@ -223,17 +253,70 @@
         });
     };
 
-    $on("pageMounted", (e, page) => {
-      const recruiterId = page.route.params.id;
-      console.log("Recruiter ID:", recruiterId);
-
+    $on("pageInit", (e, page) => {
+      receiver_id = page.route.params.id;
+      console.log("Skim se dopisujem: ",receiver_id);
+      window.updateGlobalUnreadBadge?.();
       const titleEl = document.getElementById("activeChatTitle");
       if (titleEl) {
-        titleEl.textContent = `Chat Room - #${recruiterId}`;
+        titleEl.textContent = `Chat Room - #${receiver_id}`;
       }
 
-      fetchMessage(recruiterId);
+      const markAsReadAndNavigate = async function () {
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/messages/mark-as-read/${receiver_id}`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("jwt_token")}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: receiver_id,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to mark as read");
+          }
+
+          // Navigate after marking as read
+          const f7 =
+            window.Framework7.instance ||
+            document.querySelector(".view").f7View;
+        } catch (err) {
+          console.error("Error marking as read:", err);
+          alert("Failed to mark messages as read.");
+        }
+      };
+
+      fetchMessage(receiver_id);
+      markAsReadAndNavigate();
+
+      if (window.Echo && typeof window.Echo.private === "function") {
+        window.Echo.private(`chat.${myId}`).listen(
+          ".MessageSent",
+          async (msg) => {
+            const newMsg = msg.message;
+            console.log("Nova poruka stigla:", newMsg);
+
+            if (
+              newMsg.user_id != myId &&
+              (newMsg.user_id == receiver_id ||
+                newMsg.receiver_id == receiver_id) &&
+              !lastMessageIds.has(newMsg.id)
+            ) {
+              lastMessageIds.add(newMsg.id);
+              if (navigator.vibrate) navigator.vibrate(100);
+              addMessageUI(newMsg, myId);
+            }
+          }
+        );
+      }
     });
+
     return $render;
   };
 </script>

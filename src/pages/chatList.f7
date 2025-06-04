@@ -4,7 +4,7 @@
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
         <div class="left">
-          <a id="backLink" href="#" class="link back">
+          <a href="/main/" class="link back">
             <i class="icon icon-back"></i>
           </a>
         </div>
@@ -13,7 +13,7 @@
         </div>
       </div>
     </div>
-    <div class="page-content">
+    <div class="page-content pt-50">
       <div class="block">
         <div id="recuiter-chat"></div>
       </div>
@@ -52,6 +52,17 @@
               width="50"
               height="50"
             />
+            <span
+              id="unread-badge"
+              style="
+                display: none;
+                position: absolute;
+                background: red;
+                color: white;
+              "
+              class="badge unread-badge"
+              >0</span
+            >
           </a>
         </div>
       </div>
@@ -59,22 +70,35 @@
     <!-- End of footer -->
   </div>
 </template>
+
 <style>
-  .recruiter-chat__card{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+  .pt-50 {
+    padding-top: 50px;
+  }
+  .list .item-content {
+    width: 100%;
+  }
+  .item-inner {
+    position: relative !important;
+  }
+
+  .item-after {
+    position: absolute !important;
+    top: 5px;
+    right: 3px;
   }
   .message-sent .message-bubble {
-    background: #7f7fea !important;
+    border-radius: #7f7fea !important;
   }
 </style>
+
 <script>
   export default (props, { $f7, $el, $on, $ }) => {
     $on("pageInit", () => {
       const jwtToken = localStorage.getItem("jwt_token");
-      console.log(jwtToken);
+
+      window.updateGlobalUnreadBadge?.();
+
       if (!jwtToken) {
         console.error("No JWT token found.");
         $f7.dialog.alert("You are not authenticated", "Error");
@@ -82,7 +106,7 @@
       }
 
       const fetchRecruiter = () => {
-        fetch(`http://127.0.0.1:8000/api/applied-jobs`, {
+        fetch(`http://127.0.0.1:8000/api/active/contacts/chats`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -95,7 +119,8 @@
             return response.json();
           })
           .then((data) => {
-            displayRecruiter(data.jobs);
+            console.log("DATA fetchRecruiter: ", data.data);
+            displayRecruiter(data.data);
           })
           .catch((error) => {
             console.error("Fetch error:", error);
@@ -104,44 +129,93 @@
       };
 
       const displayRecruiter = (recruiters) => {
-        console.log(recruiters);
         const jobPosts = document.querySelector("#recuiter-chat");
-        const acceptJobs = recruiters.filter(j => j.status === "accept");
-        console.log(acceptJobs);
         jobPosts.innerHTML = ""; // clear any existing posts
-        if (acceptJobs.length > 0) {
-          acceptJobs.forEach((recruiter) => {
-            console.log("Job details: ", recruiter);
 
-            const jobHTML = `
-          <div class="recruiter-chat__card">
-            <h1>${recruiter.job.job_world_type}</h1>
-            <a class="button button-small button-fill view-process-btn" href="${recruiter.job.id}">Chat</a>
-          </div>
-        `;
+        if (recruiters.length > 0) {
+          const jobHTML = `
+      <div class="list simple-list media-list">
+        <ul>
+          ${recruiters
+            .map(
+              (recruiter) => `
+                <li>
+                  <a href="/chatroom/${recruiter.id}" 
+                     class="item-link item-content recruiter-chat-link" 
+                     data-recruiter-id="${recruiter.id}" 
+                     data-unread-count="${recruiter.unread_count}">
+                    <div class="item-media">
+                      <img src="../assets/feedback.svg" style="width: 28px; border-radius: 50%" />
+                    </div>
+                    <div class="item-inner">
+                      <div class="item-title">${recruiter.first_name} ${
+                recruiter.last_name
+              }</div>
+                      <div class="item-after">
+                        ${
+                          recruiter.unread_count > 0
+                            ? `<span class="badge color-red">${recruiter.unread_count}</span>`
+                            : ""
+                        }
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <hr>
+              `
+            )
+            .join("")}
+        </ul>
+      </div>
+    `;
 
-            // Append recruiter chat
-            jobPosts.insertAdjacentHTML("beforeend", jobHTML);
+          jobPosts.insertAdjacentHTML("beforeend", jobHTML);
+
+          // Add click event to each recruiter link
+          document.querySelectorAll(".recruiter-chat-link").forEach((link) => {
+            link.addEventListener("click", () => {
+              const recruiterUnread = parseInt(
+                link.dataset.unreadCount || "0",
+                10
+              );
+              if (recruiterUnread > 0) {
+                const badge = document.getElementById("unread-badge");
+                if (badge && badge.style.display !== "none") {
+                  const currentGlobal = parseInt(badge.textContent || "0");
+                  const newCount = Math.max(currentGlobal - recruiterUnread, 0);
+
+                  // ✅ Ažuriraj UI
+                  badge.textContent = newCount;
+                  if (newCount === 0) badge.style.display = "none";
+
+                  // ✅ Ažuriraj localStorage vrednost
+                  localStorage.setItem("unread_count", newCount);
+
+                  // ✅ (Opcionalno) Ažuriraj globalnu funkciju ako postoji
+                  if (typeof window.updateGlobalUnreadBadge === "function") {
+                    window.updateGlobalUnreadBadge(); // ili ažuriraj badge direktno ako koristiš ovaj helper
+                  }
+                }
+              }
+            });
           });
         } else {
           const jobHTML = `
-          <div class="recruiter-chat__card">
-            <h4>You didn't apply in any jobs</h4>
-          </div>`;
+      <div class="recruiter-chat__card">
+        <h4>You didn't apply in any jobs</h4>
+      </div>`;
           jobPosts.innerHTML = jobHTML;
         }
       };
 
-
       fetchRecruiter();
     });
 
-    $on('pageBeforeOut', () => {
-  if (document.activeElement) {
-    document.activeElement.blur();
-  }
-});
-
+    $on("pageBeforeOut", () => {
+      if (document.activeElement) {
+        document.activeElement.blur();
+      }
+    });
 
     return $render;
   };

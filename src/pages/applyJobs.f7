@@ -56,6 +56,8 @@
               width="50"
               height="50"
             />
+            <span id="unread-badge" style="display: none; position: absolute; background: red; color: white;"
+                class="badge unread-badge">0</span>
           </a>
         </div>
       </div>
@@ -158,6 +160,7 @@
   export default (props, { $, $on, $f7, $f7router }) => {
     $on("page:init", () => {
       const jwtToken = localStorage.getItem("jwt_token");
+      window.updateGlobalUnreadBadge?.();
       let jobs = [];
 
       if (!jwtToken) {
@@ -184,6 +187,7 @@
             return response.json();
           })
           .then((data) => {
+            console.log()
             jobs = data.jobs;
             displayApplyJobs(jobs);
           })

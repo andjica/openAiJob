@@ -175,3 +175,9 @@
   position: absolute;
   bottom: 20px;
 }
+
+
+.unread-badge {
+      top: -40px;
+    right: 32px;
+}

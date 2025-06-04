@@ -52,6 +52,8 @@
               width="50"
               height="50"
             />
+            <span id="unread-badge" style="display: none; position: absolute; background: red; color: white;"
+                class="badge unread-badge">0</span>
           </a>
         </div>
       </div>
@@ -86,13 +88,14 @@
       const jobId = $f7router.currentRoute.params.id;
       const jwtToken = localStorage.getItem("jwt_token");
       const candidat = JSON.parse(localStorage.getItem("candidatProfile"));
+      window.updateGlobalUnreadBadge?.();
       if (!jwtToken) {
         $f7.dialog.alert(
           "You are not logged in. Please login to continue.",
           "Auth Error"
         );
         localStorage.clear();
-        $f7router.navigate("/login");
+        $f7router.navigate("/login/");
         return;
       }
       

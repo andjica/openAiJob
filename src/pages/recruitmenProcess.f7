@@ -57,6 +57,8 @@
               width="50"
               height="50"
             />
+            <span id="unread-badge" style=" position: absolute; background: white; color: black;"
+                class="badge unread-badge">0</span>
           </a>
         </div>
       </div>
@@ -98,6 +100,7 @@
       const jobId = $f7router.currentRoute.params.id;
       console.log("Job id: ", jobId);
       const jwtToken = localStorage.getItem("jwt_token");
+      window.updateGlobalUnreadBadge?.();
 
       const fetchRecruitmentJobProcess = () => {
         $f7.dialog.preloader("Loading phases process...");
