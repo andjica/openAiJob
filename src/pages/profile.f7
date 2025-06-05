@@ -627,7 +627,7 @@
         if (input && label) {
           input.addEventListener("change", () => {
             const file = input.files[0];
-            alert(file);
+
             if (file) label.textContent = file.name;
             if (onChangeCallback) onChangeCallback(file);
           });
