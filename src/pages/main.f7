@@ -1,102 +1,84 @@
 <template>
   <div class="page" data-name="main">
-    <!-- Begin of header -->
-    <div class="navbar navbar-large">
-      <div class="navbar-bg"></div>
-      <div class="navbar-inner">
+    <!-- Header -->
+    <div class="navbar navbar-fancy">
+      <div class="navbar-inner-custom">
         <div class="left">
           <a href="#" class="link icon-only panel-open" data-panel="left">
-            <i class="icon f7-icons if-not-md">menu</i>
-            <i class="icon material-icons if-md">menu</i>
+            <i class="icon f7-icons">menu</i>
           </a>
-          <div class="panel panel-left panel-reveal">
-            <div class="sidebar__close panel-close">
-              <i class="icon f7-icons if-not-md">close</i>
-              <i class="icon material-icons if-md">close</i>
-            </div>
-            <div class="sidebar__links">
-              <div class="sidebar__item">
-                <a href="/applyJobs/" class="panel-close pr-100" data-transition="f7-push">Apply jobs</a>
-              </div>
-              <div class="sidebar__item">
-                <a href="/settings/" class="panel-close pr-100" data-transition="f7-push">Settings</a>
-              </div>
-            </div>
-          </div>
+        </div>
+        <div class="center">
+          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
         </div>
         <div class="right">
           <a href="/profile/">
-            <img
-              src="../assets/person.svg"
-              alt="person"
-              width="40"
-              height="40"
-            />
+            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
           </a>
         </div>
       </div>
     </div>
-    <!-- End of header -->
 
-    <!-- Begin of content -->
-    <div class="page-content pt-30">
-      <div class="block">
-        <h3 class="title">Main Page</h3>
-        <div class="swiper-container">
-          <div class="swiper-wrapper"></div>
-
-          <!-- Add Pagination and Navigation if needed -->
-          <div class="swiper-pagination"></div>
-          <div class="swiper-button-next"></div>
-          <div class="swiper-button-prev"></div>
+    <!-- Panel -->
+    <div class="panel panel-left panel-reveal">
+      <div class="sidebar__close panel-close">
+        <i class="icon f7-icons">close</i>
+      </div>
+      <div class="sidebar__links">
+        <div class="sidebar__item">
+          <a href="/applyJobs/" class="panel-close" data-transition="f7-push">Apply jobs</a>
+        </div>
+        <div class="sidebar__item">
+          <a href="/settings/" class="panel-close" data-transition="f7-push">Settings</a>
         </div>
       </div>
     </div>
-    <!-- End of content -->
 
-    <!-- Begin of footer -->
+    <!-- Content -->
+    <div class="page-content pt-30">
+      <div class="block mt-60">
+        <h3 class="slider-title text-black">National Jobs</h3>
+        <div class="swiper-container swiper-national">
+          <div class="swiper-wrapper" id="national-wrapper"></div>
+          <div class="swiper-pagination swiper-national-pagination"></div>
+        </div>
+
+        <h3 class="slider-title text-black">International Jobs</h3>
+        <div class="swiper-container swiper-international">
+          <div class="swiper-wrapper" id="international-wrapper"></div>
+          <div class="swiper-pagination swiper-international-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
     <footer class="footer">
       <div class="footer-nav">
         <div class="trty">
           <a href="/searchJob/">
-            <img
-              src="../assets/employers.svg"
-              class="ft-img"
-              alt="icon"
-              width="50"
-              height="50"
-            />
+            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <p>Jobs</p>
           </a>
         </div>
-        <div class="trty">
+        <div class="trty center-button">
           <a href="/ai/">
-            <img
-              src="../assets/circle.svg"
-              class="ft-img"
-              alt="icon"
-              width="70"
-              height="70"
-            />
+            <div class="circle-btn">
+              <img src="../assets/circle.svg" alt="AI" />
+            </div>
           </a>
         </div>
         <div class="trty">
           <a href="/chatList/">
-            <img
-              src="../assets/feedback.svg"
-              class="ft-img"
-              alt="icon"
-              width="50"
-              height="50"
-            />
-            <span id="unread-badge" style="display: none; position: absolute; background: red; color: white;"
-                class="badge unread-badge">0</span>
+            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <p>Chats</p>
+            <span id="unread-badge" class="badge unread-badge">0</span>
           </a>
         </div>
       </div>
     </footer>
-    <!-- End of footer -->
   </div>
 </template>
+
 
 <style>
   .title {
@@ -174,108 +156,97 @@
 
 <script>
   export default (props, { $, $on, $f7, $f7router }) => {
-    let jobs = [];
-    let hasLoaded = false;
+  let hasLoaded = false;
 
-    $on("page:init", () => {
-      if (hasLoaded) return; // <- Prekini ako su već učitani
-      hasLoaded = true; 
-      const jwtToken = localStorage.getItem("jwt_token");
-      window.updateGlobalUnreadBadge?.();
+  $on("page:init", () => {
+    if (hasLoaded) return;
+    hasLoaded = true;
 
-      if (!jwtToken) {
-        localStorage.clear();
-        $f7router.navigate("/login");
-        $f7.dialog.alert(
-          "You are not logged in. Please login to continue.",
-          "Auth Error"
-        );
-        
-        return;
-      }
+    const jwtToken = localStorage.getItem("jwt_token");
+    window.updateGlobalUnreadBadge?.();
 
-      $f7.dialog.preloader("Loading jobs...");
+    if (!jwtToken) {
+      localStorage.clear();
+      $f7router.navigate("/login");
+      $f7.dialog.alert("You are not logged in. Please login to continue.", "Auth Error");
+      return;
+    }
 
-      fetch(`http://127.0.0.1:8000/api/jobs/active`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${jwtToken}`,
-        },
+    $f7.dialog.preloader("Loading jobs...");
+
+    fetch(`http://127.0.0.1:8000/api/jobs/active`, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const jobs = data.randomFiveJobs || data;
+        renderSlides(jobs);
+        initSwiper();
+        $f7.dialog.close();
       })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Jobs data: ", data);
-          jobs = data.randomFiveJobs || data;
-          setTimeout(() => {
-            renderSlides(jobs);
-            initSwiper();
-            $f7.dialog.close();
-          }, 0);
-        })
-        .catch((error) => {
-          console.error("Fetch error:", error);
-          $f7.dialog.alert("Something wrong to fetch", "Error");
-        });
+      .catch((err) => {
+        console.error("Error:", err);
+        $f7.dialog.alert("Something went wrong while fetching jobs.", "Error");
+      });
 
-      function renderSlides(jobs) {
-        const wrapper = document.querySelector(".swiper-wrapper");
+    function renderSlides(jobs) {
+      const nationalWrapper = document.getElementById("national-wrapper");
+      const internationalWrapper = document.getElementById("international-wrapper");
 
-        if (!wrapper) {
-          console.error("Swiper wrapper not found in DOM!");
-          return;
-        }
+      nationalWrapper.innerHTML = "";
+      internationalWrapper.innerHTML = "";
 
-        wrapper.innerHTML = ""; // Clear existing slides
+      jobs.forEach((job) => {
+        const isNational = job.job_world_type;
+        const badge = isNational
+          ? '<span class="badge color-orange">national</span>'
+          : '<span class="badge color-blue">international</span>';
 
-        jobs.forEach((job) => {
-          const badge = job.job_world_type
-            ? '<span class="badge color-orange">national</span>'
-            : '<span class="badge color-blue">international</span>';
-          const slide = document.createElement("div");
-          slide.className = "swiper-slide";
-          slide.innerHTML = `
-            <div class="job-post">
-              <div class="job-post__details">
+        const slide = document.createElement("div");
+        slide.className = "swiper-slide";
+        slide.innerHTML = `
+          <div class="job-post">
+            <div class="job-post__details">
               ${badge}
-              <h3>${job.title} <br> <i><small class="font-sm w-200"> ${job.category.name}, ${job.sub_category.name}</small></i></h3>
-              <p>
-              <br>
-              ${job.country.name}, ${job.city.name}<br>
-              Company: ${job.company.name}<br>
-              </p>
-              <img src="http://127.0.0.1:8000/storage/${job.company.logo}" alt="${job.company.name}" class="rounded-circle pos_abs" width="60" height="60"/>
-              </div>
-              <a href="/job/${job.id}" class="button">View Details</a>
+              <h3>${job.title}<br><i><small>${job.category.name}, ${job.sub_category.name}</small></i></h3>
+              <p>${job.country.name}, ${job.city.name}<br>
+              Company: ${job.company.name}</p>
+              <img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />
             </div>
-          `;
-          wrapper.appendChild(slide);
-        });
-      }
+            <a href="/job/${job.id}" class="button">View Details</a>
+          </div>
+        `;
+        if (isNational) nationalWrapper.appendChild(slide);
+        else internationalWrapper.appendChild(slide);
+      });
+    }
 
-      function initSwiper() {
-        new Swiper(".swiper-container", {
-          slidesPerView: 1,
-          spaceBetween: 10,
-          loop: true,
-          pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
-          },
-          navigation: {
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
-          },
-        });
-      }
-    });
+    function initSwiper() {
+      new Swiper(".swiper-national", {
+        slidesPerView: 1.2,
+        spaceBetween: 20,
+        pagination: {
+          el: ".swiper-national-pagination",
+          clickable: true,
+        },
+      });
 
-    return $render;
-  };
+      new Swiper(".swiper-international", {
+        slidesPerView: 1.2,
+        spaceBetween: 20,
+        pagination: {
+          el: ".swiper-international-pagination",
+          clickable: true,
+        },
+      });
+    }
+  });
+
+  return $render;
+};
+
 </script>

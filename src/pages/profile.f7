@@ -933,9 +933,7 @@
     };
 
     const logout = () => {
-      ["jwt_token", "user", "userVerify", "userId, candidatProfile"].forEach(
-        (key) => localStorage.removeItem(key)
-      );
+      localStorage.clear();
       $f7router.navigate("/login/");
     };
 

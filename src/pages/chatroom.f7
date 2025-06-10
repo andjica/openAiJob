@@ -1,19 +1,25 @@
 <template>
   <div class="page" data-name="chatroom">
     <!-- Begin of header -->
-    <div class="navbar navbar-large">
-      <div class="navbar-bg"></div>
-      <div class="navbar-inner">
-        <div class="left">
-          <a href="/chatlist/" class="link back">
-            <i class="icon icon-back"></i>
-          </a>
-        </div>
-        <div class="title-large setting__title">
-          <div class="title-large-text" id="activeChatTitle">Chat Room</div>
-        </div>
-      </div>
+  <div class="navbar navbar-fancy">
+  <div class="navbar-inner-custom">
+    <div class="left">
+      <a href="#" class="link icon-only panel-open" data-panel="left">
+        <i class="icon f7-icons">menu</i>
+      </a>
     </div>
+
+    <div class="center">
+      <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+    </div>
+
+    <div class="right">
+      <a href="/profile/">
+        <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+      </a>
+    </div>
+  </div>
+</div>
     <!-- End of header -->
     <div class="block h-100">
       <div class="page-content messages-content pt-60 h-85">

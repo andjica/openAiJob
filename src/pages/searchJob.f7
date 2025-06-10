@@ -1,19 +1,25 @@
 <template>
   <div class="page" data-name="searchJob">
     <!-- Begin of header -->
-    <div class="navbar navbar-large">
-      <div class="navbar-bg"></div>
-      <div class="navbar-inner">
-        <div class="left">
-          <a id="backLink" href="#" class="link back">
-            <i class="icon icon-back"></i>
-          </a>
-        </div>
-        <div class="title-large setting__title">
-          <div class="title-large-text" id="activeSearchTitle">Search Job</div>
-        </div>
-      </div>
+   <div class="navbar navbar-fancy">
+  <div class="navbar-inner-custom">
+    <div class="left">
+      <a href="#" class="link icon-only panel-open" data-panel="left">
+        <i class="icon f7-icons">menu</i>
+      </a>
     </div>
+
+    <div class="center">
+      <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+    </div>
+
+    <div class="right">
+      <a href="/profile/">
+        <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+      </a>
+    </div>
+  </div>
+</div>
     <!-- End of header -->
 
     <!-- Begin of content -->
@@ -26,27 +32,31 @@
     <!-- End of content -->
 
     <!-- Begin of footer -->
-    <footer class="footer">
-      <div class="footer-nav">
-        <div class="trty">
-          <a href="/searchJob/">
-            <img src="../assets/employers.svg" class="ft-img" alt="icon" width="50" height="50" />
-          </a>
+   <footer class="footer">
+  <div class="footer-nav">
+    <div class="trty">
+      <a href="/searchJob/">
+        <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+        <p>Jobs</p>
+      </a>
+    </div>
+    <div class="trty center-button">
+      <a href="/ai/">
+        <div class="circle-btn">
+          <img src="../assets/circle.svg" alt="AI" />
         </div>
-        <div class="trty">
-          <a href="/ai/">
-              <img src="../assets/circle.svg" class="ft-img" alt="icon" width="70" height="70"/>
-          </a>
-        </div>
-        <div class="trty">
-          <a href="/chatList/">
-            <img src="../assets/feedback.svg" class="ft-img" alt="icon" width="50" height="50" />
-            <span id="unread-badge" style="display: none; position: absolute; background: red; color: white;"
-                class="badge unread-badge">0</span>
-          </a>
-        </div>
-      </div>
-    </footer>
+        <!-- <p>AI</p> -->
+      </a>
+    </div>
+    <div class="trty">
+      <a href="/chatList/">
+        <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+        <p>Chats</p>
+        <span id="unread-badge" class="badge unread-badge">0</span>
+      </a>
+    </div>
+  </div>
+</footer>
     <!-- End of footer -->
   </div>
 </template>
