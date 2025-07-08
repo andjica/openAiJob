@@ -1,5 +1,7 @@
 <template>
-  <div class="page" data-name="jobdetails">
+  <div class="page" data-name="job-translated-ai">
+
+    <!-- Navbar -->
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
         <div class="left">
@@ -8,29 +10,60 @@
           </a>
         </div>
         <div class="center">
-          <img src="../assets/circle.svg" class="navbar-logo-center" alt="logo" />
+          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
         </div>
         <div class="right">
           <a href="/profile/">
-            <img src="../assets/setting.png" class="navbar-profile-icon" alt="profile" />
+            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
           </a>
         </div>
       </div>
     </div>
 
+    <!-- Page Content -->
     <div class="page-content">
       <div class="block">
         <div id="job-details-content" class="job-card skeleton-block">
+          <!-- Job details will load here -->
           <div class="skeleton-text skeleton-effect-blink" style="width: 80%"></div>
           <div class="skeleton-text skeleton-effect-blink" style="width: 60%"></div>
           <div class="skeleton-text skeleton-effect-blink" style="width: 100%"></div>
         </div>
 
-        <div class="block text-align-center" id="apply-button-wrapper" style="display:none; margin-top: 20px;">
-          <button id="apply-job-button" class="button button-fill color-blue">Apply for this job</button>
+        <!-- Apply Button -->
+        <div class="block text-align-center" id="apply-button-wrapper" style="margin-top: 20px; display: none;">
+          <button id="apply-job-button" class="button button-fill color-blue">
+            Apply for this job
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/main/">
+            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <p>Home</p>
+          </a>
+        </div>
+        <div class="trty center-button">
+          <a href="/ai/">
+            <div class="circle-btn">
+              <img src="../assets/circle.svg" alt="AI" />
+            </div>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chatList/">
+            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <p>Chats</p>
+            <span id="unread-badge" class="badge unread-badge">0</span>
+          </a>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -38,12 +71,13 @@
   export default (props, { $f7, $on, $f7route, $ }) => {
     $on('pageInit', async () => {
       const jobId = $f7route.params.id;
-      const token = localStorage.getItem("jwt_token");
       const lang = localStorage.getItem("language_code") || "en";
+      const token = localStorage.getItem("jwt_token");
 
       if (!token) {
         $f7.dialog.alert("Please login first.", "Auth Error");
-        return $f7router.navigate('/login/');
+        $f7router.navigate('/login/');
+        return;
       }
 
       try {
@@ -51,41 +85,34 @@
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (!res.ok) throw new Error("Failed to fetch job");
-
         const job = await res.json();
 
         let html = `
           <div class="card elevation-2">
             <div class="card-content card-content-padding">
-              <h2 class="job-title">${job.title ?? 'Untitled Job'}</h2>
-              <p class="company-name"><i class="f7-icons">building_2_fill</i> ${job.company?.name ?? "Company"}</p>
-              <p><i class="f7-icons">placemark</i> ${job.city ?? '-'}, ${job.country ?? '-'}</p>
-              <p><i class="f7-icons">money_dollar_circle</i> €${job.salary_min ?? 0} - €${job.salary_max ?? 0}</p>
-              <p><i class="f7-icons">person_2_fill</i> <b>Experience Level:</b> ${job.experience_level ?? "N/A"}</p>
-              <p><i class="f7-icons">person_crop_circle</i> <b>Age Range:</b> ${job.min_age ?? "-"} - ${job.max_age ?? "-"}</p>
-              <p><i class="f7-icons">checkmark_shield</i> <b>Special Requirements:</b> ${job.special_requirements ?? "None"}</p>
-              <p><i class="f7-icons">calendar</i> <b>Valid Until:</b> ${job.valid_until ?? '-'}</p>
-              <p><i class="f7-icons">globe</i> <b>World Type:</b> ${job.job_world_type ?? '-'}</p>
-              <p><i class="f7-icons">textformat</i> <b>Language:</b> ${(job.language_code ?? 'en').toUpperCase()}</p>
-              <p><i class="f7-icons">list_number</i> <b>Category:</b> ${job.category?.name ?? '-'}</p>
-              <p><i class="f7-icons">layers_alt</i> <b>Subcategory:</b> ${job.sub_category?.name ?? '-'}</p>
+              <h2 class="job-title">${job.title}</h2>
+              <p class="company-name"><i class="f7-icons">building_2_fill</i> ${job.company?.name || 'Unknown Company'}</p>
+              <p><i class="f7-icons">placemark</i> ${job.city}, ${job.country}</p>
+              <p><i class="f7-icons">money_dollar_circle</i> €${job.salary_min} - €${job.salary_max}</p>
+              <p><i class="f7-icons">square_list</i> <b>Category:</b> ${job.category}</p>
+              <p><i class="f7-icons">square_stack_3d_up</i> <b>Subcategory:</b> ${job.sub_category}</p>
               <div class="job-description">
                 <p><b>Description:</b></p>
-                <div class="text-medium">${job.description ?? 'No description available.'}</div>
+                <div class="text-medium">${job.description}</div>
               </div>
             </div>
           </div>
         `;
 
         $('#job-details-content').removeClass('skeleton-block').html(html);
-        $('#apply-button-wrapper').show();
+        $('#apply-button-wrapper').show(); // Show apply button
 
+        // Handle Apply Button Click
         $('#apply-job-button').on('click', async () => {
-          $f7.dialog.preloader("Sending application...");
+          $f7.dialog.preloader('Sending application...');
 
           try {
-         const token = localStorage.getItem('jwt_token');
+          const token = localStorage.getItem('jwt_token');
           const user = JSON.parse(localStorage.getItem('user'));
           const userId = user?.id;
             console.log("candidate profile je", localStorage.getItem('candidatProfile'));
@@ -114,28 +141,31 @@
             }
           });
 
-          const res = await response.json();
+            const result = await response.json();
 
             if (response.ok) {
-              $f7.dialog.alert("You have successfully applied!", "Success");
+              $f7.dialog.alert('Successfully applied for the job!', 'Success');
               $('#apply-job-button').hide();
             } else if (response.status === 409) {
-              $f7.dialog.alert("You already applied to this job.", "Notice");
+              $f7.dialog.alert('You have already applied for this job.', 'Notice');
             } else {
-              const err = await response.json();
-              throw new Error(err.message || "Failed to apply");
+              throw new Error(result.message || 'Unknown error');
             }
-          } catch (e) {
-            console.error(e);
-            $f7.dialog.alert("Error applying for job", "Error");
+          } catch (err) {
+            console.error(err);
+            $f7.dialog.alert('Failed to apply for the job. Try again later.', 'Error');
           } finally {
             $f7.dialog.close();
           }
         });
 
-      } catch (e) {
-        $('#job-details-content').removeClass('skeleton-block').html(`<div class="text-color-red padding">Failed to load job details.</div>`);
-        console.error(e);
+      } catch (err) {
+        $('#job-details-content').removeClass('skeleton-block').html(`
+          <div class="card elevation-2 text-color-red padding">
+            <b>Failed to load job details.</b>
+          </div>
+        `);
+        console.error(err);
       }
     });
 
@@ -169,11 +199,11 @@
     font-size: 15px;
     line-height: 1.5;
   }
-
-  #apply-job-button {
-    width: 90%;
-    max-width: 300px;
-    border-radius: 30px;
+#apply-job-button {
+    width: 100% !important;
+    max-width: 100%;
+    border-radius: 10px !important;
     font-size: 16px;
-  }
+    margin-top: 40px !important;
+}
 </style>

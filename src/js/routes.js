@@ -14,7 +14,7 @@ import RegisterPage from "../pages/register.f7";
 import LoginPage from "../pages/login.f7";
 import VerifyPage from "../pages/verify.f7";
 import VerifyUpdatePage from "../pages/verifyUpdate.f7";
-
+import JobTranslatedAi from "../pages/jobdetails.f7";
 import NotFoundPage from "../pages/404.f7";
 
 var routes = [
@@ -81,6 +81,10 @@ var routes = [
   {
     path: "/ai/",
     component: AiPage,
+  },
+  {
+    path: '/job/ai/translated/:id/',
+    component: JobTranslatedAi,
   },
   {
     path: "(.*)",

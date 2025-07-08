@@ -468,3 +468,45 @@ navbar-fancy {
     padding: 0 20px;
     overflow-x: scroll !important;
 }
+
+  .icon_back {
+    margin-top: 10px;
+    margin-left: 20px;
+  }
+
+  .toolbar.messagebar.b-12 {
+    max-width: 93%;
+    margin: 0px auto;
+    margin-left: 4%;
+    border-radius: 20px;
+}
+.md .message-received .message-avatar + .message-content {
+    margin-left: 8px;
+    min-width: 100% !important;
+}
+
+.messages {
+    display: flex
+;
+    flex-direction: column;
+    min-height: 100%;
+    position: relative;
+    z-index: 1;
+    max-width: 89%;
+    margin-left: 3%;
+    background: #f8f8f8;
+    border-radius: 20px;
+    padding: 8px;
+}
+.md .message-received .message-avatar + .message-content {
+    margin-left: 8px;
+    min-width: 115% !important;
+    max-width: 104% !important;
+}
+.toolbar i.icon {
+    display: block;
+    background: #6a63f7;
+    border-radius: 100%;
+    padding: 10px;
+    color: white !important;
+}

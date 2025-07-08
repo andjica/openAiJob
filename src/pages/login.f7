@@ -12,11 +12,7 @@
               <div class="item-inner">
                 <div class="item-title item-label">Email</div>
                 <div class="item-input-wrap">
-                  <input
-                    id="emailInput"
-                    type="email"
-                    placeholder="Your email"
-                  />
+                  <input id="emailInput" type="email" placeholder="Your email" />
                   <span class="input-clear-button"></span>
                 </div>
               </div>
@@ -25,11 +21,7 @@
               <div class="item-inner">
                 <div class="item-title item-label">Password</div>
                 <div class="item-input-wrap">
-                  <input
-                    id="passwordInput"
-                    type="password"
-                    placeholder="Your password"
-                  />
+                  <input id="passwordInput" type="password" placeholder="Your password" />
                   <span class="input-clear-button"></span>
                 </div>
               </div>
@@ -54,30 +46,38 @@
     margin-top: 50%;
     height: 10%;
   }
+
   .login-screen-content .list {
     max-width: 350px;
     margin: 0 auto;
   }
+
   .login-screen-content .item-input-wrap input {
-    width: 100%; /* inputi preuzimaju širinu list-e */
+    width: 100%;
+    /* inputi preuzimaju širinu list-e */
     box-sizing: border-box;
   }
+
   .login-screen-content .item-input-wrap input {
     width: 100%;
     box-sizing: border-box;
-    border: 1px solid #9fa1f1; /* sivi border */
+    border: 1px solid #9fa1f1;
+    /* sivi border */
     border-radius: 5px;
-    padding: 8px; /* unutrašnji razmak za udobno kucanje */
+    padding: 8px;
+    /* unutrašnji razmak za udobno kucanje */
   }
+
   .login-button {
     border-radius: 5px;
     max-width: 150px;
     margin: 0 auto;
   }
-  .item-title{
-    top: 0!important;
-    left: 0!important;
-    background: transparent!important;
+
+  .item-title {
+    top: 0 !important;
+    left: 0 !important;
+    background: transparent !important;
   }
 </style>
 
@@ -115,22 +115,6 @@
           return;
         }
 
-        // const doLogin = () => loginUser(email, password); // da se posle doda device_token
-        // if (window.FirebasePlugin) {
-        //   window.FirebasePlugin.getToken(
-        //     (token) => {
-        //       console.log("Device token:", token);
-        //       loginUser();
-        //     },
-        //     (err) => {
-        //       console.warn("Token error", err);
-        //       loginUser();
-        //     }
-        //   );
-        // } else {
-        //   loginUser();
-        // }
-
         loginUser(email, password);
       });
 
@@ -145,38 +129,68 @@
           },
           body: JSON.stringify({ email, password }),
         })
-          .then(async (response) => {
-            const data = await response.json();
-            $f7.dialog.close();
-            if (
-              response.status === 200 &&
-              data.user?.is_mobile_verified === 1
-            ) {
-              const userId = data.user.id;
+        .then(async (response) => {
+          const data = await response.json();
+          console.log("Login status:", response.status);
+          console.log("Login response data:", data);
+          $f7.dialog.close();
 
+            if (response.status === 200 && data?.user && data?.jwt_token) {
+              const user = data.user;
               localStorage.setItem("jwt_token", data.jwt_token);
-              // window.initEcho();
-              localStorage.setItem("user", JSON.stringify(data.user));
-              localStorage.setItem("userVerify", "1");
-              localStorage.setItem("candidatProfile", 0);
-              $f7router.navigate("/main/");
-              // ✅ Fetch candidatProfile after login
-              
-            } else if (
-              response.status === 403 &&
-              data.error === "Mobile number not verified."
-            ) {
-              localStorage.setItem("userVerify", "0");
-              $f7.dialog.alert("Verifikujte broj da biste nastavili.");
-              $f7router.navigate("/verify/");
+              localStorage.setItem("user", JSON.stringify(user));
+
+              if (user.is_mobile_verified === 1) {
+                localStorage.setItem("userVerify", "1");
+                localStorage.setItem("candidatProfile", 0);
+                $f7router.navigate("/main/");
+              } else {
+                localStorage.setItem("userVerify", "0");
+                $f7.dialog.alert("Verifikujte broj da biste nastavili.");
+
+                fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: user.email }),
+                }).catch((err) => {
+                  console.error("Greška prilikom slanja verifikacionog koda:", err);
+                });
+
+                $f7router.navigate("/verify/");
+              }
+
+            } else if (response.status === 403 && data.error === "Mobile number not verified.") {
+              console.log("andjica", data);
+               const user = data.user;
+                alert(data.jwt_token);
+                alert(data.user);
+            // OVDE JE KLJUČNO: Sačuvaj token i korisnika iako nije verifikovan
+            if (user && data.jwt_token) {
+              localStorage.setItem("jwt_token", data.jwt_token);
+              localStorage.setItem("user", JSON.stringify(user));
+            }
+
+            $f7.dialog.alert("Verifikujte broj da biste nastavili.");
+
+            if (user) {
+              fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user.email }),
+              }).catch((err) => {
+                console.error("Greška kod resend-code:", err);
+              });
+            }
+
+            $f7router.navigate("/verify/");
             } else {
-              $f7.dialog.alert(data.message || "Invalid credentials.");
+              $f7.dialog.alert(data.error || "Invalid credentials.");
             }
           })
           .catch((err) => {
             $f7.dialog.close();
             console.error("Login error", err);
-            $f7.dialog.alert("Error throw login. Please try again.");
+            $f7.dialog.alert("Greška pri logovanju. Pokušajte ponovo.");
           });
       }
     });

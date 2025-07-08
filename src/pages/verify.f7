@@ -191,9 +191,19 @@
         });
 
         if (response.ok) {
-          const data = await response.json();
-          localStorage.setItem("userVerify", 1);
-          localStorage.setItem("candidatProfile", 0);
+           const data = await response.json();
+
+          localStorage.setItem("userVerify", "1");
+          localStorage.setItem("candidatProfile", "0");
+
+          // 🔁 Ažuriraj is_mobile_verified u user objektu
+          const userData = localStorage.getItem("user");
+          if (userData) {
+            const user = JSON.parse(userData);
+            user.is_mobile_verified = 1;
+            localStorage.setItem("user", JSON.stringify(user));
+          }
+
           clearInterval(timerInterval);
           $f7.dialog.alert(data.message, "Update", () => {
             $f7router.navigate("/profile/");

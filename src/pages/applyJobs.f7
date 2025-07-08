@@ -1,24 +1,39 @@
 <template>
   <div class="page" data-name="recruiterJob">
-  <div class="navbar navbar-fancy">
-  <div class="navbar-inner-custom">
-    <div class="left">
-      <a href="#" class="link icon-only panel-open" data-panel="left">
-        <i class="icon f7-icons">menu</i>
-      </a>
+  <!-- Header -->
+    <div class="navbar navbar-fancy">
+      <div class="navbar-inner-custom">
+        <div class="left">
+          <a href="#" class="link icon-only panel-open" data-panel="left">
+            <i class="icon f7-icons">menu</i>
+          </a>
+        </div>
+        <div class="center">
+          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+        </div>
+        <div class="right">
+          <a href="/profile/">
+            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+          </a>
+        </div>
+      </div>
     </div>
 
-    <div class="center">
-      <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+    <!-- Panel -->
+    <div class="panel panel-left panel-reveal">
+      <div class="sidebar__close panel-close">
+        <i class="icon f7-icons">close</i>
+      </div>
+      <div class="sidebar__links">
+        <div class="sidebar__item">
+          <a href="/applyJobs/" class="panel-close" data-transition="f7-push">Apply jobs</a>
+        </div>
+        <div class="sidebar__item">
+          <a href="/settings/" class="panel-close" data-transition="f7-push">Settings</a>
+        </div>
+      </div>
     </div>
 
-    <div class="right">
-      <a href="/profile/">
-        <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
-      </a>
-    </div>
-  </div>
-</div>
     <!-- Begin of Content -->
     <div class="block">
       <div class="jobs-recrtuter mt-80">
@@ -30,9 +45,9 @@
    <footer class="footer">
   <div class="footer-nav">
     <div class="trty">
-      <a href="/searchJob/">
+      <a href="/main/">
         <img src="../assets/employers.svg" class="ft-img" alt="icon" />
-        <p>Jobs</p>
+        <p>Home</p>
       </a>
     </div>
     <div class="trty center-button">

@@ -55,9 +55,9 @@
     <footer class="footer">
       <div class="footer-nav">
         <div class="trty">
-          <a href="/searchJob/">
+          <a href="/main/">
             <img src="../assets/employers.svg" class="ft-img" alt="icon" />
-            <p>Jobs</p>
+            <p>Home</p>
           </a>
         </div>
         <div class="trty center-button">
@@ -201,11 +201,12 @@
       internationalWrapper.innerHTML = "";
 
       jobs.forEach((job) => {
+        console.log("MAIN JOBS: ",job)
         const isNational = job.job_world_type;
         const badge = isNational
           ? '<span class="badge color-orange">national</span>'
           : '<span class="badge color-blue">international</span>';
-
+        const displayImage = job.company.logo ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />` : null;
         const slide = document.createElement("div");
         slide.className = "swiper-slide";
         slide.innerHTML = `
@@ -215,7 +216,7 @@
               <h3>${job.title}<br><i><small>${job.category.name}, ${job.sub_category.name}</small></i></h3>
               <p>${job.country.name}, ${job.city.name}<br>
               Company: ${job.company.name}</p>
-              <img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />
+              ${displayImage}
             </div>
             <a href="/job/${job.id}" class="button">View Details</a>
           </div>

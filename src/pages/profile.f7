@@ -4,7 +4,7 @@
       <div class="navbar-bg"></div>
       <div class="navbar-inner">
         <div class="left">
-          <a id="backLink" href="#" class="link back">
+          <a id="backLink" href="/main/" class="link back">
             <i class="icon icon-back"></i>
           </a>
         </div>
@@ -545,6 +545,9 @@
       $("#phoneNumber").val(cleanPhone);
       $("#phone-code").text(`+${phoneCode}`);
 
+      const isoCode = profile.country?.iso_code || "EN";
+      localStorage.setItem("languageCode", isoCode);
+      console.log("Language code set:", isoCode);
       // CV file
       if (profile.cv) {
         const fileName = profile.cv.split("/").pop();
@@ -905,6 +908,7 @@
       const formData = new FormData();
       const phoneCode = $("#phone-code").text().trim();
       const phone = phoneCode + $("#phoneNumber").val().trim();
+
       const fullName = $("#full-name").val().trim().split(" ");
       const firstName = fullName[0],
         lastName = fullName.slice(1).join(" ");

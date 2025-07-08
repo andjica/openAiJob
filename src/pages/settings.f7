@@ -1,24 +1,23 @@
 <template>
   <div class="page" data-name="settings">
-   <div class="navbar navbar-fancy">
-  <div class="navbar-inner-custom">
-    <div class="left">
-      <a href="#" class="link icon-only panel-open" data-panel="left">
-        <i class="icon f7-icons">menu</i>
-      </a>
+   <!-- Header -->
+    <div class="navbar navbar-fancy">
+      <div class="navbar-inner-custom">
+        <div class="left">
+          <a href="#" class="link icon-only panel-open" data-panel="left">
+            <i class="icon f7-icons">menu</i>
+          </a>
+        </div>
+        <div class="center">
+          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+        </div>
+        <div class="right">
+          <a href="/profile/">
+            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+          </a>
+        </div>
+      </div>
     </div>
-
-    <div class="center">
-      <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
-    </div>
-
-    <div class="right">
-      <a href="/profile/">
-        <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
-      </a>
-    </div>
-  </div>
-</div>
     <div class="block pt-30">
       <div class="list list-strong-ios list-dividers-ios inset-ios">
         <form id="uploadEmail" class="form__settings">
