@@ -137,35 +137,35 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .popup-job-details .company-logo {
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
 
-.popup-job-details h2 {
-  margin-top: 8px;
-  font-size: 22px;
-}
+  .popup-job-details h2 {
+    margin-top: 8px;
+    font-size: 22px;
+  }
 
-.popup-job-details .block-content {
-  line-height: 1.6;
-  color: #333;
-}
+  .popup-job-details .block-content {
+    line-height: 1.6;
+    color: #333;
+  }
 
-.popup-job-details ul li {
-  padding: 6px 0;
-}
+  .popup-job-details ul li {
+    padding: 6px 0;
+  }
 
-.popup-job-details .badge {
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 13px;
-  background-color: var(--f7-theme-color);
-  color: #fff;
-  display: inline-block;
-}
-
+  .popup-job-details .badge {
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    background-color: var(--f7-theme-color);
+    color: #fff;
+    display: inline-block;
+  }
 </style>
 <script>
   export default (props, { $f7, $el, $on, $, $f7router }) => {
@@ -369,6 +369,95 @@
       }
     };
 
+    const fetchHistory = async () => {
+      const token = localStorage.getItem('jwt_token');
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/chat/history", {
+          headers: {
+            "Authorization": "Bearer " + token,
+          },
+        });
+
+        const history = await res.json();
+
+        history.reverse().forEach(item => {
+          // Korisnička poruka
+          messages.addMessage({
+            text: item.user_message,
+            type: 'sent',
+          });
+
+          // AI odgovor
+          messages.addMessage({
+            text: item.ai_response,
+            type: 'received',
+            name: "JobAI",
+            avatar: "http://localhost:5173/assets/circle.svg",
+          });
+
+          // Poslovi
+          if (Array.isArray(item.jobs)) {
+            item.jobs.forEach(job => {
+              const jobHtml = `
+            <div class="job-card">
+              <div class="job-card-header">
+                <b>${job.title}</b>
+                <span class="job-company">${job.company}</span>
+              </div>
+              <div class="job-card-body">
+                <p><b>Location:</b> ${job.city}, ${job.country}</p>
+                <p><b>Category:</b> ${job.category} <br> <b>Sub:</b> ${job.sub_category}</p>
+              </div>
+              <div class="job-card-footer">
+                <a href="#" class="view-job-details" data-id="${job.id}">View Details</a>
+              </div>
+            </div>
+          `;
+              messages.addMessage({
+                text: jobHtml,
+                type: "received",
+                name: "JobBot",
+                avatar: "../assets/ai-avatar.png",
+              });
+            });
+          }
+        });
+
+        // Reaktiviraj View Details dugmiće
+        setTimeout(() => {
+          document.querySelectorAll('.view-job-details').forEach((btn) => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              const jobId = btn.getAttribute('data-id');
+              const langCode = localStorage.getItem('language_code') || 'en';
+              try {
+                const res = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`, {
+                  headers: {
+                    'Authorization': 'Bearer ' + token,
+                  },
+                });
+
+                const job = await res.json();
+
+                if (job.id) {
+                  $f7router.navigate(`/job/ai/translated/${job.id}/`);
+                } else {
+                  $f7.dialog.alert("Job not found.");
+                }
+              } catch (err) {
+                console.error("Error fetching job:", err);
+                $f7.dialog.alert("Something went wrong while loading job details.");
+              }
+            });
+          });
+        }, 100);
+
+      } catch (err) {
+        console.error("Failed to fetch AI history:", err);
+      }
+    };
+
 
     $on("pageInit", () => {
       messagebar = $f7.messagebar.create({
@@ -410,6 +499,11 @@
         },
       });
 
+      messages.addMessage({
+      text: 'Loading previous conversations...',
+      type: 'received',
+    });
+      fetchHistory();
       // ✅ Ovde dodaješ dinamički timestamp
       const now = new Date();
       const options = { weekday: "long", month: "short", day: "numeric" };
@@ -426,7 +520,7 @@
       messages.destroy();
     });
 
-  
+
 
 
 
