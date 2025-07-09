@@ -262,7 +262,7 @@
       // Prikaži typing pre slanja
       messages.showTyping({
         header: "ImJob AI is typing...",
-        avatar: "../assets/ai-avatar.png",
+        avatar: "../assets/images/ai.png",
       });
 
       try {
@@ -329,6 +329,7 @@
                   const langCode = localStorage.getItem('language_code') || 'en'; // koristi ono što već imaš
 
                   try {
+                    // $f7.dialog.preloader("Go to next page...");
                     const res = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`, {
                       headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('jwt_token')
@@ -336,6 +337,7 @@
                     });
                     const job = await res.json();
 
+                    // $f7.dialog.close();
                     if (job.id) {
                       $f7router.navigate(`/job/ai/translated/${job.id}/`);
                     } else {
@@ -343,6 +345,7 @@
                     }
                   } catch (err) {
                     console.error("Error fetching job:", err);
+                    // $f7.dialog.close();
                     $f7.dialog.alert("Something went wrong while loading job details.");
                   }
                 });

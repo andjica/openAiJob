@@ -77,8 +77,9 @@
   }
 
   .job-scroll {
-    max-height: 566px;
+    max-height: calc(100vh - 120px); /* Ili koristi calc() ako treba više kontrole */
     overflow-y: auto;
+    padding-right: 8px;
   }
 
   .job-post__details {

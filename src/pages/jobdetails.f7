@@ -1,6 +1,5 @@
 <template>
   <div class="page" data-name="job-translated-ai">
-
     <!-- Navbar -->
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
@@ -10,11 +9,19 @@
           </a>
         </div>
         <div class="center">
-          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+          <img
+            src="../assets/circle.svg"
+            alt="imjob logo"
+            class="navbar-logo-center"
+          />
         </div>
         <div class="right">
           <a href="/profile/">
-            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+            <img
+              src="../assets/setting.png"
+              alt="profile"
+              class="navbar-profile-icon"
+            />
           </a>
         </div>
       </div>
@@ -25,13 +32,26 @@
       <div class="block">
         <div id="job-details-content" class="job-card skeleton-block">
           <!-- Job details will load here -->
-          <div class="skeleton-text skeleton-effect-blink" style="width: 80%"></div>
-          <div class="skeleton-text skeleton-effect-blink" style="width: 60%"></div>
-          <div class="skeleton-text skeleton-effect-blink" style="width: 100%"></div>
+          <div
+            class="skeleton-text skeleton-effect-blink"
+            style="width: 80%"
+          ></div>
+          <div
+            class="skeleton-text skeleton-effect-blink"
+            style="width: 60%"
+          ></div>
+          <div
+            class="skeleton-text skeleton-effect-blink"
+            style="width: 100%"
+          ></div>
         </div>
 
         <!-- Apply Button -->
-        <div class="block text-align-center" id="apply-button-wrapper" style="margin-top: 20px; display: none;">
+        <div
+          class="block text-align-center"
+          id="apply-button-wrapper"
+          style="margin-top: 20px; display: none"
+        >
           <button id="apply-job-button" class="button button-fill color-blue">
             Apply for this job
           </button>
@@ -69,33 +89,54 @@
 
 <script>
   export default (props, { $f7, $on, $f7route, $ }) => {
-    $on('pageInit', async () => {
+    let hasLoaded = false;
+
+    $on("pageInit", async () => {
+      if (hasLoaded) return;
+      hasLoaded = true;
+
       const jobId = $f7route.params.id;
       const lang = localStorage.getItem("language_code") || "en";
       const token = localStorage.getItem("jwt_token");
 
       if (!token) {
         $f7.dialog.alert("Please login first.", "Auth Error");
-        $f7router.navigate('/login/');
+        $f7router.navigate("/login/");
         return;
       }
 
+      $f7.dialog.preloader("Loading job details...");
+
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${lang}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await fetch(
+          `http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${lang}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         const job = await res.json();
+        $f7.dialog.close();
 
         let html = `
           <div class="card elevation-2">
             <div class="card-content card-content-padding">
               <h2 class="job-title">${job.title}</h2>
-              <p class="company-name"><i class="f7-icons">building_2_fill</i> ${job.company?.name || 'Unknown Company'}</p>
-              <p><i class="f7-icons">placemark</i> ${job.city}, ${job.country}</p>
-              <p><i class="f7-icons">money_dollar_circle</i> €${job.salary_min} - €${job.salary_max}</p>
-              <p><i class="f7-icons">square_list</i> <b>Category:</b> ${job.category}</p>
-              <p><i class="f7-icons">square_stack_3d_up</i> <b>Subcategory:</b> ${job.sub_category}</p>
+              <p class="company-name"><i class="f7-icons">building_2_fill</i> ${
+                job.company?.name || "Unknown Company"
+              }</p>
+              <p><i class="f7-icons">placemark</i> ${job.city}, ${
+          job.country
+        }</p>
+              <p><i class="f7-icons">money_dollar_circle</i> €${
+                job.salary_min
+              } - €${job.salary_max}</p>
+              <p><i class="f7-icons">square_list</i> <b>Category:</b> ${
+                job.category
+              }</p>
+              <p><i class="f7-icons">square_stack_3d_up</i> <b>Subcategory:</b> ${
+                job.sub_category
+              }</p>
               <div class="job-description">
                 <p><b>Description:</b></p>
                 <div class="text-medium">${job.description}</div>
@@ -104,68 +145,84 @@
           </div>
         `;
 
-        $('#job-details-content').removeClass('skeleton-block').html(html);
-        $('#apply-button-wrapper').show(); // Show apply button
+        $("#job-details-content").removeClass("skeleton-block").html(html);
+        $("#apply-button-wrapper").show(); // Show apply button
 
         // Handle Apply Button Click
-        $('#apply-job-button').on('click', async () => {
-          $f7.dialog.preloader('Sending application...');
+        $("#apply-job-button").on("click", async () => {
+          $f7.dialog.preloader("Sending application...");
 
           try {
-          const token = localStorage.getItem('jwt_token');
-          const user = JSON.parse(localStorage.getItem('user'));
-          const userId = user?.id;
-            console.log("candidate profile je", localStorage.getItem('candidatProfile'));
+            const token = localStorage.getItem("jwt_token");
+            const user = JSON.parse(localStorage.getItem("user"));
+            const userId = user?.id;
+            console.log(
+              "candidate profile je",
+              localStorage.getItem("candidatProfile")
+            );
 
-          const candidatProfileRaw = localStorage.getItem('candidatProfile');
-          let candidatProfile;
+            const candidatProfileRaw = localStorage.getItem("candidatProfile");
+            let candidatProfile;
 
-          try {
-            candidatProfile = JSON.parse(candidatProfileRaw);
-          } catch (e) {
-            candidatProfile = null;
-          }
-
-          if (!candidatProfile || !candidatProfile.id) {
-            $f7.dialog.alert('You must complete your profile before applying for a job.');
-            return;
-          }
-
-          const candidateId = candidatProfile.id;
-          
-          const response = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/apply`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              'Authorization': `Bearer ${token}`
+            try {
+              candidatProfile = JSON.parse(candidatProfileRaw);
+            } catch (e) {
+              candidatProfile = null;
             }
-          });
+
+            if (!candidatProfile || !candidatProfile.id) {
+              $f7.dialog.alert(
+                "You must complete your profile before applying for a job."
+              );
+              return;
+            }
+
+            const candidateId = candidatProfile.id;
+
+            const response = await fetch(
+              `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/apply`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
 
             const result = await response.json();
 
             if (response.ok) {
-              $f7.dialog.alert('Successfully applied for the job!', 'Success');
-              $('#apply-job-button').hide();
+              $f7.dialog.alert("Successfully applied for the job!", "Success");
+              $("#apply-job-button").hide();
             } else if (response.status === 409) {
-              $f7.dialog.alert('You have already applied for this job.', 'Notice');
+              $f7.dialog.alert(
+                "You have already applied for this job.",
+                "Notice"
+              );
             } else {
-              throw new Error(result.message || 'Unknown error');
+              throw new Error(result.message || "Unknown error");
             }
           } catch (err) {
             console.error(err);
-            $f7.dialog.alert('Failed to apply for the job. Try again later.', 'Error');
+            $f7.dialog.alert(
+              "Failed to apply for the job. Try again later.",
+              "Error"
+            );
           } finally {
             $f7.dialog.close();
           }
         });
-
       } catch (err) {
-        $('#job-details-content').removeClass('skeleton-block').html(`
+        $("#job-details-content").removeClass("skeleton-block").html(`
           <div class="card elevation-2 text-color-red padding">
             <b>Failed to load job details.</b>
           </div>
         `);
         console.error(err);
+      }
+      finally {
+        $f7.dialog.close();
       }
     });
 
@@ -191,7 +248,7 @@
   }
 
   .card.elevation-2 {
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     border-radius: 12px;
   }
 
@@ -199,11 +256,11 @@
     font-size: 15px;
     line-height: 1.5;
   }
-#apply-job-button {
+  #apply-job-button {
     width: 100% !important;
     max-width: 100%;
     border-radius: 10px !important;
     font-size: 16px;
     margin-top: 40px !important;
-}
+  }
 </style>

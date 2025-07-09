@@ -80,7 +80,7 @@
     background: transparent !important;
   }
 </style>
-
+<!-- 
 <script>
   export default (props, { $, $on, $f7, $f7router }) => {
     $on("pageInit", () => {
@@ -192,6 +192,152 @@
             console.error("Login error", err);
             $f7.dialog.alert("Greška pri logovanju. Pokušajte ponovo.");
           });
+      }
+    });
+
+    return $render;
+  };
+</script> -->
+<script>
+  export default (props, { $, $on, $f7, $f7router }) => {
+    $on("pageInit", () => {
+      const $email = $("#emailInput");
+      const $password = $("#passwordInput");
+
+      function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      }
+
+      function authHeaders(token) {
+        return {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+      }
+
+      const fetchCandidateProfile = async (userId, token) => {
+        const res = await fetch(`http://127.0.0.1:8000/api/candidat/${userId}`, {
+          headers: authHeaders(token),
+        });
+        const data = await res.json();
+        return data?.candidateProfile || null;
+      };
+
+      const handleProfileStorage = (profile) => {
+        if (profile?.is_finished_profile) {
+          localStorage.setItem("candidatProfile", JSON.stringify(profile));
+        } else {
+          localStorage.setItem("candidatProfile", 0);
+        }
+      };
+
+      $("#loginForm").on("submit", (e) => {
+        e.preventDefault();
+        const email = $email.val().trim();
+        const password = $password.val();
+        const errors = [];
+
+        if (!email) {
+          errors.push("Email is required!");
+        } else if (!validateEmail(email)) {
+          errors.push("Email is not valid!");
+        }
+        if (!password) {
+          errors.push("Password is required");
+        } else if (password.length < 6) {
+          errors.push("Password must be at least 6 characters");
+        }
+
+        if (errors.length) {
+          const msgHtml = errors.map((msg) => `<div>• ${msg}</div>`).join("");
+          $f7.dialog.alert(msgHtml, "Validation Errors");
+          return;
+        }
+
+        loginUser(email, password);
+      });
+
+      function loginUser(email, password) {
+        $f7.dialog.preloader("Logging in...");
+
+        fetch("http://127.0.0.1:8000/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        })
+        .then(async (response) => {
+          const data = await response.json();
+          console.log("Login status:", response.status);
+          console.log("Login response data:", data);
+          $f7.dialog.close();
+
+          if (response.status === 200 && data?.user && data?.jwt_token) {
+            const user = data.user;
+            const token = data.jwt_token;
+
+            localStorage.setItem("jwt_token", token);
+            localStorage.setItem("user", JSON.stringify(user));
+
+            if (user.is_mobile_verified === 1) {
+              localStorage.setItem("userVerify", "1");
+
+              try {
+                const profile = await fetchCandidateProfile(user.id, token);
+                handleProfileStorage(profile);
+              } catch (e) {
+                console.error("Greška pri dohvaćanju profila:", e);
+                localStorage.setItem("candidatProfile", 0);
+              }
+
+              $f7router.navigate("/main/");
+            } else {
+              localStorage.setItem("userVerify", "0");
+              $f7.dialog.alert("Verifikujte broj da biste nastavili.");
+
+              fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user.email }),
+              }).catch((err) => {
+                console.error("Greška prilikom slanja verifikacionog koda:", err);
+              });
+
+              $f7router.navigate("/verify/");
+            }
+
+          } else if (response.status === 403 && data.error === "Mobile number not verified.") {
+            const user = data.user;
+            if (user && data.jwt_token) {
+              localStorage.setItem("jwt_token", data.jwt_token);
+              localStorage.setItem("user", JSON.stringify(user));
+            }
+
+            $f7.dialog.alert("Verifikujte broj da biste nastavili.");
+
+            if (user) {
+              fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user.email }),
+              }).catch((err) => {
+                console.error("Greška kod resend-code:", err);
+              });
+            }
+
+            $f7router.navigate("/verify/");
+          } else {
+            $f7.dialog.alert(data.error || "Invalid credentials.");
+          }
+        })
+        .catch((err) => {
+          $f7.dialog.close();
+          console.error("Login error", err);
+          $f7.dialog.alert("Greška pri logovanju. Pokušajte ponovo.");
+        });
       }
     });
 

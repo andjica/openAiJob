@@ -1,6 +1,6 @@
 <template>
   <div class="page" data-name="chatList">
-<div class="navbar navbar-fancy">
+    <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
         <div class="left">
           <a href="#" class="link icon-only panel-open" data-panel="left">
@@ -8,11 +8,19 @@
           </a>
         </div>
         <div class="center">
-          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+          <img
+            src="../assets/circle.svg"
+            alt="imjob logo"
+            class="navbar-logo-center"
+          />
         </div>
         <div class="right">
           <a href="/profile/">
-            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+            <img
+              src="../assets/setting.png"
+              alt="profile"
+              class="navbar-profile-icon"
+            />
           </a>
         </div>
       </div>
@@ -25,10 +33,14 @@
       </div>
       <div class="sidebar__links">
         <div class="sidebar__item">
-          <a href="/applyJobs/" class="panel-close" data-transition="f7-push">Apply jobs</a>
+          <a href="/applyJobs/" class="panel-close" data-transition="f7-push"
+            >Apply jobs</a
+          >
         </div>
         <div class="sidebar__item">
-          <a href="/settings/" class="panel-close" data-transition="f7-push">Settings</a>
+          <a href="/settings/" class="panel-close" data-transition="f7-push"
+            >Settings</a
+          >
         </div>
       </div>
     </div>
@@ -39,36 +51,44 @@
       </div>
     </div>
     <!-- Begin of footer -->
-<footer class="footer">
-  <div class="footer-nav">
-    <div class="trty">
-      <a href="/main/">
-        <img src="../assets/employers.svg" class="ft-img" alt="icon" />
-        <p>Home</p>
-      </a>
-    </div>
-    <div class="trty center-button">
-      <a href="/ai/">
-        <div class="circle-btn">
-          <img src="../assets/circle.svg" alt="AI" />
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/main/">
+            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <p>Home</p>
+          </a>
         </div>
-        <!-- <p>AI</p> -->
-      </a>
-    </div>
-    <div class="trty">
-      <a href="/chatList/">
-        <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
-        <p>Chats</p>
-        <span id="unread-badge" class="badge unread-badge">0</span>
-      </a>
-    </div>
-  </div>
-</footer>
+        <div class="trty center-button">
+          <a href="/ai/">
+            <div class="circle-btn">
+              <img src="../assets/circle.svg" alt="AI" />
+            </div>
+            <!-- <p>AI</p> -->
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chatList/">
+            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <p>Chats</p>
+            <span id="unread-badge" class="badge unread-badge">0</span>
+          </a>
+        </div>
+      </div>
+    </footer>
     <!-- End of footer -->
   </div>
 </template>
 
 <style>
+  .recruiter-chat__card {
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
   .pt-50 {
     padding-top: 50px;
   }
