@@ -198,9 +198,11 @@
           });
         } else {
           const jobHTML = `
-      <div class="recruiter-chat__card">
-        <h4>You didn't apply in any jobs</h4>
-      </div>`;
+        <div class="recruiter-chat__card">
+        <h4>You are not part of the recruitment process yet.</h4><br>
+        <p>A recruiter will contact you once your application has been accepted.</p>
+      </div>
+      `;
           jobPosts.innerHTML = jobHTML;
         }
       };
