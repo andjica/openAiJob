@@ -22,7 +22,7 @@
 </div>
     <!-- End of header -->
     <div class="block h-100">
-      <div class="page-content messages-content pt-60 h-85">
+      <div class="page-content messages-content h-85">
         <div class="messages"></div>
       </div>
       <div
