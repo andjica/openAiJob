@@ -183,7 +183,6 @@
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("National: ",data);
         const jobs = data.randomFiveJobs || data;
         renderSlidesNational(jobs);
         initSwiper();
@@ -204,7 +203,6 @@
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("International: ",data);
         const jobs = data.data || data;
         renderSlidesInternational(jobs);
         initSwiper();
@@ -219,9 +217,7 @@
       const nationalWrapper = document.getElementById("national-wrapper");
 
       nationalWrapper.innerHTML = "";
-      console.log(jobs);
       jobs.forEach((job) => {
-        console.log("MAIN JOBS: ",job)
         const badge = '<span class="badge color-orange">national</span>';
         const displayImage = job.company.logo ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />` : null;
         const slide = document.createElement("div");
@@ -248,9 +244,7 @@
       const internationalWrapper = document.getElementById("international-wrapper");
 
       internationalWrapper.innerHTML = "";
-      console.log(jobs);
       jobs.forEach((job) => {
-        console.log("MAIN JOBS: ",job)
         const badge = '<span class="badge color-blue">international</span>';
         const displayImage = job.company.logo ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />` : null;
         const slide = document.createElement("div");

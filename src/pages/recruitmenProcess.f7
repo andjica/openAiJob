@@ -31,9 +31,9 @@
    <footer class="footer">
   <div class="footer-nav">
     <div class="trty">
-      <a href="/searchJob/">
+      <a href="/main/">
         <img src="../assets/employers.svg" class="ft-img" alt="icon" />
-        <p>Jobs</p>
+        <p>Home</p>
       </a>
     </div>
     <div class="trty center-button">

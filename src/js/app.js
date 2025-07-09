@@ -71,6 +71,7 @@ app.on("pageInit", () => {
 
       const chatRouteMatch = to.url.match(/^\/chatroom\/([^/]+)\/?$/);
       if (chatRouteMatch) {
+        console.log("chatRouteMatch: ",chatRouteMatch)
         const chatId = parseInt(chatRouteMatch[1]);
         localStorage.setItem("active_chat_id", chatId);
         console.log("🟢 Ušao u chat sa ID: " + chatId);
@@ -167,7 +168,7 @@ window.initEcho = function () {
 //   window.Echo.private(`chat.${myId}`)
 //   .listen(".MessageSent", (msg) => {
 //   console.log("📥 Nova poruka stigla:", msg);
-  
+
 //   const myId = JSON.parse(localStorage.getItem("user"))?.id;
 //   const activeChatId = parseInt(localStorage.getItem("active_chat_id") || "0");
 
@@ -207,6 +208,7 @@ window.initEcho = function () {
 
 //   window.globalListenerAttached = true;
 // }
+
 function initGlobalMessageListener() {
   if (window.globalListenerAttached) return;
 
@@ -214,29 +216,79 @@ function initGlobalMessageListener() {
   const myId = user?.id;
   if (!myId) return;
 
+  const fetchRecruiter = () => {
+    const token = localStorage.getItem("jwt_token");
+
+    fetch(`http://127.0.0.1:8000/api/active/contacts/chats`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const contacts = data.data || [];
+
+        // 🧮 Saberemo ukupno nepročitanih
+        const unreadCount = contacts.reduce((total, contact) => {
+          return total + (contact.unread_count || 0);
+        }, 0);
+
+        console.log("📬 Ukupan broj nepročitanih:", unreadCount);
+        localStorage.setItem("unread_count", unreadCount.toString());
+
+        // (opcionalno) mapa po korisnicima
+        const senderMap = {};
+        contacts.forEach((contact) => {
+          console.log("contact: ", contact)
+          if (contact.unread_count > 0) {
+            senderMap[contact.id] = contact.unread_count;
+          }
+        });
+        localStorage.setItem("unread_sender_map", JSON.stringify(senderMap));
+
+        // ažuriraj UI ako postoji
+        window.updateGlobalUnreadBadge?.();
+      })
+      .catch((error) => {
+        console.error("Fetch error:", error);
+        $f7.dialog.alert("Something wrong to fetch", "Error");
+      });
+  };
+
+  fetchRecruiter();
   window.Echo.private(`chat.${myId}`)
     .listen(".MessageSent", (msg) => {
       console.log("📥 Nova poruka stigla:", msg);
 
-      const activeChatId = parseInt(localStorage.getItem("active_chat_id") || "0");
-
+      const activeChatId = parseInt(
+        localStorage.getItem("active_chat_id") || "0"
+      );
+      console.log("activeChatId: ", activeChatId);
       // Poruka mora biti za mene
       if (msg.receiver_id !== myId) return;
 
       // Ako sam već u tom chatu, nema badge-a
-      if (msg.sender_id === activeChatId) {
+      if (msg.sender.id  === activeChatId) {
         console.log("✅ U aktivnom sam chatu – bez badge-a");
         return;
       }
 
       // 🔴 Uvećaj globalni badge
-      let count = parseInt(localStorage.getItem("unread_count")) || 0;
+      let count = parseInt(localStorage.getItem("unread_count") || "0");
       count++;
-      localStorage.setItem("unread_count", count);
+      localStorage.setItem("unread_count", count.toString());
+
+      console.log("🔔 Novi count nepročitanih:", count);
 
       // 🔴 Dodaj pošiljaoca u mapu
       let map = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
-      map[msg.sender_id] = (map[msg.sender_id] || 0) + 1;
+      map[msg.user_id] = (map[msg.user_id] || 0) + 1;
       localStorage.setItem("unread_sender_map", JSON.stringify(map));
 
       // 🔄 Ažuriraj badge u footeru i u listi
@@ -323,7 +375,6 @@ window.updateGlobalUnreadBadge = function () {
   });
 };
 
-
 window.clearUnreadForUser = function (senderId) {
   let count = parseInt(localStorage.getItem("unread_count")) || 0;
   let unreadMap = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
@@ -338,46 +389,45 @@ window.clearUnreadForUser = function (senderId) {
   window.updateGlobalUnreadBadge?.();
 };
 
-
 // 🔴 UNREAD BADGE
-window.updateGlobalUnreadBadge = function () {
-  let count = parseInt(localStorage.getItem("unread_count")) || 0;
-  let unreadMap = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
+// window.updateGlobalUnreadBadge = function () {
+//   let count = parseInt(localStorage.getItem("unread_count")) || 0;
+//   let unreadMap = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
 
-  const myId = JSON.parse(localStorage.getItem("user"))?.id;
+//   const myId = JSON.parse(localStorage.getItem("user"))?.id;
 
-  // Ukloni unread count za sebe (poruke koje si ti poslao)
-  if (myId && unreadMap[myId]) {
-    count -= unreadMap[myId]; // oduzmi od ukupnog count-a
-    delete unreadMap[myId]; // ukloni iz mape
-  }
+//   // Ukloni unread count za sebe (poruke koje si ti poslao)
+//   if (myId && unreadMap[myId]) {
+//     count -= unreadMap[myId]; // oduzmi od ukupnog count-a
+//     delete unreadMap[myId]; // ukloni iz mape
+//   }
 
-  // Update localStorage da bude konzistentno
-  localStorage.setItem("unread_count", count);
-  localStorage.setItem("unread_sender_map", JSON.stringify(unreadMap));
+//   // Update localStorage da bude konzistentno
+//   localStorage.setItem("unread_count", count);
+//   localStorage.setItem("unread_sender_map", JSON.stringify(unreadMap));
 
-  const badges = document.getElementsByClassName("unread-badge");
+//   const badges = document.getElementsByClassName("unread-badge");
 
-  for (let i = 0; i < badges.length; i++) {
-    badges[i].textContent = count > 0 ? count : "";
-    badges[i].style.display = count > 0 ? "inline-block" : "none";
-  }
+//   for (let i = 0; i < badges.length; i++) {
+//     badges[i].textContent = count > 0 ? count : "";
+//     badges[i].style.display = count > 0 ? "inline-block" : "none";
+//   }
 
-  document.querySelectorAll(".match-row").forEach((row) => {
-    const btn = row.querySelector("a[data-id]");
-    const id = btn?.dataset?.id;
-    if (id && unreadMap[id]) {
-      let span = btn.querySelector(".unread-count");
-      if (!span) {
-        span = document.createElement("span");
-        span.className = "unread-count";
-        btn.appendChild(span);
-      }
-      span.textContent = `${unreadMap[id]} new`;
-      row.querySelector(".name").style.fontWeight = "bold";
-    }
-  });
-};
+//   document.querySelectorAll(".match-row").forEach((row) => {
+//     const btn = row.querySelector("a[data-id]");
+//     const id = btn?.dataset?.id;
+//     if (id && unreadMap[id]) {
+//       let span = btn.querySelector(".unread-count");
+//       if (!span) {
+//         span = document.createElement("span");
+//         span.className = "unread-count";
+//         btn.appendChild(span);
+//       }
+//       span.textContent = `${unreadMap[id]} new`;
+//       row.querySelector(".name").style.fontWeight = "bold";
+//     }
+//   });
+// };
 
 window.refreshUnreadInMatchRows = function () {
   window.updateGlobalUnreadBadge();
@@ -396,7 +446,7 @@ window.updateUnreadCount = async function () {
       return;
     }
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("jwt_token");
     const res = await fetch(
       "http://127.0.0.1:8000/api/messages/total/unread/count",
       {
@@ -407,13 +457,19 @@ window.updateUnreadCount = async function () {
     console.log("data: ", data);
     localStorage.setItem("unread_count", data.success ? data.count : 0);
 
-    const res2 = await fetch('http://127.0.0.1:8000/api/messages/unread/count', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res2 = await fetch(
+      "http://127.0.0.1:8000/api/messages/unread/count",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     const data2 = await res2.json();
-    console.log("data2: ",data2);
+    console.log("data2: ", data2);
     if (data2.success) {
-      localStorage.setItem("unread_sender_map", JSON.stringify(data2.unread_senders));
+      localStorage.setItem(
+        "unread_sender_map",
+        JSON.stringify(data2.unread_senders)
+      );
     }
 
     window.updateGlobalUnreadBadge();

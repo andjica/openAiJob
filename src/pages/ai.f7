@@ -316,7 +316,7 @@
                 text: messageHtml,
                 type: "received",
                 name: "JobBot",
-                avatar: "../assets/ai-avatar.png",
+                avatar: "../assets/images/ai.png",
               });
             });
 
@@ -499,10 +499,10 @@
         },
       });
 
-      messages.addMessage({
-      text: 'Loading previous conversations...',
-      type: 'received',
-    });
+    //   messages.addMessage({
+    //   text: 'Loading previous conversations...',
+    //   type: 'received',
+    // });
       fetchHistory();
       // ✅ Ovde dodaješ dinamički timestamp
       const now = new Date();

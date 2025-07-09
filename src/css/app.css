@@ -354,8 +354,8 @@
 
 .badge.unread-badge {
   position: absolute;
-  top: 0px;
-  right: -5px;
+  top: -40px;
+  right: -10px;
   background: red;
   color: white;
   font-size: 10px;
@@ -486,8 +486,7 @@ navbar-fancy {
 }
 
 .messages {
-    display: flex
-;
+    display: flex;
     flex-direction: column;
     min-height: 100%;
     position: relative;

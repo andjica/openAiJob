@@ -43,6 +43,31 @@
         </div>
       </div>
     </div>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-nav">
+        <div class="trty">
+          <a href="/main/">
+            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <p>Home</p>
+          </a>
+        </div>
+        <div class="trty center-button">
+          <a href="/ai/">
+            <div class="circle-btn">
+              <img src="../assets/circle.svg" alt="AI" />
+            </div>
+          </a>
+        </div>
+        <div class="trty">
+          <a href="/chatList/">
+            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <p>Chats</p>
+            <span id="unread-badge" class="badge unread-badge">0</span>
+          </a>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
