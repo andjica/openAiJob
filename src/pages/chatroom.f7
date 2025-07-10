@@ -1,35 +1,44 @@
 <template>
   <div class="page" data-name="chatroom">
     <!-- Begin of header -->
-  <div class="navbar navbar-fancy">
-  <div class="navbar-inner-custom">
-    <div class="left">
-      <a href="#" class="link icon-only panel-open" data-panel="left">
-        <i class="icon f7-icons">menu</i>
-      </a>
-    </div>
+    <div class="navbar navbar-fancy">
+      <div class="navbar-inner-custom">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon f7-icons">arrow_left</i>
+          </a>
+        </div>
 
-    <div class="center">
-      <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
-    </div>
+        <div class="center">
+          <img
+            src="../assets/circle.svg"
+            alt="imjob logo"
+            class="navbar-logo-center"
+          />
+        </div>
 
-    <div class="right">
-      <a href="/profile/">
-        <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
-      </a>
+        <div class="right">
+          <a href="/profile/">
+            <img
+              src="../assets/setting.png"
+              alt="profile"
+              class="navbar-profile-icon"
+            />
+          </a>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
     <!-- End of header -->
-    <div class="block h-100">
-      <div class="page-content messages-content h-85">
+    <div class="block chatroom-container">
+      <div class="page-content messages-content messages-scroll">
         <div class="messages"></div>
       </div>
+
       <div
-        class="toolbar messagebar b-12"
+        class="toolbar messagebar"
         @messagebar:attachmentdelete="${deleteAttachment}"
       >
-        <div class="toolbar-inner mt-100">
+        <div class="toolbar-inner">
           <div class="messagebar-area">
             <textarea class="resizable" placeholder="Message"></textarea>
           </div>
@@ -43,6 +52,7 @@
         </div>
       </div>
     </div>
+
     <!-- Footer -->
     <footer class="footer">
       <div class="footer-nav">
@@ -75,12 +85,33 @@
   .h-100 {
     height: 100%;
   }
-  .h-85 {
-    height: 85%;
+
+  .chatroom-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 56px - 56px); /* -navbar -footer (adjust if needed) */
   }
-  .mt-100 {
-    margin-top: 100px;
+
+  .messages-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-top: 20px!important;
   }
+
+  .messagebar {
+    flex-shrink: 0;
+    border-top: 1px solid #ddd;
+    background: #fff;
+  }
+
+  .messagebar .messagebar-area textarea {
+    min-height: 40px;
+    max-height: 120px;
+    resize: none;
+    overflow-y: auto;
+  }
+
   .message-sent {
     text-align: right;
   }
@@ -226,7 +257,7 @@
           console.log("Message sent:", data);
           fetchMessage(receiver_id);
           textarea.value = "";
-           // Optionally just addMessageUI here
+          // Optionally just addMessageUI here
           textarea.focus();
         })
         .catch((error) => {
@@ -236,7 +267,7 @@
 
     $on("pageInit", (e, page) => {
       receiver_id = page.route.params.id;
-      console.log("Skim se dopisujem: ",receiver_id);
+      console.log("Skim se dopisujem: ", receiver_id);
 
       window.clearUnreadForUser?.(parseInt(receiver_id));
 

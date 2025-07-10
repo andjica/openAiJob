@@ -177,7 +177,7 @@
         $f7router.navigate("/login/");
         return;
       }
-
+      
       const fetchApplyJob = () => {
         $f7.dialog.preloader("Loading applied jobs...");
         fetch(`http://127.0.0.1:8000/api/applied-jobs`, {

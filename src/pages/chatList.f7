@@ -3,8 +3,8 @@
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
         <div class="left">
-          <a href="#" class="link icon-only panel-open" data-panel="left">
-            <i class="icon f7-icons">menu</i>
+          <a href="#" class="link back">
+            <i class="icon f7-icons">arrow_left</i>
           </a>
         </div>
         <div class="center">
@@ -107,6 +107,28 @@
   .message-sent .message-bubble {
     border-radius: #7f7fea !important;
   }
+
+  .recruiter-highlight {
+    animation: pulseHighlight 1.5s ease-out;
+    background-color: #ddd4e9 !important; /* svetložuta pozadina */
+    transition: background-color 1s ease;
+    border-radius: 12px;
+  }
+
+  @keyframes pulseHighlight {
+    0% {
+      background-color: #ddd4e9;
+      transform: scale(1);
+    }
+    50% {
+      background-color: #bfbcfb;
+      transform: scale(1.02);
+    }
+    100% {
+      background-color: #ddd4e9;
+      transform: scale(1);
+    }
+  }
 </style>
 
 <script>
@@ -122,6 +144,8 @@
         return;
       }
 
+      $f7.dialog.preloader("Loading chats...");
+
       const fetchRecruiter = () => {
         fetch(`http://127.0.0.1:8000/api/active/contacts/chats`, {
           method: "GET",
@@ -136,8 +160,8 @@
             return response.json();
           })
           .then((data) => {
-            console.log("DATA fetchRecruiter: ", data.data);
             displayRecruiter(data.data);
+            $f7.dialog.close();
           })
           .catch((error) => {
             console.error("Fetch error:", error);
@@ -148,43 +172,44 @@
       const displayRecruiter = (recruiters) => {
         const jobPosts = document.querySelector("#recuiter-chat");
         jobPosts.innerHTML = ""; // clear any existing posts
+        localStorage.setItem("chat_list", JSON.stringify(recruiters));
 
         if (recruiters.length > 0) {
           const jobHTML = `
-      <div class="list simple-list media-list">
-        <ul>
-          ${recruiters
-            .map(
-              (recruiter) => `
-                <li>
-                  <a href="/chatroom/${recruiter.id}" 
-                     class="item-link item-content recruiter-chat-link" 
-                     data-recruiter-id="${recruiter.id}" 
-                     data-unread-count="${recruiter.unread_count}">
-                    <div class="item-media">
-                      <img src="../assets/feedback.svg" style="width: 28px; border-radius: 50%" />
-                    </div>
-                    <div class="item-inner">
-                      <div class="item-title">${recruiter.first_name} ${
-                recruiter.last_name
-              }</div>
-                      <div class="item-after">
-                        ${
-                          recruiter.unread_count > 0
-                            ? `<span class="badge color-red">${recruiter.unread_count}</span>`
-                            : ""
-                        }
-                      </div>
-                    </div>
-                  </a>
-                </li>
-                <hr>
-              `
-            )
-            .join("")}
-        </ul>
-      </div>
-    `;
+            <div class="list simple-list media-list">
+              <ul>
+                ${recruiters
+                  .map(
+                    (recruiter) => `
+                      <li>
+                        <a href="/chatroom/${recruiter.id}" 
+                          class="item-link item-content recruiter-chat-link" 
+                          data-recruiter-id="${recruiter.id}" 
+                          data-unread-count="${recruiter.unread_count}">
+                          <div class="item-media">
+                            <img src="../assets/feedback.svg" style="width: 28px; border-radius: 50%" />
+                          </div>
+                          <div class="item-inner">
+                            <div class="item-title">${recruiter.first_name} ${
+                      recruiter.last_name
+                    }</div>
+                            <div class="item-after">
+                              ${
+                                recruiter.unread_count > 0
+                                  ? `<span class="badge color-red">${recruiter.unread_count}</span>`
+                                  : ""
+                              }
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                      <hr>
+                    `
+                  )
+                  .join("")}
+              </ul>
+            </div>
+          `;
 
           jobPosts.insertAdjacentHTML("beforeend", jobHTML);
 
@@ -235,6 +260,76 @@
         document.activeElement.blur();
       }
     });
+
+    window.moveSenderToTopOfList = function (senderId) {
+      let chatList = JSON.parse(localStorage.getItem("chat_list") || "[]");
+
+      const index = chatList.findIndex((item) => item.id == senderId);
+      if (index !== -1) {
+        const [sender] = chatList.splice(index, 1);
+        chatList.unshift(sender);
+        localStorage.setItem("chat_list", JSON.stringify(chatList));
+
+        // ✅ Osvetli tog korisnika
+        window.refreshChatListUI(senderId);
+
+        // ✅ Ukloni klasu posle animacije
+        setTimeout(() => {
+          const link = document.querySelector(
+            `.recruiter-chat-link[data-recruiter-id="${senderId}"]`
+          );
+          if (link && link.parentElement) {
+            link.parentElement.classList.remove("recruiter-highlight");
+          }
+        }, 2000);
+      }
+    };
+
+    window.refreshChatListUI = function (highlightedId = null) {
+      const recruiters = JSON.parse(localStorage.getItem("chat_list") || "[]");
+      if (!recruiters.length) return;
+
+      const jobPosts = document.querySelector("#recuiter-chat");
+      if (!jobPosts) return;
+
+      const listHTML = recruiters
+        .map((recruiter) => {
+          const highlightClass =
+            recruiter.id == highlightedId ? "recruiter-highlight" : "";
+
+          return `
+            <li class="${highlightClass}">
+              <a href="/chatroom/${recruiter.id}" 
+                class="item-link item-content recruiter-chat-link" 
+                data-recruiter-id="${recruiter.id}" 
+                data-unread-count="${recruiter.unread_count}">
+                <div class="item-media">
+                  <img src="../assets/feedback.svg" style="width: 28px; border-radius: 50%" />
+                </div>
+                <div class="item-inner">
+                  <div class="item-title">${recruiter.first_name} ${
+            recruiter.last_name
+          }</div>
+                  <div class="item-after">
+                    ${
+                      recruiter.unread_count > 0
+                        ? `<span class="badge color-red">${recruiter.unread_count}</span>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              </a>
+            </li>
+            <hr>`;
+        })
+        .join("");
+
+      jobPosts.innerHTML = `
+        <div class="list simple-list media-list">
+          <ul>${listHTML}</ul>
+        </div>
+      `;
+    };
 
     return $render;
   };

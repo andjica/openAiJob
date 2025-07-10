@@ -182,11 +182,22 @@ function initGlobalMessageListener() {
       map[senderId] = (map[senderId] || 0) + 1;
       localStorage.setItem("unread_sender_map", JSON.stringify(map));
 
+      let chatList = JSON.parse(localStorage.getItem("chat_list") || "[]");
+      const index = chatList.findIndex((r) => r.id == senderId);
+      if (index !== -1) {
+        chatList[index].unread_count = (chatList[index].unread_count || 0) + 1;
+        localStorage.setItem("chat_list", JSON.stringify(chatList));
+      }
+
       window.updateGlobalUnreadBadge?.();
       window.refreshUnreadInMatchRows?.();
 
       if (typeof window.chatAddMessageUI === "function") {
         window.chatAddMessageUI(msg);
+      }
+
+      if (typeof window.moveSenderToTopOfList === "function") {
+        window.moveSenderToTopOfList(senderId);
       }
     })
     .error((err) => console.error("❌ Echo error:", err));

@@ -9,11 +9,19 @@
           </a>
         </div>
         <div class="center">
-          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+          <img
+            src="../assets/circle.svg"
+            alt="imjob logo"
+            class="navbar-logo-center"
+          />
         </div>
         <div class="right">
           <a href="/profile/">
-            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+            <img
+              src="../assets/setting.png"
+              alt="profile"
+              class="navbar-profile-icon"
+            />
           </a>
         </div>
       </div>
@@ -26,10 +34,14 @@
       </div>
       <div class="sidebar__links">
         <div class="sidebar__item">
-          <a href="/applyJobs/" class="panel-close" data-transition="f7-push">Apply jobs</a>
+          <a href="/applyJobs/" class="panel-close" data-transition="f7-push"
+            >Apply jobs</a
+          >
         </div>
         <div class="sidebar__item">
-          <a href="/settings/" class="panel-close" data-transition="f7-push">Settings</a>
+          <a href="/settings/" class="panel-close" data-transition="f7-push"
+            >Settings</a
+          >
         </div>
       </div>
     </div>
@@ -78,7 +90,6 @@
     </footer>
   </div>
 </template>
-
 
 <style>
   .title {
@@ -156,73 +167,80 @@
 
 <script>
   export default (props, { $, $on, $f7, $f7router }) => {
-  let hasLoaded = false;
+    $on("page:init", () => {
+  
+      const jwtToken = localStorage.getItem("jwt_token");
+      window.updateGlobalUnreadBadge?.();
+      console.log("JONE", window.updateGlobalUnreadBadge?.());
+      if (!jwtToken) {
+        localStorage.clear();
 
-  $on("page:init", () => {
-    if (hasLoaded) return;
-    hasLoaded = true;
+        $f7.dialog.alert(
+          "You are not logged in. Please login to continue.",
+          "Auth Error"
+        );
+        $f7router.navigate("/login");
+        return;
+      }
 
-    const jwtToken = localStorage.getItem("jwt_token");
-    window.updateGlobalUnreadBadge?.();
+      $f7.dialog.preloader("Loading jobs...");
 
-    if (!jwtToken) {
-      localStorage.clear();
-      $f7router.navigate("/login");
-      $f7.dialog.alert("You are not logged in. Please login to continue.", "Auth Error");
-      return;
-    }
-
-    $f7.dialog.preloader("Loading jobs...");
-
-    fetch(`http://127.0.0.1:8000/api/jobs/active/national`, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const jobs = data.randomFiveJobs || data;
-        renderSlidesNational(jobs);
-        initSwiper();
-        $f7.dialog.close();
+      fetch(`http://127.0.0.1:8000/api/jobs/active/national`, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
       })
-      .catch((err) => {
-        console.error("Error:", err);
-        $f7.dialog.alert("Something went wrong while fetching jobs.", "Error");
-      });
-
+        .then((res) => res.json())
+        .then((data) => {
+          const jobs = data.randomFiveJobs || data;
+          renderSlidesNational(jobs);
+          initSwiper();
+          $f7.dialog.close();
+        })
+        .catch((err) => {
+          console.error("Error:", err);
+          $f7.dialog.alert(
+            "Something went wrong while fetching jobs.",
+            "Error"
+          );
+        });
 
       fetch(`http://127.0.0.1:8000/api/jobs/active/international`, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const jobs = data.data || data;
-        renderSlidesInternational(jobs);
-        initSwiper();
-        $f7.dialog.close();
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
       })
-      .catch((err) => {
-        console.error("Error:", err);
-        $f7.dialog.alert("Something went wrong while fetching jobs.", "Error");
-      });
+        .then((res) => res.json())
+        .then((data) => {
+          const jobs = data.data || data;
+          renderSlidesInternational(jobs);
+          initSwiper();
+          $f7.dialog.close();
+        })
+        .catch((err) => {
+          console.error("Error:", err);
+          $f7.dialog.alert(
+            "Something went wrong while fetching jobs.",
+            "Error"
+          );
+        });
 
-    function renderSlidesNational(jobs) {
-      const nationalWrapper = document.getElementById("national-wrapper");
-
-      nationalWrapper.innerHTML = "";
-      jobs.forEach((job) => {
-        const badge = '<span class="badge color-orange">national</span>';
-        const displayImage = job.company.logo ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />` : null;
-        const slide = document.createElement("div");
-        slide.className = "swiper-slide";
-        slide.innerHTML = `
+      function renderSlidesNational(jobs) {
+        const nationalWrapper = document.getElementById("national-wrapper");
+        console.log("MAIN JOBS: ", jobs);
+        nationalWrapper.innerHTML = "";
+        jobs.forEach((job) => {
+          const badge = '<span class="badge color-orange">national</span>';
+          const displayImage = job.company.logo
+            ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />`
+            : "";
+          const slide = document.createElement("div");
+          slide.className = "swiper-slide";
+          slide.innerHTML = `
           <div class="job-post">
             <div class="job-post__details">
               ${badge}
@@ -234,22 +252,25 @@
             <a href="/job/${job.id}" class="button">View Details</a>
           </div>
         `;
-        
+
           nationalWrapper.appendChild(slide);
-      });
-    }
+        });
+      }
 
+      function renderSlidesInternational(jobs) {
+        const internationalWrapper = document.getElementById(
+          "international-wrapper"
+        );
 
-    function renderSlidesInternational(jobs) {
-      const internationalWrapper = document.getElementById("international-wrapper");
-
-      internationalWrapper.innerHTML = "";
-      jobs.forEach((job) => {
-        const badge = '<span class="badge color-blue">international</span>';
-        const displayImage = job.company.logo ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />` : null;
-        const slide = document.createElement("div");
-        slide.className = "swiper-slide";
-        slide.innerHTML = `
+        internationalWrapper.innerHTML = "";
+        jobs.forEach((job) => {
+          const badge = '<span class="badge color-blue">international</span>';
+          const displayImage = job.company.logo
+            ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />`
+            : "";
+          const slide = document.createElement("div");
+          slide.className = "swiper-slide";
+          slide.innerHTML = `
           <div class="job-post">
             <div class="job-post__details">
               ${badge}
@@ -261,33 +282,32 @@
             <a href="/job/${job.id}" class="button">View Details</a>
           </div>
         `;
-        
+
           internationalWrapper.appendChild(slide);
-      });
-    }
+        });
+      }
 
-    function initSwiper() {
-      new Swiper(".swiper-national", {
-        slidesPerView: 1.2,
-        spaceBetween: 20,
-        pagination: {
-          el: ".swiper-national-pagination",
-          clickable: true,
-        },
-      });
+      function initSwiper() {
+        new Swiper(".swiper-national", {
+          slidesPerView: 1.2,
+          spaceBetween: 20,
+          pagination: {
+            el: ".swiper-national-pagination",
+            clickable: true,
+          },
+        });
 
-      new Swiper(".swiper-international", {
-        slidesPerView: 1.2,
-        spaceBetween: 20,
-        pagination: {
-          el: ".swiper-international-pagination",
-          clickable: true,
-        },
-      });
-    }
-  });
+        new Swiper(".swiper-international", {
+          slidesPerView: 1.2,
+          spaceBetween: 20,
+          pagination: {
+            el: ".swiper-international-pagination",
+            clickable: true,
+          },
+        });
+      }
+    });
 
-  return $render;
-};
-
+    return $render;
+  };
 </script>
