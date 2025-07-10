@@ -210,7 +210,7 @@
       const displayApplyJobs = (jobs) => {
         const jobPosts = document.querySelector("#job-post");
         jobPosts.innerHTML = ""; // clear any existing posts
-
+        console.log("Apply Jobs: ", jobs);
         if (jobs.length > 0) {
           jobs.forEach((jobWrapper) => {
             const status =

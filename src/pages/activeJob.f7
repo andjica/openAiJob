@@ -70,8 +70,8 @@
               <p><i class="f7-icons">calendar</i> <b>Valid Until:</b> ${job.valid_until ?? '-'}</p>
               <p><i class="f7-icons">globe</i> <b>World Type:</b> ${job.job_world_type ?? '-'}</p>
               <p><i class="f7-icons">textformat</i> <b>Language:</b> ${(job.language_code ?? 'en').toUpperCase()}</p>
-              <p><i class="f7-icons">list_number</i> <b>Category:</b> ${job.category?.name ?? '-'}</p>
-              <p><i class="f7-icons">layers_alt</i> <b>Subcategory:</b> ${job.sub_category?.name ?? '-'}</p>
+              <p><i class="f7-icons">list_number</i> <b>Category:</b> ${job?.category ?? '-'}</p>
+              <p><i class="f7-icons">layers_alt</i> <b>Subcategory:</b> ${job?.sub_category ?? '-'}</p>
               <div class="job-description">
                 <p><b>Description:</b></p>
                 <div class="text-medium">${job.description ?? 'No description available.'}</div>

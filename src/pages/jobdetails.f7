@@ -116,6 +116,7 @@
         );
 
         const job = await res.json();
+        console.log("JOB DETAILS: ",job);
         $f7.dialog.close();
 
         let html = `

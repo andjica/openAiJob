@@ -4,7 +4,7 @@
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
         <div class="left">
-          <a href="#" class="link back">
+          <a href="/chatList/" class="link" data-ignore-cache="true">
             <i class="icon f7-icons">arrow_left</i>
           </a>
         </div>
@@ -137,6 +137,7 @@
 <script>
   export default (props, { $, $f7, $on, $f7router }) => {
     let receiver_id;
+
     const lastMessageIds = new Set();
     let jwtToken = localStorage.getItem("jwt_token");
     const user = JSON.parse(localStorage.getItem("user"));

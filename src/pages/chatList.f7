@@ -3,7 +3,7 @@
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
         <div class="left">
-          <a href="#" class="link back">
+          <a href="/main/" class="link back">
             <i class="icon f7-icons">arrow_left</i>
           </a>
         </div>
@@ -154,9 +154,7 @@
           },
         })
           .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
+            if (!response.ok) throw new Error("Network response was not ok");
             return response.json();
           })
           .then((data) => {
@@ -171,7 +169,7 @@
 
       const displayRecruiter = (recruiters) => {
         const jobPosts = document.querySelector("#recuiter-chat");
-        jobPosts.innerHTML = ""; // clear any existing posts
+        jobPosts.innerHTML = "";
         localStorage.setItem("chat_list", JSON.stringify(recruiters));
 
         if (recruiters.length > 0) {
@@ -190,9 +188,7 @@
                             <img src="../assets/feedback.svg" style="width: 28px; border-radius: 50%" />
                           </div>
                           <div class="item-inner">
-                            <div class="item-title">${recruiter.first_name} ${
-                      recruiter.last_name
-                    }</div>
+                            <div class="item-title">${recruiter.first_name} ${recruiter.last_name}</div>
                             <div class="item-after">
                               ${
                                 recruiter.unread_count > 0
@@ -212,45 +208,41 @@
           `;
 
           jobPosts.insertAdjacentHTML("beforeend", jobHTML);
-
-          // Add click event to each recruiter link
-          document.querySelectorAll(".recruiter-chat-link").forEach((link) => {
-            link.addEventListener("click", () => {
-              const recruiterUnread = parseInt(
-                link.dataset.unreadCount || "0",
-                10
-              );
-              if (recruiterUnread > 0) {
-                const badge = document.getElementById("unread-badge");
-                if (badge && badge.style.display !== "none") {
-                  const currentGlobal = parseInt(badge.textContent || "0");
-                  const newCount = Math.max(currentGlobal - recruiterUnread, 0);
-
-                  // ✅ Ažuriraj UI
-                  badge.textContent = newCount;
-                  if (newCount === 0) badge.style.display = "none";
-
-                  // ✅ Ažuriraj localStorage vrednost
-                  localStorage.setItem("unread_count", newCount);
-
-                  // ✅ (Opcionalno) Ažuriraj globalnu funkciju ako postoji
-                  if (typeof window.updateGlobalUnreadBadge === "function") {
-                    window.updateGlobalUnreadBadge(); // ili ažuriraj badge direktno ako koristiš ovaj helper
-                  }
-                }
-              }
-            });
-          });
+          // bindRecruiterClickHandlers(); // 🟢 BITNO!
         } else {
           const jobHTML = `
-        <div class="recruiter-chat__card">
-        <h4>You are not part of the recruitment process yet.</h4><br>
-        <p>A recruiter will contact you once your application has been accepted.</p>
-      </div>
-      `;
+            <div class="recruiter-chat__card">
+              <h4>You are not part of the recruitment process yet.</h4><br>
+              <p>A recruiter will contact you once your application has been accepted.</p>
+            </div>
+          `;
           jobPosts.innerHTML = jobHTML;
         }
       };
+
+      // function bindRecruiterClickHandlers() {
+      //   document.querySelectorAll(".recruiter-chat-link").forEach((link) => {
+      //     link.addEventListener("click", () => {
+      //       const recruiterUnread = parseInt(link.dataset.unreadCount || "0", 10);
+      //       if (recruiterUnread > 0) {
+      //         const badge = document.getElementById("unread-badge");
+      //         if (badge && badge.style.display !== "none") {
+      //           const currentGlobal = parseInt(badge.textContent || "0");
+      //           const newCount = Math.max(currentGlobal - recruiterUnread, 0);
+
+      //           badge.textContent = newCount;
+      //           if (newCount === 0) badge.style.display = "none";
+
+      //           localStorage.setItem("unread_count", newCount);
+
+      //           if (typeof window.updateGlobalUnreadBadge === "function") {
+      //             window.updateGlobalUnreadBadge();
+      //           }
+      //         }
+      //       }
+      //     });
+      //   });
+      // }
 
       fetchRecruiter();
     });
@@ -263,17 +255,14 @@
 
     window.moveSenderToTopOfList = function (senderId) {
       let chatList = JSON.parse(localStorage.getItem("chat_list") || "[]");
-
       const index = chatList.findIndex((item) => item.id == senderId);
       if (index !== -1) {
         const [sender] = chatList.splice(index, 1);
         chatList.unshift(sender);
         localStorage.setItem("chat_list", JSON.stringify(chatList));
 
-        // ✅ Osvetli tog korisnika
         window.refreshChatListUI(senderId);
 
-        // ✅ Ukloni klasu posle animacije
         setTimeout(() => {
           const link = document.querySelector(
             `.recruiter-chat-link[data-recruiter-id="${senderId}"]`
@@ -307,9 +296,7 @@
                   <img src="../assets/feedback.svg" style="width: 28px; border-radius: 50%" />
                 </div>
                 <div class="item-inner">
-                  <div class="item-title">${recruiter.first_name} ${
-            recruiter.last_name
-          }</div>
+                  <div class="item-title">${recruiter.first_name} ${recruiter.last_name}</div>
                   <div class="item-after">
                     ${
                       recruiter.unread_count > 0
@@ -329,8 +316,10 @@
           <ul>${listHTML}</ul>
         </div>
       `;
+      // bindRecruiterClickHandlers(); // 🟢 NE ZABORAVI I OVDE!
     };
 
     return $render;
   };
 </script>
+

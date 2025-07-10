@@ -205,6 +205,22 @@ function initGlobalMessageListener() {
   window.globalListenerAttached = true;
 }
 
+window.clearUnreadForUser = function (senderId) {
+  let count = parseInt(localStorage.getItem("unread_count")) || 0;
+  let map = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
+
+  if (map[senderId]) {
+    count -= map[senderId];
+    delete map[senderId];
+  }
+
+  localStorage.setItem("unread_count", count);
+  localStorage.setItem("unread_sender_map", JSON.stringify(map));
+
+  window.updateGlobalUnreadBadge?.();
+  window.refreshUnreadInMatchRows?.();
+};
+
 // 🔴 UNREAD BADGE
 window.updateGlobalUnreadBadge = function () {
   let count = parseInt(localStorage.getItem("unread_count")) || 0;
@@ -223,10 +239,16 @@ window.updateGlobalUnreadBadge = function () {
   localStorage.setItem("unread_sender_map", JSON.stringify(unreadMap));
 
   const badges = document.getElementsByClassName("unread-badge");
+for (let i = 0; i < badges.length; i++) {
+  badges[i].textContent = count > 0 ? count : "";
+  badges[i].style.display = count > 0 ? "inline-block" : "none";
+}
 
-  for (let i = 0; i < badges.length; i++) {
-    badges[i].textContent = count > 0 ? count : "";
-    badges[i].style.display = count > 0 ? "inline-block" : "none";
+  // Ako postoji #unread-badge (footer), ažuriraj i njega
+  const footerBadge = document.getElementById("unread-badge");
+  if (footerBadge) {
+    footerBadge.textContent = count > 0 ? count : "";
+    footerBadge.style.display = count > 0 ? "inline-block" : "none";
   }
 
   document.querySelectorAll(".match-row").forEach((row) => {
