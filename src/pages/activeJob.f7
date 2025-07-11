@@ -1,4 +1,4 @@
-<template>
+  <template>
   <div class="page" data-name="jobdetails">
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="block text-align-center" id="apply-button-wrapper" style="display:none; margin-top: 20px;">
-          <button id="apply-job-button" class="button button-fill color-blue">Apply for this job</button>
+          <button id="apply-job-button" class="button button-fill color-blue">Apply for this job </button>
         </div>
       </div>
     </div>
@@ -42,11 +42,57 @@
       const lang = localStorage.getItem("language_code") || "en";
 
       if (!token) {
-        $f7.dialog.alert("Please login first.", "Auth Error");
-        return $f7router.navigate('/login/');
+        localStorage.clear();
+
+        const dialog = $f7.dialog.create({
+          title: 'Auth Error',
+          text: 'You are not logged in. Please login to continue.',
+          buttons: [
+            {
+              text: 'OK',
+              bold: true,
+              onClick: () => {
+                $f7router.navigate('/login');
+              }
+            }
+          ],
+          closeByBackdropClick: false
+        });
+
+        dialog.open();
+        return;
       }
 
       $f7.dialog.preloader("Loading details of job...");
+
+      const candidatProfileRaw = localStorage.getItem('candidatProfile');
+      let candidatProfile;
+
+      try {
+        candidatProfile = JSON.parse(candidatProfileRaw);
+      } catch (e) {
+        candidatProfile = null;
+      }
+
+      if (candidatProfile && candidatProfile.id) {
+        const candidateId = candidatProfile.id;
+
+        const checkRes = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/check`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const checkJson = await checkRes.json();
+
+        if (!checkJson.applied) {
+          $('#apply-button-wrapper').show();
+        } else {
+          $('#apply-button-wrapper').html('<div class="text-color-green">✅ You already applied for this job.</div>');
+        }
+      } else {
+        $('#apply-button-wrapper').html('<div class="text-color-red">⚠️ Complete your profile to apply for this job.</div>');
+      }
 
       try {
         const res = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${lang}`, {

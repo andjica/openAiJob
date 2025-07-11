@@ -52,32 +52,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-nav">
-        <div class="trty">
-          <a href="/main/">
-            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
-            <p>Home</p>
-          </a>
-        </div>
-        <div class="trty center-button">
-          <a href="/ai/">
-            <div class="circle-btn">
-              <img src="../assets/circle.svg" alt="AI" />
-            </div>
-          </a>
-        </div>
-        <div class="trty">
-          <a href="/chatList/">
-            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
-            <p>Chats</p>
-            <span id="unread-badge" class="badge unread-badge">0</span>
-          </a>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -96,7 +70,7 @@
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    padding-top: 20px!important;
+    padding-top: 20px !important;
   }
 
   .messagebar {
@@ -256,10 +230,10 @@
         })
         .then((data) => {
           console.log("Message sent:", data);
-          fetchMessage(receiver_id);
           textarea.value = "";
           // Optionally just addMessageUI here
           textarea.focus();
+          fetchMessage(receiver_id);
         })
         .catch((error) => {
           console.error("Failed to send message:", error);
@@ -331,6 +305,49 @@
           }
         );
       }
+    });
+
+    $on("pageBeforeOut", async () => {
+      alert(2);
+      try {
+        const rid = parseInt(receiver_id);
+
+        await fetch(`http://127.0.0.1:8000/api/messages/mark-as-read/${rid}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: rid }),
+        });
+
+        let count = parseInt(localStorage.getItem("unread_count")) || 0;
+        let map = JSON.parse(localStorage.getItem("unread_sender_map") || "{}");
+
+        if (map[rid]) {
+          count -= map[rid];
+          delete map[rid];
+        }
+
+        let chatList = JSON.parse(localStorage.getItem("chat_list") || "[]");
+        const index = chatList.findIndex((r) => r.id == rid);
+        if (index !== -1) {
+          chatList[index].unread_count = 0;
+        }
+
+        localStorage.setItem("unread_count", count);
+        localStorage.setItem("unread_sender_map", JSON.stringify(map));
+        localStorage.setItem("chat_list", JSON.stringify(chatList));
+
+        window.updateGlobalUnreadBadge?.();
+        window.refreshUnreadInMatchRows?.();
+
+        alert(count); // ✅ sada će sigurno biti tačno
+      } catch (err) {
+        console.error("❌ Greška pri mark-as-read:", err);
+      }
+
+      localStorage.setItem("active_chat_id", "0");
     });
 
     return $render;

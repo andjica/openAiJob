@@ -3,7 +3,7 @@
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
         <div class="left">
-          <a href="/main/" class="link back">
+          <a href="/main/" class="link">
             <i class="icon f7-icons">arrow_left</i>
           </a>
         </div>
@@ -139,8 +139,24 @@
       window.updateGlobalUnreadBadge?.();
 
       if (!jwtToken) {
-        console.error("No JWT token found.");
-        $f7.dialog.alert("You are not authenticated", "Error");
+        localStorage.clear();
+
+        const dialog = $f7.dialog.create({
+          title: 'Auth Error',
+          text: 'You are not logged in. Please login to continue.',
+          buttons: [
+            {
+              text: 'OK',
+              bold: true,
+              onClick: () => {
+                $f7router.navigate('/login');
+              }
+            }
+          ],
+          closeByBackdropClick: false
+        });
+
+        dialog.open();
         return;
       }
 
@@ -208,7 +224,7 @@
           `;
 
           jobPosts.insertAdjacentHTML("beforeend", jobHTML);
-          // bindRecruiterClickHandlers(); // 🟢 BITNO!
+          bindRecruiterClickHandlers(); // 🟢 BITNO!
         } else {
           const jobHTML = `
             <div class="recruiter-chat__card">
@@ -220,29 +236,29 @@
         }
       };
 
-      // function bindRecruiterClickHandlers() {
-      //   document.querySelectorAll(".recruiter-chat-link").forEach((link) => {
-      //     link.addEventListener("click", () => {
-      //       const recruiterUnread = parseInt(link.dataset.unreadCount || "0", 10);
-      //       if (recruiterUnread > 0) {
-      //         const badge = document.getElementById("unread-badge");
-      //         if (badge && badge.style.display !== "none") {
-      //           const currentGlobal = parseInt(badge.textContent || "0");
-      //           const newCount = Math.max(currentGlobal - recruiterUnread, 0);
+      function bindRecruiterClickHandlers() {
+        document.querySelectorAll(".recruiter-chat-link").forEach((link) => {
+          link.addEventListener("click", () => {
+            const recruiterUnread = parseInt(link.dataset.unreadCount || "0", 10);
+            if (recruiterUnread > 0) {
+              const badge = document.getElementById("unread-badge");
+              if (badge && badge.style.display !== "none") {
+                const currentGlobal = parseInt(badge.textContent || "0");
+                const newCount = Math.max(currentGlobal - recruiterUnread, 0);
 
-      //           badge.textContent = newCount;
-      //           if (newCount === 0) badge.style.display = "none";
+                badge.textContent = newCount;
+                if (newCount === 0) badge.style.display = "none";
 
-      //           localStorage.setItem("unread_count", newCount);
+                localStorage.setItem("unread_count", newCount);
 
-      //           if (typeof window.updateGlobalUnreadBadge === "function") {
-      //             window.updateGlobalUnreadBadge();
-      //           }
-      //         }
-      //       }
-      //     });
-      //   });
-      // }
+                if (typeof window.updateGlobalUnreadBadge === "function") {
+                  window.updateGlobalUnreadBadge();
+                }
+              }
+            }
+          });
+        });
+      }
 
       fetchRecruiter();
     });

@@ -116,14 +116,26 @@
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const jwtToken = localStorage.getItem("jwt_token");
       window.updateGlobalUnreadBadge?.();
-      console.log(user);
+
       if (!jwtToken) {
-        $f7.dialog.alert(
-          "You are not logged in. Please login to continue.",
-          "Auth Error"
-        );
         localStorage.clear();
-        $f7router.navigate("/login");
+
+        const dialog = $f7.dialog.create({
+          title: 'Auth Error',
+          text: 'You are not logged in. Please login to continue.',
+          buttons: [
+            {
+              text: 'OK',
+              bold: true,
+              onClick: () => {
+                $f7router.navigate('/login');
+              }
+            }
+          ],
+          closeByBackdropClick: false
+        });
+
+        dialog.open();
         return;
       }
 

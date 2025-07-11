@@ -451,7 +451,6 @@
         candidateProfile = await fetchCandidateProfile(user.id, token);
         handleProfileStorage(candidateProfile);
         $f7.dialog.close();
-        await fetchAndPopulateCountry();
 
         if (candidateProfile?.is_finished_profile) {
           populateCandidateFields(candidateProfile);
@@ -482,11 +481,23 @@
     const getToken = () => localStorage.getItem("jwt_token");
 
     const redirectToLogin = () => {
-      $f7.dialog.alert(
-        "You are not logged in. Please login to continue.",
-        "Auth Error"
-      );
-      $f7router.navigate("/login");
+      const dialog = $f7.dialog.create({
+          title: 'Auth Error',
+          text: 'You are not logged in. Please login to continue.',
+          buttons: [
+            {
+              text: 'OK',
+              bold: true,
+              onClick: () => {
+                $f7router.navigate('/login');
+              }
+            }
+          ],
+          closeByBackdropClick: false
+        });
+
+        dialog.open();
+        return;
     };
 
     const fetchCandidateProfile = async (userId, token) => {
@@ -614,7 +625,11 @@
     };
 
     const setSelect = (id, value) => {
-      $(`#${id}`).val(value).trigger("change");
+      $(`#${id}`).val(value);
+        if (id === "countries") {
+          fetchPhoneCode(value);
+          fetchCities(value);
+        }
       const selectEl = document.getElementById(id);
       const selectedText = selectEl.options[selectEl.selectedIndex]?.text || "";
       $(`#${id}`)
@@ -780,7 +795,12 @@
       refreshSmartSelect("#cities");
     };
 
+    let lastFetchedPhoneCodeId = null;
+
     const fetchPhoneCode = async (countryId) => {
+      if (countryId === lastFetchedPhoneCodeId) return; // već fetchovano
+      lastFetchedPhoneCodeId = countryId;
+
       try {
         const res = await fetch(
           `http://127.0.0.1:8000/api/country/${countryId}/phone-code`

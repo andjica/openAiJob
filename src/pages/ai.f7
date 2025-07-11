@@ -10,12 +10,20 @@
         </div>
 
         <div class="center">
-          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+          <img
+            src="../assets/circle.svg"
+            alt="imjob logo"
+            class="navbar-logo-center"
+          />
         </div>
 
         <div class="right">
           <a href="/profile/">
-            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+            <img
+              src="../assets/setting.png"
+              alt="profile"
+              class="navbar-profile-icon"
+            />
           </a>
         </div>
       </div>
@@ -27,10 +35,14 @@
       </div>
       <div class="sidebar__links">
         <div class="sidebar__item">
-          <a href="/applyJobs/" class="panel-close" data-transition="f7-push">Apply jobs</a>
+          <a href="/applyJobs/" class="panel-close" data-transition="f7-push"
+            >Apply jobs</a
+          >
         </div>
         <div class="sidebar__item">
-          <a href="/settings/" class="panel-close" data-transition="f7-push">Settings</a>
+          <a href="/settings/" class="panel-close" data-transition="f7-push"
+            >Settings</a
+          >
         </div>
       </div>
     </div>
@@ -41,7 +53,12 @@
         <div class="messages-title" id="ai-timestamp"></div>
 
         <div class="message message-received">
-          <div class="message-avatar" style="background-image:url(http://localhost:5173/assets/circle.svg)"></div>
+          <div
+            class="message-avatar"
+            style="
+              background-image: url(http://localhost:5173/assets/circle.svg);
+            "
+          ></div>
           <div class="message-content">
             <div class="message-name">Im Job Ai</div>
             <div class="message-bubble">
@@ -51,12 +68,18 @@
         </div>
       </div>
     </div>
-    <div class="toolbar messagebar b-12" @messagebar:attachmentdelete=${deleteAttachment}>
+    <div
+      class="toolbar messagebar b-12"
+      @messagebar:attachmentdelete="${deleteAttachment}"
+    >
       <div class="toolbar-inner">
         <div class="messagebar-area">
           <textarea class="resizable" placeholder="Message"></textarea>
         </div>
-        <a class="link icon-only demo-send-message-link" @click=${sendMessage}>
+        <a
+          class="link icon-only demo-send-message-link"
+          @click="${sendMessage}"
+        >
           <i class="icon f7-icons if-not-md">arrow_up_circle_fill</i>
           <i class="icon material-icons md-only">send</i>
         </a>
@@ -169,7 +192,6 @@
 </style>
 <script>
   export default (props, { $f7, $el, $on, $, $f7router }) => {
-
     window.updateGlobalUnreadBadge?.();
     const people = [
       {
@@ -255,7 +277,6 @@
       messagebar.focus();
     };
 
-
     const sendMessageToAI = async (messageText) => {
       const token = localStorage.getItem("jwt_token");
 
@@ -270,7 +291,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + token,
+            Authorization: "Bearer " + token,
           },
           body: JSON.stringify({
             message: messageText,
@@ -279,7 +300,7 @@
 
         const data = await res.json();
         messages.hideTyping();
-        localStorage.setItem('language_code', data.language_code);
+        localStorage.setItem("language_code", data.language_code);
 
         if (data.message) {
           messages.addMessage({
@@ -311,7 +332,6 @@
               </div>
             `;
 
-
               messages.addMessage({
                 text: messageHtml,
                 type: "received",
@@ -322,19 +342,24 @@
 
             // Dodaj listener nakon što su poruke ubačene
             setTimeout(() => {
-              document.querySelectorAll('.view-job-details').forEach((btn) => {
-                btn.addEventListener('click', async (e) => {
+              document.querySelectorAll(".view-job-details").forEach((btn) => {
+                btn.addEventListener("click", async (e) => {
                   e.preventDefault();
-                  const jobId = btn.getAttribute('data-id');
-                  const langCode = localStorage.getItem('language_code') || 'en'; // koristi ono što već imaš
+                  const jobId = btn.getAttribute("data-id");
+                  const langCode =
+                    localStorage.getItem("language_code") || "en"; // koristi ono što već imaš
 
                   try {
                     // $f7.dialog.preloader("Go to next page...");
-                    const res = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`, {
-                      headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('jwt_token')
+                    const res = await fetch(
+                      `http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`,
+                      {
+                        headers: {
+                          Authorization:
+                            "Bearer " + localStorage.getItem("jwt_token"),
+                        },
                       }
-                    });
+                    );
                     const job = await res.json();
 
                     // $f7.dialog.close();
@@ -346,13 +371,14 @@
                   } catch (err) {
                     console.error("Error fetching job:", err);
                     // $f7.dialog.close();
-                    $f7.dialog.alert("Something went wrong while loading job details.");
+                    $f7.dialog.alert(
+                      "Something went wrong while loading job details."
+                    );
                   }
                 });
               });
             }, 100);
           }
-
         } else {
           messages.addMessage({
             text: "Sorry, I didn't get that.",
@@ -370,35 +396,35 @@
     };
 
     const fetchHistory = async () => {
-      const token = localStorage.getItem('jwt_token');
+      const token = localStorage.getItem("jwt_token");
 
       try {
         const res = await fetch("http://127.0.0.1:8000/api/chat/history", {
           headers: {
-            "Authorization": "Bearer " + token,
+            Authorization: "Bearer " + token,
           },
         });
 
         const history = await res.json();
 
-        history.reverse().forEach(item => {
+        history.reverse().forEach((item) => {
           // Korisnička poruka
           messages.addMessage({
             text: item.user_message,
-            type: 'sent',
+            type: "sent",
           });
 
           // AI odgovor
           messages.addMessage({
             text: item.ai_response,
-            type: 'received',
+            type: "received",
             name: "JobAI",
             avatar: "http://localhost:5173/assets/circle.svg",
           });
 
           // Poslovi
           if (Array.isArray(item.jobs)) {
-            item.jobs.forEach(job => {
+            item.jobs.forEach((job) => {
               const jobHtml = `
             <div class="job-card">
               <div class="job-card-header">
@@ -426,17 +452,20 @@
 
         // Reaktiviraj View Details dugmiće
         setTimeout(() => {
-          document.querySelectorAll('.view-job-details').forEach((btn) => {
-            btn.addEventListener('click', async (e) => {
+          document.querySelectorAll(".view-job-details").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
               e.preventDefault();
-              const jobId = btn.getAttribute('data-id');
-              const langCode = localStorage.getItem('language_code') || 'en';
+              const jobId = btn.getAttribute("data-id");
+              const langCode = localStorage.getItem("language_code") || "en";
               try {
-                const res = await fetch(`http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`, {
-                  headers: {
-                    'Authorization': 'Bearer ' + token,
-                  },
-                });
+                const res = await fetch(
+                  `http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`,
+                  {
+                    headers: {
+                      Authorization: "Bearer " + token,
+                    },
+                  }
+                );
 
                 const job = await res.json();
 
@@ -447,19 +476,43 @@
                 }
               } catch (err) {
                 console.error("Error fetching job:", err);
-                $f7.dialog.alert("Something went wrong while loading job details.");
+                $f7.dialog.alert(
+                  "Something went wrong while loading job details."
+                );
               }
             });
           });
         }, 100);
-
       } catch (err) {
         console.error("Failed to fetch AI history:", err);
       }
     };
 
-
     $on("pageInit", () => {
+      const jwtToken = localStorage.getItem("jwt_token");
+
+      if (!jwtToken) {
+        localStorage.clear();
+
+        const dialog = $f7.dialog.create({
+          title: "Auth Error",
+          text: "You are not logged in. Please login to continue.",
+          buttons: [
+            {
+              text: "OK",
+              bold: true,
+              onClick: () => {
+                $f7router.navigate("/login");
+              },
+            },
+          ],
+          closeByBackdropClick: false,
+        });
+
+        dialog.open();
+        return;
+      }
+
       messagebar = $f7.messagebar.create({
         el: $el.value.find(".messagebar"),
         attachments: [],
@@ -499,10 +552,10 @@
         },
       });
 
-    //   messages.addMessage({
-    //   text: 'Loading previous conversations...',
-    //   type: 'received',
-    // });
+      //   messages.addMessage({
+      //   text: 'Loading previous conversations...',
+      //   type: 'received',
+      // });
       fetchHistory();
       // ✅ Ovde dodaješ dinamički timestamp
       const now = new Date();
@@ -519,10 +572,6 @@
       messagebar.destroy();
       messages.destroy();
     });
-
-
-
-
 
     return $render;
   };

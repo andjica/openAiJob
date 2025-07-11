@@ -90,6 +90,29 @@
       const jobId = $f7router.currentRoute.params.id;
       console.log("Job id: ", jobId);
       const jwtToken = localStorage.getItem("jwt_token");
+      
+      if (!jwtToken) {
+        localStorage.clear();
+
+        const dialog = $f7.dialog.create({
+          title: 'Auth Error',
+          text: 'You are not logged in. Please login to continue.',
+          buttons: [
+            {
+              text: 'OK',
+              bold: true,
+              onClick: () => {
+                $f7router.navigate('/login');
+              }
+            }
+          ],
+          closeByBackdropClick: false
+        });
+
+        dialog.open();
+        return;
+      }
+
       window.updateGlobalUnreadBadge?.();
 
       const fetchRecruitmentJobProcess = () => {

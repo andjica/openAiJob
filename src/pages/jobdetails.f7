@@ -53,7 +53,7 @@
           style="margin-top: 20px; display: none"
         >
           <button id="apply-job-button" class="button button-fill color-blue">
-            Apply for this job
+            Apply for this job andjica
           </button>
         </div>
       </div>
@@ -100,13 +100,71 @@
       const token = localStorage.getItem("jwt_token");
 
       if (!token) {
-        $f7.dialog.alert("Please login first.", "Auth Error");
-        $f7router.navigate("/login/");
+        localStorage.clear();
+
+        const dialog = $f7.dialog.create({
+          title: 'Auth Error',
+          text: 'You are not logged in. Please login to continue.',
+          buttons: [
+            {
+              text: 'OK',
+              bold: true,
+              onClick: () => {
+                $f7router.navigate('/login');
+              }
+            }
+          ],
+          closeByBackdropClick: false
+        });
+
+        dialog.open();
         return;
       }
 
       $f7.dialog.preloader("Loading job details...");
 
+      let alreadyApplied = false;
+
+      const candidatProfileRaw = localStorage.getItem("candidatProfile");
+      let candidatProfile;
+
+      try {
+        candidatProfile = JSON.parse(candidatProfileRaw);
+      } catch (e) {
+        candidatProfile = null;
+      }
+
+      // Check if already applied
+      if (candidatProfile && candidatProfile.id) {
+        const candidateId = candidatProfile.id;
+
+        try {
+          const checkRes = await fetch(
+            `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/check`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const checkJson = await checkRes.json();
+
+          if (!checkJson.applied) {
+            $("#apply-button-wrapper").show();
+          } else {
+            alreadyApplied = true;
+            $("#apply-button-wrapper").html(
+              '<div class="text-color-green">✅ You already applied for this job.</div>'
+            );
+          }
+        } catch (err) {
+          console.error("Error checking application status", err);
+        }
+      } else {
+        $("#apply-button-wrapper").html(
+          '<div class="text-color-red">⚠️ Complete your profile to apply for this job.</div>'
+        );
+      }
+
+      // Load job details
       try {
         const res = await fetch(
           `http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${lang}`,
@@ -116,7 +174,7 @@
         );
 
         const job = await res.json();
-        console.log("JOB DETAILS: ",job);
+        console.log("JOB DETAILS: ", job);
         $f7.dialog.close();
 
         let html = `
@@ -124,20 +182,12 @@
             <div class="card-content card-content-padding">
               <h2 class="job-title">${job.title}</h2>
               <p class="company-name"><i class="f7-icons">building_2_fill</i> ${
-                job.company?.name || "Unknown Company"
+                job.company || "Unknown Company"
               }</p>
-              <p><i class="f7-icons">placemark</i> ${job.city}, ${
-          job.country
-        }</p>
-              <p><i class="f7-icons">money_dollar_circle</i> €${
-                job.salary_min
-              } - €${job.salary_max}</p>
-              <p><i class="f7-icons">square_list</i> <b>Category:</b> ${
-                job.category
-              }</p>
-              <p><i class="f7-icons">square_stack_3d_up</i> <b>Subcategory:</b> ${
-                job.sub_category
-              }</p>
+              <p><i class="f7-icons">placemark</i> ${job.city}, ${job.country}</p>
+              <p><i class="f7-icons">money_dollar_circle</i> €${job.salary_min} - €${job.salary_max}</p>
+              <p><i class="f7-icons">square_list</i> <b>Category:</b> ${job.category}</p>
+              <p><i class="f7-icons">square_stack_3d_up</i> <b>Subcategory:</b> ${job.sub_category}</p>
               <div class="job-description">
                 <p><b>Description:</b></p>
                 <div class="text-medium">${job.description}</div>
@@ -147,69 +197,53 @@
         `;
 
         $("#job-details-content").removeClass("skeleton-block").html(html);
-        $("#apply-button-wrapper").show(); // Show apply button
 
-        // Handle Apply Button Click
-        $("#apply-job-button").on("click", async () => {
-          $f7.dialog.preloader("Sending application...");
-
-          try {
-            const token = localStorage.getItem("jwt_token");
-            const user = JSON.parse(localStorage.getItem("user"));
-            const userId = user?.id;
-
-            const candidatProfileRaw = localStorage.getItem("candidatProfile");
-            let candidatProfile;
+        // Attach click handler only if not already applied
+        if (!alreadyApplied) {
+          $("#apply-job-button").on("click", async () => {
+            $f7.dialog.preloader("Sending application...");
 
             try {
-              candidatProfile = JSON.parse(candidatProfileRaw);
-            } catch (e) {
-              candidatProfile = null;
-            }
+              const user = JSON.parse(localStorage.getItem("user"));
 
-            if (!candidatProfile || !candidatProfile.id) {
-              $f7.dialog.alert(
-                "You must complete your profile before applying for a job."
-              );
-              return;
-            }
-
-            const candidateId = candidatProfile.id;
-
-            const response = await fetch(
-              `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/apply`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
+              if (!candidatProfile || !candidatProfile.id) {
+                $f7.dialog.alert("You must complete your profile before applying for a job.");
+                return;
               }
-            );
 
-            const result = await response.json();
+              const candidateId = candidatProfile.id;
 
-            if (response.ok) {
-              $f7.dialog.alert("Successfully applied for the job!", "Success");
-              $("#apply-job-button").hide();
-            } else if (response.status === 409) {
-              $f7.dialog.alert(
-                "You have already applied for this job.",
-                "Notice"
+              const response = await fetch(
+                `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/apply`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
               );
-            } else {
-              throw new Error(result.message || "Unknown error");
+
+              const result = await response.json();
+
+              if (response.ok) {
+                $f7.dialog.alert("Successfully applied for the job!", "Success");
+                $("#apply-button-wrapper").html(
+                  '<div class="text-color-green">✅ You already applied for this job.</div>'
+                );
+              } else if (response.status === 409) {
+                $f7.dialog.alert("You have already applied for this job.", "Notice");
+              } else {
+                throw new Error(result.message || "Unknown error");
+              }
+            } catch (err) {
+              console.error(err);
+              $f7.dialog.alert("Failed to apply for the job. Try again later.", "Error");
+            } finally {
+              $f7.dialog.close();
             }
-          } catch (err) {
-            console.error(err);
-            $f7.dialog.alert(
-              "Failed to apply for the job. Try again later.",
-              "Error"
-            );
-          } finally {
-            $f7.dialog.close();
-          }
-        });
+          });
+        }
       } catch (err) {
         $("#job-details-content").removeClass("skeleton-block").html(`
           <div class="card elevation-2 text-color-red padding">
@@ -217,8 +251,7 @@
           </div>
         `);
         console.error(err);
-      }
-      finally {
+      } finally {
         $f7.dialog.close();
       }
     });
@@ -226,6 +259,7 @@
     return $render;
   };
 </script>
+
 
 <style>
   .job-title {
