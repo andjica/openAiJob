@@ -243,7 +243,6 @@
 
       function renderSlidesNational(jobs) {
         const nationalWrapper = document.getElementById("national-wrapper");
-        console.log("MAIN JOBS: ", jobs);
         nationalWrapper.innerHTML = "";
         jobs.forEach((job) => {
           const badge = '<span class="badge color-orange">national</span>';

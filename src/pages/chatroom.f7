@@ -4,7 +4,7 @@
     <div class="navbar navbar-fancy">
       <div class="navbar-inner-custom">
         <div class="left">
-          <a href="/chatList/" class="link" data-ignore-cache="true">
+          <a href="/chatList/" class="link">
             <i class="icon f7-icons">arrow_left</i>
           </a>
         </div>
@@ -144,8 +144,15 @@
     };
 
     const addMessageUI = (msg, currentUserId) => {
+      console.log("addMessageUI 12345678910: ", msg);
+    // if (lastMessageIds.has(msg?.id || msg?.message?.id)) return;
+      // lastMessageIds.add(msg?.id || msg?.message?.id);
+      
       const messagesContainer = document.querySelector(".messages");
-      const isSent = msg.user_id === currentUserId;
+      const senderId = msg?.user_id ?? msg?.message?.user_id;
+      
+      const isSent = senderId === currentUserId;
+
       const messageEl = document.createElement("div");
       messageEl.className = `message ${
         isSent ? "message-sent" : "message-received"
@@ -153,12 +160,17 @@
       messageEl.innerHTML = `
         <div class="message-content">
           <div class="message-bubble">
-            <div class="message-text">${escapeHtml(msg.text)}</div>
+            <div class="message-text">${escapeHtml(msg?.text || msg?.message?.text)}</div>
           </div>
         </div>
       `;
       messagesContainer.appendChild(messageEl);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      setTimeout(() => {
+        const lastMessage = messagesContainer.querySelector(
+          ".message:last-child"
+        );
+        lastMessage?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
     };
 
     const renderMessages = (messages) => {
@@ -184,11 +196,17 @@
     `;
         messagesContainer.appendChild(messageEl);
       });
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // Scroll to last message after rendering all
+      setTimeout(() => {
+        const lastMessage = messagesContainer.querySelector(
+          ".message:last-child"
+        );
+        lastMessage?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
     };
 
-    const fetchMessage = (receiverId) => {
-      fetch(`http://127.0.0.1:8000/api/messages/${receiverId}`, {
+    const fetchMessage = async (receiverId) => {
+      await fetch(`http://127.0.0.1:8000/api/messages/${receiverId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${jwtToken}`,
@@ -196,6 +214,7 @@
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log("fetchMessage chatroom: ", data);
           renderMessages(data);
         })
         .catch((err) => {
@@ -233,7 +252,7 @@
           textarea.value = "";
           // Optionally just addMessageUI here
           textarea.focus();
-          fetchMessage(receiver_id);
+          addMessageUI(data, myId);
         })
         .catch((error) => {
           console.error("Failed to send message:", error);
@@ -242,15 +261,22 @@
 
     $on("pageInit", (e, page) => {
       receiver_id = page.route.params.id;
+      localStorage.setItem("active_chat_id", receiver_id);
       console.log("Skim se dopisujem: ", receiver_id);
+      let mapStr = localStorage.getItem("unread_sender_map");
+      let map = JSON.parse(mapStr || "{}");
+      let firstKey = Object.keys(map)[0];
+
+      console.log(firstKey); // "71" (kao string)
+      console.log(Number(firstKey));
 
       window.clearUnreadForUser?.(parseInt(receiver_id));
 
       window.updateGlobalUnreadBadge?.();
-      const titleEl = document.getElementById("activeChatTitle");
-      if (titleEl) {
-        titleEl.textContent = `Chat Room - #${receiver_id}`;
-      }
+      // const titleEl = document.getElementById("activeChatTitle");
+      // if (titleEl) {
+      //   titleEl.textContent = `Chat Room - #${receiver_id}`;
+      // }
 
       const markAsReadAndNavigate = async function () {
         try {
@@ -278,7 +304,6 @@
             document.querySelector(".view").f7View;
         } catch (err) {
           console.error("Error marking as read:", err);
-          alert("Failed to mark messages as read.");
         }
       };
 
@@ -292,10 +317,14 @@
             const newMsg = msg.message;
             console.log("Nova poruka stigla:", newMsg);
 
+            const activeChatId = parseInt(
+              localStorage.getItem("active_chat_id") || "0"
+            );
+
             if (
-              newMsg.user_id != myId &&
-              (newMsg.user_id == receiver_id ||
-                newMsg.receiver_id == receiver_id) &&
+              newMsg.user_id !== myId &&
+              (newMsg.user_id === activeChatId ||
+                newMsg.receiver_id === activeChatId) &&
               !lastMessageIds.has(newMsg.id)
             ) {
               lastMessageIds.add(newMsg.id);
@@ -308,7 +337,7 @@
     });
 
     $on("pageBeforeOut", async () => {
-      alert(2);
+      localStorage.setItem("active_chat_id", "0");
       try {
         const rid = parseInt(receiver_id);
 
@@ -341,8 +370,6 @@
 
         window.updateGlobalUnreadBadge?.();
         window.refreshUnreadInMatchRows?.();
-
-        alert(count); // ✅ sada će sigurno biti tačno
       } catch (err) {
         console.error("❌ Greška pri mark-as-read:", err);
       }
