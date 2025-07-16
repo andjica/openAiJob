@@ -11,7 +11,7 @@
 
         <div class="center">
           <img
-            src="../assets/circle.svg"
+            src="../assets/assets/circle.svg"
             alt="imjob logo"
             class="navbar-logo-center"
           />
@@ -20,7 +20,7 @@
         <div class="right">
           <a href="/profile/">
             <img
-              src="../assets/setting.png"
+              src="../assets/assets/setting.png"
               alt="profile"
               class="navbar-profile-icon"
             />
@@ -206,7 +206,7 @@
     };
 
     const fetchMessage = async (receiverId) => {
-      await fetch(`http://127.0.0.1:8000/api/messages/${receiverId}`, {
+      await fetch(`https://fluffycave.nl/api/messages/${receiverId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${jwtToken}`,
@@ -226,7 +226,7 @@
       const textarea = document.querySelector(".messagebar textarea");
       const message = textarea.value.trim();
       if (!message) return;
-      fetch("http://127.0.0.1:8000/api/store/messages", {
+      fetch("https://fluffycave.nl/api/store/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -281,7 +281,7 @@
       const markAsReadAndNavigate = async function () {
         try {
           const response = await fetch(
-            `http://127.0.0.1:8000/api/messages/mark-as-read/${receiver_id}`,
+            `https://fluffycave.nl/api/messages/mark-as-read/${receiver_id}`,
             {
               method: "POST",
               headers: {
@@ -341,7 +341,7 @@
       try {
         const rid = parseInt(receiver_id);
 
-        await fetch(`http://127.0.0.1:8000/api/messages/mark-as-read/${rid}`, {
+        await fetch(`https://fluffycave.nl/api/messages/mark-as-read/${rid}`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${jwtToken}`,

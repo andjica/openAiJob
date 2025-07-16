@@ -380,8 +380,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     padding: 0 16px;
     max-width: 95%;
-    margin: 0px auto;
-}
+margin-left: 2% !important;}
 
 .navbar-inner-custom {
   display: flex;
@@ -508,4 +507,12 @@ navbar-fancy {
     border-radius: 100%;
     padding: 10px;
     color: white !important;
+}
+.toolbar.messagebar.b-12 {
+    max-width: 93%;
+    margin: 0px auto;
+    margin-left: 4%;
+    border-radius: 20px;
+    position: fixed !important;
+    bottom: 12% !important;
 }

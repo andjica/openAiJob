@@ -177,7 +177,7 @@
           return;
         }
 
-        const url = `http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`;
+        const url = `https://fluffycave.nl/api/verify-user/${user.id}/resend-code`;
 
         const response = await fetch(url, {
           method: "POST",
@@ -234,7 +234,7 @@
           return;
         }
 
-        const url = `http://127.0.0.1:8000/api/update-email`;
+        const url = `https://fluffycave.nl/api/update-email`;
         const response = await fetch(url, {
           method: "POST",
           headers: {

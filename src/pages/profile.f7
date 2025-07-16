@@ -501,7 +501,7 @@
     };
 
     const fetchCandidateProfile = async (userId, token) => {
-      const res = await fetch(`http://127.0.0.1:8000/api/candidat/${userId}`, {
+      const res = await fetch(`https://fluffycave.nl/api/candidat/${userId}`, {
         headers: authHeaders(token),
       });
       const data = await res.json();
@@ -562,7 +562,7 @@
       // CV file
       if (profile.cv) {
         const fileName = profile.cv.split("/").pop();
-        const fileUrl = `http://127.0.0.1:8000/api/candidat/${profile.cv}`;
+        const fileUrl = `https://fluffycave.nl/api/candidat/${profile.cv}`;
         const fullName = `${profile.user.first_name} ${profile.user.last_name}`;
 
         const span = document.getElementById("cv_filename");
@@ -583,7 +583,7 @@
       if (profile.profile_image) {
         const defaultImage = "../assets/user-default.png";
         const imageUrl = profile.profile_image
-          ? `http://127.0.0.1:8000/storage/${profile.profile_image}`
+          ? `https://fluffycave.nl/storage/${profile.profile_image}`
           : defaultImage;
         console.log(imageUrl)
         const imageSpan = document.getElementById("image_file");
@@ -702,7 +702,7 @@
       }
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/countries", {
+        const res = await fetch("https://fluffycave.nl/api/countries", {
           headers: authHeaders(token),
         });
         const data = await res.json();
@@ -763,12 +763,13 @@
 
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/api/cities/${countryId}`,
+          `https://fluffycave.nl/api/cities/${countryId}`,
           {
             headers: authHeaders(token),
           }
         );
         const data = await res.json();
+        console.log("andjica", data);
         const cities = Array.isArray(data) ? data : data?.cities || [];
         localStorage.setItem(key, JSON.stringify(cities));
         populateCities(cities, selectedCityId);
@@ -803,7 +804,7 @@
 
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/api/country/${countryId}/phone-code`
+          `https://fluffycave.nl/api/country/${countryId}/phone-code`
         );
         const data = await res.json();
         $("#phone-code").text(data.phone ? `+${data.phone}` : "XXX");
@@ -825,7 +826,7 @@
       const formData = buildFormData(userId);
       const preloader = $f7.dialog.preloader("Updating...");
 
-      fetch(`http://127.0.0.1:8000/api/candidat/profile/update/${userId}`, {
+      fetch(`https://fluffycave.nl/api/candidat/profile/update/${userId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -847,7 +848,7 @@
           });
           const url= data?.candidateProfile?.original?.data.profile_image;
           if (url) {
-            const imageUrl = `http://127.0.0.1:8000/storage/${url}`;
+            const imageUrl = `https://fluffycave.nl/storage/${url}`;
             const imageSpan = document.getElementById("image_file");
             imageSpan.innerHTML = "";
 

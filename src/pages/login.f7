@@ -2,7 +2,7 @@
   <div class="page" data-name="login">
     <div class="page-content">
       <div class="login-screen-title">
-        <img src="./assets/images/logo1.png" width="150px" />
+        <img src="../assets/assets/circle.svg" width="50px" />
       </div>
 
       <form id="loginForm">
@@ -121,7 +121,7 @@
       function loginUser(email, password) {
         $f7.dialog.preloader("Logging in...");
 
-        fetch("http://127.0.0.1:8000/api/login", {
+        fetch("https://fluffycave.nl/api/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -148,7 +148,7 @@
                 localStorage.setItem("userVerify", "0");
                 $f7.dialog.alert("Verifikujte broj da biste nastavili.");
 
-                fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+                fetch(`https://fluffycave.nl/api/verify-user/${user.id}/resend-code`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: user.email }),
@@ -173,7 +173,7 @@
             $f7.dialog.alert("Verifikujte broj da biste nastavili.");
 
             if (user) {
-              fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+              fetch(`https://fluffycave.nl/api/verify-user/${user.id}/resend-code`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: user.email }),
@@ -217,7 +217,7 @@
       }
 
       const fetchCandidateProfile = async (userId, token) => {
-        const res = await fetch(`http://127.0.0.1:8000/api/candidat/${userId}`, {
+        const res = await fetch(`https://fluffycave.nl/api/candidat/${userId}`, {
           headers: authHeaders(token),
         });
         const data = await res.json();
@@ -261,7 +261,7 @@
       function loginUser(email, password) {
         $f7.dialog.preloader("Logging in...");
 
-        fetch("http://127.0.0.1:8000/api/login", {
+        fetch("https://fluffycave.nl/api/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -298,7 +298,7 @@
               localStorage.setItem("userVerify", "0");
               $f7.dialog.alert("Verifikujte broj da biste nastavili.");
 
-              fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+              fetch(`https://fluffycave.nl/api/verify-user/${user.id}/resend-code`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: user.email }),
@@ -319,7 +319,7 @@
             $f7.dialog.alert("Verifikujte broj da biste nastavili.");
 
             if (user) {
-              fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+              fetch(`https://fluffycave.nl/api/verify-user/${user.id}/resend-code`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: user.email }),

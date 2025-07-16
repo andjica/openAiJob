@@ -2,7 +2,7 @@
   <div class="page" data-name="register">
     <div class="page-content">
       <div class="register-screen-title">
-        <img src="./assets/images/logo1.png" width="150px" />
+        <img src="../assets/assets/images/logo1.png" width="150px" />
       </div>
       <form id="registerForm">
         <div class="list inset no-hairlines-md">
@@ -159,7 +159,7 @@
       ) {
         $f7.dialog.preloader("Registering...");
 
-        fetch("http://127.0.0.1:8000/api/register", {
+        fetch("https://fluffycave.nl/api/register", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

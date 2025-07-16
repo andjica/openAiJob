@@ -2,13 +2,13 @@
   <div class="page">
     <div class="page-content">
       <div class="block grid grid-gap mt-50">
-        <img src="./assets/images/logo1.png" width="150px" class="logo" />
+        <img src="../assets/assets/images/logo1.png" width="150px" class="logo" />
       </div>
-      <div class="block">
+      <!-- <div class="block">
         <a href="/login/" class="button button-fill login-button">Login</a>
         <br />
         <a href="/register/" class="link">Register</a>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -43,7 +43,7 @@
         }
         if (userVerify === "0") {
           localStorage.setItem("userVerify", 0);
-          fetch(`http://127.0.0.1:8000/api/verify-user/${user?.id}/resend-code`, {
+          fetch(`https://fluffycave.nl/api/verify-user/${user?.id}/resend-code`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: user.email })

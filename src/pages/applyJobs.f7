@@ -9,11 +9,11 @@
           </a>
         </div>
         <div class="center">
-          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+          <img src="../assets/assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
         </div>
         <div class="right">
           <a href="/profile/">
-            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+            <img src="../assets/assets/setting.png" alt="profile" class="navbar-profile-icon" />
           </a>
         </div>
       </div>
@@ -46,21 +46,21 @@
   <div class="footer-nav">
     <div class="trty">
       <a href="/main/">
-        <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+        <img src="../assets/assets/employers.svg" class="ft-img" alt="icon" />
         <p>Home</p>
       </a>
     </div>
     <div class="trty center-button">
       <a href="/ai/">
         <div class="circle-btn">
-          <img src="../assets/circle.svg" alt="AI" />
+          <img src="../assets/assets/circle.svg" alt="AI" />
         </div>
         <!-- <p>AI</p> -->
       </a>
     </div>
     <div class="trty">
       <a href="/chatList/">
-        <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+        <img src="../assets/assets/feedback.svg" class="ft-img" alt="icon" />
         <p>Chats</p>
         <span id="unread-badge" class="badge unread-badge">0</span>
       </a>
@@ -193,7 +193,7 @@
       
       const fetchApplyJob = () => {
         $f7.dialog.preloader("Loading applied jobs...");
-        fetch(`http://127.0.0.1:8000/api/applied-jobs`, {
+        fetch(`https://fluffycave.nl/api/applied-jobs`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -228,7 +228,7 @@
           jobs.forEach((jobWrapper) => {
             const status =
               jobWrapper.pivot.status === "accept"
-                ? `<div class="status__accept"><button class="btn btn__process">In recruiter process</button><a href="/chatroom/${jobWrapper.recruiter.user_id}" class="chat-link"><img src="../assets/feedback.svg" alt="Chat" class="chat-icon"/></a></div>`
+                ? `<div class="status__accept"><button class="btn btn__process">In recruiter process</button><a href="/chatroom/${jobWrapper.recruiter.user_id}" class="chat-link"><img src="../assets/assets//feedback.svg" alt="Chat" class="chat-icon"/></a></div>`
                 : '<button class="btn btn__pedding" disabled>In pending</button>';
 
             const linkToProccess = `
@@ -246,7 +246,7 @@
                 : '<span class="badge color-blue">international</span>';
 
             const companyLogo = jobWrapper.company?.logo
-              ? `http://127.0.0.1:8000/storage/${jobWrapper.company.logo}`
+              ? `https://fluffycave.nl/storage/${jobWrapper.company.logo}`
               : "";
 
             const logoHTML = companyLogo

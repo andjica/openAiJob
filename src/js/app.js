@@ -30,7 +30,6 @@ function isTokenExpired(token) {
   }
 }
 
-// Inicijalizuj Framework7 aplikaciju
 var app = new Framework7({
   name: "openAiJob",
   theme: "auto",
@@ -43,15 +42,26 @@ var app = new Framework7({
     scrollIntoViewCentered: device.cordova,
   },
   statusbar: {
-    iosOverlaysWebView: true,
-    androidOverlaysWebView: true,
+    iosOverlaysWebView: false,
+    androidOverlaysWebView: false,
   },
   on: {
     init: function () {
-      if (window.cordova) cordovaApp.init(this);
-    },
+if (window.cordova && window.cordovaApp?.init) {
+  window.cordovaApp.init(this);
+}    },
   },
 });
+
+
+document.addEventListener("deviceready", function () {
+  if (window.StatusBar) {
+    StatusBar.overlaysWebView(false);
+    StatusBar.backgroundColorByHexString("#ffffff");
+    StatusBar.styleDefault();
+  }
+});
+
 app.on("pageInit", () => {
   const mainRouter = app.views.main?.router;
   // alert(3);
@@ -101,23 +111,24 @@ window.initEcho = function () {
 
   window.Pusher = Pusher;
 
-  window.Echo = new Echo({
-    broadcaster: "pusher",
-    key: "localkey",
-    cluster: "mt1",
-    wsHost: "127.0.0.1",
-    wsPort: 6001,
-    forceTLS: false,
-    encrypted: false,
-    disableStats: true,
-    enabledTransports: ["ws"],
-    authEndpoint: "http://127.0.0.1:8000/api/broadcasting/auth",
-    auth: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  
+window.Echo = new Echo({
+  broadcaster: "pusher",
+  key: "localkey",
+  cluster: "mt1",
+  wsHost: window.location.hostname === "localhost" ? "127.0.0.1" : "fluffycave.nl",
+  wsPort: 6001,
+  forceTLS: false,
+  disableStats: true,
+  enabledTransports: ["ws"],
+  authEndpoint: "https://fluffycave.nl/api/broadcasting/auth",
+  auth: {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  });
+  },
+});
+
 
   // document.addEventListener("deviceready", () => {
   //   const ws = new WebSocket(
@@ -286,7 +297,7 @@ window.updateUnreadCount = async function () {
 
     const token = localStorage.getItem("token");
     const res = await fetch(
-      "http://127.0.0.1:8000/api/messages/total/unread/count",
+      "https://fluffycave.nl/api/messages/total/unread/count",
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -294,7 +305,7 @@ window.updateUnreadCount = async function () {
     const data = await res.json();
     localStorage.setItem("unread_count", data.success ? data.count : 0);
 
-    const res2 = await fetch('http://127.0.0.1:8000/api/messages/unread/count', {
+    const res2 = await fetch('https://fluffycave.nl/api/messages/unread/count', {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data2 = await res2.json();

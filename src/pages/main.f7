@@ -10,7 +10,7 @@
         </div>
         <div class="center">
           <img
-            src="../assets/circle.svg"
+            src="../assets/assets/circle.svg"
             alt="imjob logo"
             class="navbar-logo-center"
           />
@@ -18,7 +18,7 @@
         <div class="right">
           <a href="/profile/">
             <img
-              src="../assets/setting.png"
+              src="../assets/assets/setting.png"
               alt="profile"
               class="navbar-profile-icon"
             />
@@ -68,20 +68,20 @@
       <div class="footer-nav">
         <div class="trty">
           <a href="/main/">
-            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/employers.svg" class="ft-img" alt="icon" />
             <p>Home</p>
           </a>
         </div>
         <div class="trty center-button">
           <a href="/ai/">
             <div class="circle-btn">
-              <img src="../assets/circle.svg" alt="AI" />
+              <img src="../assets/assets/circle.svg" alt="AI" />
             </div>
           </a>
         </div>
         <div class="trty">
           <a href="/chatList/">
-            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/feedback.svg" class="ft-img" alt="icon" />
             <p>Chats</p>
             <span id="unread-badge" class="badge unread-badge">0</span>
           </a>
@@ -175,18 +175,24 @@
         localStorage.clear();
 
         const dialog = $f7.dialog.create({
-          title: 'Auth Error',
-          text: 'You are not logged in. Please login to continue.',
+          title: "Auth Error",
+          text: "You are not logged in. Please login to continue.",
           buttons: [
             {
-              text: 'OK',
+              text: "OK",
               bold: true,
               onClick: () => {
-                $f7router.navigate('/login');
-              }
-            }
+                setTimeout(() => {
+                  const currentRoute = $f7router?.currentRoute?.path;
+                  if (currentRoute !== "/login/") {
+                    $f7router?.navigate("/login/") ||
+                      $f7.views.main.router.navigate("/login/");
+                  }
+                }, 100); // kratak delay za sigurnost
+              },
+            },
           ],
-          closeByBackdropClick: false
+          closeByBackdropClick: false,
         });
 
         dialog.open();
@@ -197,7 +203,7 @@
       
       $f7.dialog.preloader("Loading jobs...");
 
-      fetch(`http://127.0.0.1:8000/api/jobs/active/national`, {
+      fetch(`https://fluffycave.nl/api/jobs/active/national`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -219,7 +225,7 @@
           );
         });
 
-      fetch(`http://127.0.0.1:8000/api/jobs/active/international`, {
+      fetch(`https://fluffycave.nl/api/jobs/active/international`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -247,7 +253,7 @@
         jobs.forEach((job) => {
           const badge = '<span class="badge color-orange">national</span>';
           const displayImage = job.company.logo
-            ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />`
+            ? `<img src="https://fluffycave.nl/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />`
             : "";
           const slide = document.createElement("div");
           slide.className = "swiper-slide";
@@ -277,7 +283,7 @@
         jobs.forEach((job) => {
           const badge = '<span class="badge color-blue">international</span>';
           const displayImage = job.company.logo
-            ? `<img src="http://127.0.0.1:8000/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />`
+            ? `<img src="https://fluffycave.nl/storage/${job.company.logo}" class="pos_abs" width="50" height="50" alt="${job.company.name}" />`
             : "";
           const slide = document.createElement("div");
           slide.className = "swiper-slide";

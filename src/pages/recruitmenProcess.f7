@@ -9,12 +9,12 @@
     </div>
 
     <div class="center">
-      <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+      <img src="../assets/assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
     </div>
 
     <div class="right">
       <a href="/profile/">
-        <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+        <img src="../assets/assets/setting.png" alt="profile" class="navbar-profile-icon" />
       </a>
     </div>
   </div>
@@ -32,21 +32,21 @@
   <div class="footer-nav">
     <div class="trty">
       <a href="/main/">
-        <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+        <img src="../assets/assets/employers.svg" class="ft-img" alt="icon" />
         <p>Home</p>
       </a>
     </div>
     <div class="trty center-button">
       <a href="/ai/">
         <div class="circle-btn">
-          <img src="../assets/circle.svg" alt="AI" />
+          <img src="../assets/assets/circle.svg" alt="AI" />
         </div>
         <!-- <p>AI</p> -->
       </a>
     </div>
     <div class="trty">
       <a href="/chatList/">
-        <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+        <img src="../assets/assets/feedback.svg" class="ft-img" alt="icon" />
         <p>Chats</p>
         <span id="unread-badge" class="badge unread-badge">0</span>
       </a>
@@ -117,7 +117,7 @@
 
       const fetchRecruitmentJobProcess = () => {
         $f7.dialog.preloader("Loading phases process...");
-        fetch(`http://127.0.0.1:8000/api/recruitment/status/${jobId}`, {
+        fetch(`https://fluffycave.nl/api/recruitment/status/${jobId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${jwtToken}`,

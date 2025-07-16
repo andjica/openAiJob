@@ -8,13 +8,16 @@ var cordovaApp = {
     if (!window.navigator.splashscreen) return;
     setTimeout(() => {
       window.navigator.splashscreen.hide();
-    }, 2000);
+    }, 1500);
   },
   /*
   This method prevents back button tap to exit from app on android.
   In case there is an opened modal it will close that modal instead.
   In case there is a current view with navigation history, it will go back instead.
   */
+
+  
+ 
   handleAndroidBackButton: function () {
     var f7 = cordovaApp.f7;
     const $ = f7.$;
@@ -144,8 +147,13 @@ var cordovaApp = {
   init: function (f7) {
     // Save f7 instance
     cordovaApp.f7 = f7;
-
+    
     document.addEventListener('deviceready', () => {
+      if (StatusBar) {
+        StatusBar.overlaysWebView(false); // Da ne uđe u content
+        StatusBar.styleDefault();
+        StatusBar.backgroundColorByHexString("#ffffff");
+      }
       // Handle Android back button
       cordovaApp.handleAndroidBackButton();
 

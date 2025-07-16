@@ -9,11 +9,11 @@
           </a>
         </div>
         <div class="center">
-          <img src="../assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
+          <img src="../assets/assets/circle.svg" alt="imjob logo" class="navbar-logo-center" />
         </div>
         <div class="right">
           <a href="/profile/">
-            <img src="../assets/setting.png" alt="profile" class="navbar-profile-icon" />
+            <img src="../assets/assets/setting.png" alt="profile" class="navbar-profile-icon" />
           </a>
         </div>
       </div>
@@ -87,20 +87,20 @@
       <div class="footer-nav">
         <div class="trty">
           <a href="/main/">
-            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/employers.svg" class="ft-img" alt="icon" />
             <p>Home</p>
           </a>
         </div>
         <div class="trty center-button">
           <a href="/ai/">
             <div class="circle-btn">
-              <img src="../assets/circle.svg" alt="AI" />
+              <img src="../assets/assets/circle.svg" alt="AI" />
             </div>
           </a>
         </div>
         <div class="trty">
           <a href="/chatList/">
-            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/feedback.svg" class="ft-img" alt="icon" />
             <p>Chats</p>
             <span id="unread-badge" class="badge unread-badge">0</span>
           </a>
@@ -199,7 +199,7 @@
         console.log("Email updated to:", email);
         const user = JSON.parse(localStorage.getItem("user"));
         localStorage.setItem("newEmail", email);
-        fetch(`http://127.0.0.1:8000/api/verify-user/${user.id}/resend-code`, {
+        fetch(`https://fluffycave.nl/api/verify-user/${user.id}/resend-code`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email }),
@@ -248,7 +248,7 @@
         }
 
         try {
-          const url = `http://127.0.0.1:8000/api/update-password`;
+          const url = `https://fluffycave.nl/api/update-password`;
           const response = await fetch(url, {
             method: "POST",
             headers: {

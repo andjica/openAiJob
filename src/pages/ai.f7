@@ -11,7 +11,7 @@
 
         <div class="center">
           <img
-            src="../assets/circle.svg"
+            src="../assets/assets/circle.svg"
             alt="imjob logo"
             class="navbar-logo-center"
           />
@@ -20,7 +20,7 @@
         <div class="right">
           <a href="/profile/">
             <img
-              src="../assets/setting.png"
+              src="../assets/assets/setting.png"
               alt="profile"
               class="navbar-profile-icon"
             />
@@ -90,21 +90,21 @@
       <div class="footer-nav">
         <div class="trty">
           <a href="/main/">
-            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/employers.svg" class="ft-img" alt="icon" />
             <p>Home</p>
           </a>
         </div>
         <div class="trty center-button">
           <a href="/ai/">
             <div class="circle-btn">
-              <img src="../assets/circle.svg" alt="AI" />
+              <img src="../assets/assets/circle.svg" alt="AI" />
             </div>
             <!-- <p>AI</p> -->
           </a>
         </div>
         <div class="trty">
           <a href="/chatList/">
-            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/feedback.svg" class="ft-img" alt="icon" />
             <p>Chats</p>
             <span id="unread-badge" class="badge unread-badge">0</span>
           </a>
@@ -283,11 +283,11 @@
       // Prikaži typing pre slanja
       messages.showTyping({
         header: "ImJob AI is typing...",
-        avatar: "../assets/images/ai.png",
+        avatar: ".../assets/assets//images/ai.png",
       });
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/chat/search", {
+        const res = await fetch("https://fluffycave.nl/api/chat/search", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -336,7 +336,7 @@
                 text: messageHtml,
                 type: "received",
                 name: "JobBot",
-                avatar: "../assets/images/ai.png",
+                avatar: ".../assets/assets//images/ai.png",
               });
             });
 
@@ -352,7 +352,7 @@
                   try {
                     // $f7.dialog.preloader("Go to next page...");
                     const res = await fetch(
-                      `http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`,
+                      `https://fluffycave.nl/api/job/${jobId}/translated?lang=${langCode}`,
                       {
                         headers: {
                           Authorization:
@@ -399,7 +399,7 @@
       const token = localStorage.getItem("jwt_token");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/chat/history", {
+        const res = await fetch("https://fluffycave.nl/api/chat/history", {
           headers: {
             Authorization: "Bearer " + token,
           },
@@ -444,7 +444,7 @@
                 text: jobHtml,
                 type: "received",
                 name: "JobBot",
-                avatar: "../assets/ai-avatar.png",
+                avatar: "../assets/assets//ai-avatar.png",
               });
             });
           }
@@ -459,7 +459,7 @@
               const langCode = localStorage.getItem("language_code") || "en";
               try {
                 const res = await fetch(
-                  `http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${langCode}`,
+                  `https://fluffycave.nl/api/job/${jobId}/translated?lang=${langCode}`,
                   {
                     headers: {
                       Authorization: "Bearer " + token,

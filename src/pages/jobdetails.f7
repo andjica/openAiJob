@@ -10,7 +10,7 @@
         </div>
         <div class="center">
           <img
-            src="../assets/circle.svg"
+            src="../assets/assets/circle.svg"
             alt="imjob logo"
             class="navbar-logo-center"
           />
@@ -18,7 +18,7 @@
         <div class="right">
           <a href="/profile/">
             <img
-              src="../assets/setting.png"
+              src="../assets/assets/setting.png"
               alt="profile"
               class="navbar-profile-icon"
             />
@@ -64,20 +64,20 @@
       <div class="footer-nav">
         <div class="trty">
           <a href="/main/">
-            <img src="../assets/employers.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/employers.svg" class="ft-img" alt="icon" />
             <p>Home</p>
           </a>
         </div>
         <div class="trty center-button">
           <a href="/ai/">
             <div class="circle-btn">
-              <img src="../assets/circle.svg" alt="AI" />
+              <img src="../assets/assets/circle.svg" alt="AI" />
             </div>
           </a>
         </div>
         <div class="trty">
           <a href="/chatList/">
-            <img src="../assets/feedback.svg" class="ft-img" alt="icon" />
+            <img src="../assets/assets/feedback.svg" class="ft-img" alt="icon" />
             <p>Chats</p>
             <span id="unread-badge" class="badge unread-badge">0</span>
           </a>
@@ -140,7 +140,7 @@
 
         try {
           const checkRes = await fetch(
-            `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/check`,
+            `https://fluffycave.nl/api/job/${jobId}/candidat/${candidateId}/check`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -167,7 +167,7 @@
       // Load job details
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/api/job/${jobId}/translated?lang=${lang}`,
+          `https://fluffycave.nl/api/job/${jobId}/translated?lang=${lang}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -214,7 +214,7 @@
               const candidateId = candidatProfile.id;
 
               const response = await fetch(
-                `http://127.0.0.1:8000/api/job/${jobId}/candidat/${candidateId}/apply`,
+                `https://fluffycave.nl/api/job/${jobId}/candidat/${candidateId}/apply`,
                 {
                   method: "POST",
                   headers: {
